@@ -16,6 +16,7 @@
   --surface-brand: #f0efff;
   --surface-info: #ebf3ff;
   --surface-success: #eaf9f5;
+  --surface-warning: #fffbf1;
   --surface-navigation-active: #eef2ff;
 
   --primary: #675dff;
@@ -27,6 +28,7 @@
   --success: #31b99a;
   --warning: #f4b740;
   --warning-strong: #f59e0b;
+  --warning-foreground: #9a6200;
   --danger: #e85d75;
   --error: #ef4444;
   --info: #3b82f6;
@@ -37,6 +39,7 @@
   --border: #e4e7ec;
   --border-subtle: #e5e7eb;
   --border-hover: #d1d5db;
+  --border-strong: #d0d5dd;
   --focus-ring: rgb(103 93 255 / 10%);
   --backdrop: rgb(0 0 0 / 50%);
 
@@ -88,6 +91,7 @@
   --color-surface-brand: var(--surface-brand);
   --color-surface-info: var(--surface-info);
   --color-surface-success: var(--surface-success);
+  --color-surface-warning: var(--surface-warning);
   --color-surface-navigation-active: var(--surface-navigation-active);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
@@ -97,6 +101,7 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-warning-strong: var(--warning-strong);
+  --color-warning-foreground: var(--warning-foreground);
   --color-danger: var(--danger);
   --color-error: var(--error);
   --color-info: var(--info);
@@ -106,6 +111,7 @@
   --color-border: var(--border);
   --color-border-subtle: var(--border-subtle);
   --color-border-hover: var(--border-hover);
+  --color-border-strong: var(--border-strong);
   --color-focus-ring: var(--focus-ring);
   --color-backdrop: var(--backdrop);
 

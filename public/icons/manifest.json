@@ -1,0 +1,276 @@
+[
+  {
+    "name": "alert-circle",
+    "path": "/icons/alert-circle.svg",
+    "source": "figma",
+    "figmaNodeId": "54:202",
+    "figmaNodeName": "alert-circle",
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "alert-triangle",
+    "path": "/icons/alert-triangle.svg",
+    "source": "figma",
+    "figmaNodeId": "69:106",
+    "figmaNodeName": "alert-triangle",
+    "width": 20,
+    "height": 20
+  },
+  {
+    "name": "arrow-right",
+    "path": "/icons/arrow-right.svg",
+    "source": "figma",
+    "figmaNodeId": "71:484",
+    "figmaNodeName": "arrow-right",
+    "width": 24,
+    "height": 24
+  },
+  {
+    "name": "arrow-up-right",
+    "path": "/icons/arrow-up-right.svg",
+    "source": "figma",
+    "figmaNodeId": "37:331",
+    "figmaNodeName": "arrow-up-right",
+    "width": 24,
+    "height": 24
+  },
+  {
+    "name": "chart-gantt",
+    "path": "/icons/chart-gantt.svg",
+    "source": "figma",
+    "figmaNodeId": "71:529",
+    "figmaNodeName": "chart-gantt",
+    "width": 18,
+    "height": 18
+  },
+  {
+    "name": "check",
+    "path": "/icons/check.svg",
+    "source": "figma",
+    "figmaNodeId": "37:876",
+    "figmaNodeName": "check",
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "check-circle",
+    "path": "/icons/check-circle.svg",
+    "source": "figma",
+    "figmaNodeId": "54:205",
+    "figmaNodeName": "check-circle",
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "chevron-down",
+    "path": "/icons/chevron-down.svg",
+    "source": "lucide",
+    "sourceIcon": "chevron-down",
+    "declaredIn": "Figma _codex-metadata"
+  },
+  {
+    "name": "chevron-right",
+    "path": "/icons/chevron-right.svg",
+    "source": "lucide",
+    "sourceIcon": "chevron-right",
+    "declaredIn": "Figma _codex-metadata"
+  },
+  {
+    "name": "cog",
+    "path": "/icons/cog.svg",
+    "source": "figma",
+    "figmaNodeId": "58:171",
+    "figmaNodeName": "cog",
+    "width": 18,
+    "height": 18
+  },
+  {
+    "name": "credit-card",
+    "path": "/icons/credit-card.svg",
+    "source": "figma",
+    "figmaNodeId": "71:499",
+    "figmaNodeName": "credit-card",
+    "width": 18,
+    "height": 18
+  },
+  {
+    "name": "eye",
+    "path": "/icons/eye.svg",
+    "source": "lucide",
+    "sourceIcon": "eye",
+    "declaredIn": "Figma _codex-metadata"
+  },
+  {
+    "name": "filter",
+    "path": "/icons/filter.svg",
+    "source": "lucide",
+    "sourceIcon": "funnel",
+    "declaredIn": "Figma _codex-metadata"
+  },
+  {
+    "name": "info",
+    "path": "/icons/info.svg",
+    "source": "figma",
+    "figmaNodeId": "69:103",
+    "figmaNodeName": "info",
+    "width": 20,
+    "height": 20
+  },
+  {
+    "name": "ios-battery-full",
+    "path": "/icons/ios-battery-full.svg",
+    "source": "figma",
+    "figmaNodeId": "71:481",
+    "figmaNodeName": "ios-battery-full",
+    "width": 28,
+    "height": 20
+  },
+  {
+    "name": "ios-signal",
+    "path": "/icons/ios-signal.svg",
+    "source": "figma",
+    "figmaNodeId": "71:475",
+    "figmaNodeName": "ios-signal",
+    "width": 20,
+    "height": 20
+  },
+  {
+    "name": "ios-wifi-signal",
+    "path": "/icons/ios-wifi-signal.svg",
+    "source": "figma",
+    "figmaNodeId": "71:478",
+    "figmaNodeName": "ios-wifi-signal",
+    "width": 20,
+    "height": 20
+  },
+  {
+    "name": "kanban-square",
+    "path": "/icons/kanban-square.svg",
+    "source": "figma",
+    "figmaNodeId": "71:532",
+    "figmaNodeName": "kanban-square",
+    "width": 18,
+    "height": 18
+  },
+  {
+    "name": "layout-dashboard",
+    "path": "/icons/layout-dashboard.svg",
+    "source": "figma",
+    "figmaNodeId": "71:514",
+    "figmaNodeName": "layout-dashboard",
+    "width": 18,
+    "height": 18
+  },
+  {
+    "name": "layout-panel-left",
+    "path": "/icons/layout-panel-left.svg",
+    "source": "figma",
+    "figmaNodeId": "69:259",
+    "figmaNodeName": "layout-panel-left",
+    "width": 32,
+    "height": 32
+  },
+  {
+    "name": "loader",
+    "path": "/icons/loader.svg",
+    "source": "figma",
+    "figmaNodeId": "23:235",
+    "figmaNodeName": "Vector",
+    "width": 24,
+    "height": 24
+  },
+  {
+    "name": "log-out",
+    "path": "/icons/log-out.svg",
+    "source": "figma",
+    "figmaNodeId": "71:526",
+    "figmaNodeName": "log-out",
+    "width": 18,
+    "height": 18
+  },
+  {
+    "name": "logo-mark",
+    "path": "/icons/logo-mark.svg",
+    "source": "figma",
+    "figmaNodeId": "12:379",
+    "figmaNodeName": "Logo mark",
+    "width": 32,
+    "height": 32
+  },
+  {
+    "name": "menu",
+    "path": "/icons/menu.svg",
+    "source": "figma",
+    "figmaNodeId": "71:520",
+    "figmaNodeName": "menu",
+    "width": 24,
+    "height": 24
+  },
+  {
+    "name": "plus",
+    "path": "/icons/plus.svg",
+    "source": "figma",
+    "figmaNodeId": "69:247",
+    "figmaNodeName": "plus",
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "search",
+    "path": "/icons/search.svg",
+    "source": "figma",
+    "figmaNodeId": "69:256",
+    "figmaNodeName": "search",
+    "width": 24,
+    "height": 24
+  },
+  {
+    "name": "settings",
+    "path": "/icons/settings.svg",
+    "source": "figma",
+    "figmaNodeId": "71:496",
+    "figmaNodeName": "settings",
+    "width": 18,
+    "height": 18
+  },
+  {
+    "name": "sort-desc",
+    "path": "/icons/sort-desc.svg",
+    "source": "lucide",
+    "sourceIcon": "arrow-down-wide-narrow",
+    "declaredIn": "Figma _codex-metadata"
+  },
+  {
+    "name": "terminal-square",
+    "path": "/icons/terminal-square.svg",
+    "source": "figma",
+    "figmaNodeId": "71:296",
+    "figmaNodeName": "terminal-square",
+    "width": 16,
+    "height": 16
+  },
+  {
+    "name": "thumbs-up",
+    "path": "/icons/thumbs-up.svg",
+    "source": "lucide",
+    "sourceIcon": "thumbs-up",
+    "declaredIn": "Figma _codex-metadata"
+  },
+  {
+    "name": "user",
+    "path": "/icons/user.svg",
+    "source": "lucide",
+    "sourceIcon": "user",
+    "declaredIn": "Figma _codex-metadata"
+  },
+  {
+    "name": "x-circle",
+    "path": "/icons/x-circle.svg",
+    "source": "figma",
+    "figmaNodeId": "71:517",
+    "figmaNodeName": "x-circle",
+    "width": 24,
+    "height": 24
+  }
+]

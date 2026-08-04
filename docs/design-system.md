@@ -79,6 +79,8 @@ Landing 使用全宽 Section 与居中的 `max-w-content` 容器。Dashboard 使
 - 应用字号 Scale：13、14、16、20、24、32、40px。
 - `_tokens` 展示板自身还使用 11、12、17、18、44px；这些是设计说明画布尺寸，不自动成为产品页面的正文 Scale。
 - 图标：Lucide React 风格，默认 24px、1.5px stroke，使用 round caps/joins。
+- Figma 中使用的 SVG 已本地化到 `public/icons/`；业务代码优先通过 `src/lib/icons.ts` 的 `iconPaths` 引用，来源与节点映射见 `public/icons/manifest.json`。
+- Figma 导出的状态图标保留设计稿颜色；需要继承运行时文字颜色时，应内联使用带 `currentColor` 的 Lucide SVG，而不是依赖外链图片继承颜色。
 
 ## 5. 尺寸、圆角与布局
 
