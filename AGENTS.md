@@ -12,7 +12,7 @@ FeedbackFlow 是一个用于作品展示的产品反馈与公开路线图 SaaS�
 
 ## 2. 当前状态与执行原则
 
-- 当前仓库处于 Day 1，只有 README、计划文档和基础 `.gitignore`；先建立可部署的最小 Next.js 骨架。
+- Day 1 的可部署 Next.js 工程骨架已完成；下一阶段按计划进入数据库与领域模型。
 - 按“可部署骨架 -> 数据库 -> 身份与项目 -> 反馈 -> 投票 -> Stripe -> 生产与测试”的依赖顺序推进。
 - 每次只完成当前需求所需的最小纵向切片，不提前实现后续阶段的大功能。
 - 默认使用 Server Component；仅把需要浏览器状态、事件或 Web API 的最小交互岛标记为 Client Component。
@@ -33,6 +33,18 @@ FeedbackFlow 是一个用于作品展示的产品反馈与公开路线图 SaaS�
 - Resend 仅为可选扩展，不得阻塞公开 Demo
 
 引入新依赖前必须说明它解决的问题；平台已有能力或现有依赖能清晰完成时，不新增包。
+
+## 3.1 设计来源与实现规范
+
+- Figma 文件：[FeedbackFlow SaaS Complete UI Design](https://www.figma.com/design/TxUtfRQ9Eh71XWC939ksIz/FeedbackFlow-SaaS---Complete-UI-Design?node-id=35-2)。
+- 设计 Token 页面为 `_tokens`（`35:2`），视觉 Token Frame 为 `design-tokens`（`12:376`），Agent 实现说明为 `_codex-metadata`（`40:14`）。
+- 开始实现或审查 UI 前必须先读取 `docs/design-system.md`，并尽量读取对应 Figma 页面或节点；不要只凭截图推断交互状态。
+- `plan.pdf` 与本文件定义产品范围、领域规则和正式路由；Figma 定义视觉、响应式与交互行为；`docs/design-system.md` 是可离线读取的实现快照。三者冲突时不得擅自扩大产品范围。
+- 页面使用 mobile-first：390px 设计作为基础，按 `md` 768px、`lg` 1024px、`xl` 1280px 逐级覆盖，内容最大宽度为 1280px。
+- 使用 Inter 字体与 Lucide React 图标风格；图标默认 24px、1.5px stroke、round caps/joins。
+- 已有语义 Token 时禁止在组件中重复硬编码颜色、圆角、阴影、尺寸、时长或 easing；运行时代码以 `src/app/globals.css` 中的 Token 为准。
+- 通用动画必须支持 `prefers-reduced-motion`；表单错误状态必须使用 `aria-invalid` 与 `aria-describedby` 建立可访问关联。
+- Figma 当前未建立原生 Variable Collections。Figma Token 或 `_codex-metadata` 变更后，应在同一变更中同步 `docs/design-system.md` 与 `src/app/globals.css`，并记录无法一一映射的差异。
 
 ## 4. 核心范围
 
