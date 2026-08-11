@@ -3,5 +3,7 @@ allowBuilds:
   unrs-resolver: false
 enableGlobalVirtualStore: false
 verifyDepsBeforeRun: error
+overrides:
+  shadcn>zod: 3.25.76
 minimumReleaseAgeExclude:
   - '@testing-library/jest-dom@7.0.0'
