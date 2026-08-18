@@ -20,6 +20,8 @@
   --surface-success: #eaf9f5;
   --surface-warning: #fffbf1;
   --surface-navigation-active: #eef2ff;
+  --auth-proof: #4e46d5;
+  --auth-proof-muted: #ddd9ff;
 
   /* shadcn/ui semantic aliases mapped to the FeedbackFlow design tokens. */
   --card: var(--background);
@@ -108,6 +110,8 @@
   --color-surface-success: var(--surface-success);
   --color-surface-warning: var(--surface-warning);
   --color-surface-navigation-active: var(--surface-navigation-active);
+  --color-auth-proof: var(--auth-proof);
+  --color-auth-proof-muted: var(--auth-proof-muted);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-popover: var(--popover);
@@ -241,7 +245,13 @@ body {
   font-family: var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
 }
 
-:focus-visible {
+a[href],
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+a[href]:focus-visible,
+button:focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 2px;
 }

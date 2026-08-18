@@ -1,14 +1,21 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { getAuthErrorMessage } from "@/features/auth/auth-error";
 import { authClient } from "@/lib/auth-client";
 import { loginSchema, type LoginValues } from "@/validators/auth";
+
+const visibleSignInErrorCodes = new Set([
+  "INVALID_EMAIL",
+  "INVALID_EMAIL_OR_PASSWORD",
+]);
 
 const defaultValues: LoginValues = {
   email: "",
@@ -38,7 +45,11 @@ export function LoginForm() {
 
       if (result.error) {
         setError("root", {
-          message: "Unable to sign in. Check your credentials and try again.",
+          message: getAuthErrorMessage(
+            result.error,
+            visibleSignInErrorCodes,
+            "Unable to sign in. Check your credentials and try again.",
+          ),
         });
         return;
       }
@@ -114,6 +125,7 @@ export function LoginForm() {
                 aria-invalid={Boolean(errors.password) || undefined}
                 autoComplete="current-password"
                 id="password"
+                placeholder="8–128 characters"
                 type="password"
                 {...register("password")}
               />
@@ -171,6 +183,25 @@ export function LoginForm() {
               Credentials also appear in the live README.
             </p>
           </aside>
+
+          <p className="text-center text-body-sm text-muted-foreground">
+            Don&apos;t have an account?{" "}
+            {isSubmitting ? (
+              <span
+                aria-disabled="true"
+                className="font-semibold text-disabled-foreground"
+              >
+                Create account
+              </span>
+            ) : (
+              <Link
+                className="rounded-sm font-semibold text-primary transition-colors duration-200 hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                href="/register"
+              >
+                Create account
+              </Link>
+            )}
+          </p>
         </div>
       </form>
     </div>

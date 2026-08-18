@@ -26,20 +26,50 @@ describe("RegisterPage", () => {
     mocks.signUpEmail.mockResolvedValue({ data: {}, error: null });
   });
 
-  it("validates matching passwords", async () => {
+  it("renders the Figma registration content", () => {
+    render(<RegisterPage />);
+
+    expect(
+      screen.getByText("Start with one project. Ship the whole loop."),
+    ).toBeInTheDocument();
+    expect(screen.getByText("A public feedback board")).toBeInTheDocument();
+    expect(
+      screen.getByText("One account owns one focused product workspace."),
+    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Name")).toHaveAttribute(
+      "placeholder",
+      "e.g. Paul Maker",
+    );
+    expect(screen.getByLabelText("Password")).toHaveAttribute(
+      "placeholder",
+      "Must be at least 8 characters",
+    );
+    expect(screen.queryByLabelText("Confirm password")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Log in" })).toHaveAttribute(
+      "href",
+      "/login",
+    );
+  });
+
+  it("updates the password strength indicator", async () => {
     const user = userEvent.setup();
     render(<RegisterPage />);
 
-    await user.type(screen.getByLabelText("Name"), "Paul");
-    await user.type(screen.getByLabelText("Email"), "paul@example.com");
-    await user.type(screen.getByLabelText("Password"), "Feedback123!");
-    await user.type(screen.getByLabelText("Confirm password"), "Different123!");
-    await user.click(screen.getByRole("button", { name: "Create account" }));
+    const strength = screen.getByRole("progressbar", {
+      name: "Password strength",
+    });
+    expect(strength).toHaveAttribute("aria-valuenow", "0");
+    expect(strength).toHaveAttribute("aria-valuetext", "Not entered");
+    expect(screen.getByLabelText("Password")).toHaveAttribute(
+      "aria-describedby",
+      "password-strength",
+    );
 
-    const confirmation = screen.getByLabelText("Confirm password");
-    expect(await screen.findByText("Passwords do not match.")).toBeVisible();
-    expect(confirmation).toHaveAttribute("aria-invalid", "true");
-    expect(mocks.signUpEmail).not.toHaveBeenCalled();
+    await user.type(screen.getByLabelText("Password"), "Feedback123!");
+
+    expect(screen.getByText("Good")).toBeVisible();
+    expect(strength).toHaveAttribute("aria-valuenow", "68");
+    expect(strength).toHaveAttribute("aria-valuetext", "Good");
   });
 
   it("creates an account and navigates to onboarding", async () => {
@@ -49,7 +79,6 @@ describe("RegisterPage", () => {
     await user.type(screen.getByLabelText("Name"), "Paul");
     await user.type(screen.getByLabelText("Email"), "paul@example.com");
     await user.type(screen.getByLabelText("Password"), "Feedback123!");
-    await user.type(screen.getByLabelText("Confirm password"), "Feedback123!");
     await user.click(screen.getByRole("button", { name: "Create account" }));
 
     expect(mocks.signUpEmail).toHaveBeenCalledWith({
@@ -65,18 +94,20 @@ describe("RegisterPage", () => {
     const user = userEvent.setup();
     mocks.signUpEmail.mockResolvedValue({
       data: null,
-      error: { message: "Email is already in use." },
+      error: {
+        code: "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL",
+        message: "User already exists. Use another email.",
+      },
     });
     render(<RegisterPage />);
 
     await user.type(screen.getByLabelText("Name"), "Paul");
     await user.type(screen.getByLabelText("Email"), "paul@example.com");
     await user.type(screen.getByLabelText("Password"), "Feedback123!");
-    await user.type(screen.getByLabelText("Confirm password"), "Feedback123!");
     await user.click(screen.getByRole("button", { name: "Create account" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Unable to create your account. Check your details and try again.",
+      "User already exists. Use another email.",
     );
     expect(mocks.push).not.toHaveBeenCalled();
   });
@@ -95,10 +126,6 @@ describe("RegisterPage", () => {
     await user.type(screen.getByLabelText("Name"), "Paul");
     await user.type(screen.getByLabelText("Email"), "paul@example.com");
     await user.type(screen.getByLabelText("Password"), "Feedback123!");
-    await user.type(
-      screen.getByLabelText("Confirm password"),
-      "Feedback123!",
-    );
     await user.dblClick(
       screen.getByRole("button", { name: "Create account" }),
     );
@@ -107,6 +134,9 @@ describe("RegisterPage", () => {
     expect(
       screen.getByRole("button", { name: "Creating account..." }),
     ).toBeDisabled();
+    expect(
+      screen.queryByRole("link", { name: "Log in" }),
+    ).not.toBeInTheDocument();
 
     resolveSignUp?.({ data: {}, error: null });
   });

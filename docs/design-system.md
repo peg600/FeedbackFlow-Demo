@@ -2,7 +2,7 @@
 
 本文档是 Figma 设计规范的本地实现快照，供开发、评审、测试和无法连接 Figma 的 Agent 使用。它不替代 Figma 原稿，也不改变 `plan.pdf` 与 `AGENTS.md` 规定的产品范围。
 
-最后同步日期：2026-08-04。
+最后同步日期：2026-08-18。
 
 ## 1. 设计来源与优先级
 
@@ -48,6 +48,8 @@ Landing 使用全宽 Section 与居中的 `max-w-content` 容器。Dashboard 使
 | `surface-brand` | `#F0EFFF` | 品牌 Badge 背景 |
 | `surface-info` | `#EBF3FF` | In-progress Badge 背景 |
 | `surface-success` | `#EAF9F5` | Completed Badge 背景 |
+| `auth-proof` | `#4E46D5` | 注册页桌面 Product proof 背景 |
+| `auth-proof-muted` | `#DDD9FF` | 注册页 Product proof 次级文字 |
 | `primary` | `#675DFF` | 品牌色、主要操作、focus outline、Planned |
 | `primary-hover` | `#5549E0` | Primary hover |
 | `primary-active` | `#4A3FCC` | Primary active |
@@ -102,6 +104,8 @@ Landing 使用全宽 Section 与居中的 `max-w-content` 容器。Dashboard 使
 
 ## 6. 组件与状态
 
+所有带 `href` 的链接和未禁用按钮在 Hover 时使用 `cursor: pointer`；禁用按钮不得显示可点击光标。
+
 ### Button
 
 - Primary：`primary` 背景、白色文本。
@@ -113,7 +117,7 @@ Landing 使用全宽 Section 与居中的 `max-w-content` 容器。Dashboard 使
 ### Input
 
 - 默认使用 `border`。
-- Focus 使用 `primary` 边框和 `0 0 0 3px rgb(103 93 255 / 10%)` focus ring。
+- Focus 仅使用单层 `primary` 边框，不叠加外侧 focus ring。
 - Error 使用 `error` 边框与 12px 错误文本，并设置 `aria-invalid="true"`、`aria-describedby`。
 - Success 使用 `status-completed` 边框和 Check 图标。
 - Disabled 使用 `surface-subtle` 背景与 `disabled-foreground` 文本。

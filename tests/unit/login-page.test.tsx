@@ -37,7 +37,14 @@ describe("LoginPage", () => {
       "type",
       "password",
     );
+    expect(screen.getByLabelText("Password")).toHaveAttribute(
+      "placeholder",
+      "8–128 characters",
+    );
     expect(screen.getByText("demo@feedbackflow.app · Demo1234!")).toBeVisible();
+    expect(
+      screen.getByRole("link", { name: "Create account" }),
+    ).toHaveAttribute("href", "/register");
   });
 
   it("links validation errors to invalid fields", async () => {
@@ -75,7 +82,31 @@ describe("LoginPage", () => {
     const user = userEvent.setup();
     mocks.signInEmail.mockResolvedValue({
       data: null,
-      error: { message: "Invalid email or password." },
+      error: {
+        code: "INVALID_EMAIL_OR_PASSWORD",
+        message: "Invalid email or password",
+      },
+    });
+    render(<LoginPage />);
+
+    await user.type(screen.getByLabelText("Email"), "paul@example.com");
+    await user.type(screen.getByLabelText("Password"), "Feedback123!");
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "Invalid email or password",
+    );
+    expect(mocks.signInEmail).toHaveBeenCalledWith(
+      expect.objectContaining({ rememberMe: false }),
+    );
+    expect(mocks.push).not.toHaveBeenCalled();
+  });
+
+  it("does not expose unexpected server errors", async () => {
+    const user = userEvent.setup();
+    mocks.signInEmail.mockResolvedValue({
+      data: null,
+      error: { code: "INTERNAL_SERVER_ERROR", message: "database details" },
     });
     render(<LoginPage />);
 
@@ -86,10 +117,7 @@ describe("LoginPage", () => {
     expect(await screen.findByRole("alert")).toHaveTextContent(
       "Unable to sign in. Check your credentials and try again.",
     );
-    expect(mocks.signInEmail).toHaveBeenCalledWith(
-      expect.objectContaining({ rememberMe: false }),
-    );
-    expect(mocks.push).not.toHaveBeenCalled();
+    expect(screen.queryByText("database details")).not.toBeInTheDocument();
   });
 
   it("disables submission while the request is pending", async () => {
@@ -112,6 +140,9 @@ describe("LoginPage", () => {
     expect(
       screen.getByRole("button", { name: "Signing in..." }),
     ).toBeDisabled();
+    expect(
+      screen.queryByRole("link", { name: "Create account" }),
+    ).not.toBeInTheDocument();
 
     resolveSignIn?.({ data: {}, error: null });
   });
