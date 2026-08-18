@@ -9,6 +9,9 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "auth:generate": "auth generate --config ./src/server/auth/index.ts --output ./src/server/db/schema/auth.ts --yes",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -20,9 +23,13 @@
     "check": "pnpm lint && pnpm typecheck && pnpm test && pnpm build"
   },
   "dependencies": {
+    "@better-auth/drizzle-adapter": "1.6.25",
     "@hookform/resolvers": "^5.7.1",
+    "@neondatabase/serverless": "1.1.0",
+    "better-auth": "1.6.25",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "drizzle-orm": "^0.45.2",
     "next": "16.2.10",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -44,6 +51,8 @@
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^6.0.3",
     "@vitest/coverage-v8": "^4.1.10",
+    "auth": "1.6.25",
+    "drizzle-kit": "^0.31.10",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
     "jsdom": "^29.1.1",

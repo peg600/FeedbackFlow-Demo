@@ -1,30 +1,54 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
 import { useForm, type SubmitHandler } from "react-hook-form";
 
 import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client";
 import { loginSchema, type LoginValues } from "@/validators/auth";
 
 const defaultValues: LoginValues = {
-  email: "paul@example.com",
-  password: "Feedback123!",
+  email: "",
+  password: "",
   remember: false,
 };
 
 export function LoginForm() {
+  const router = useRouter();
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    setError,
+    formState: { errors, isSubmitting },
   } = useForm<LoginValues>({
     defaultValues,
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit: SubmitHandler<LoginValues> = () => {};
+  const onSubmit: SubmitHandler<LoginValues> = async (values) => {
+    try {
+      const result = await authClient.signIn.email({
+        email: values.email,
+        password: values.password,
+        rememberMe: values.remember,
+      });
+
+      if (result.error) {
+        setError("root", {
+          message: "Unable to sign in. Check your credentials and try again.",
+        });
+        return;
+      }
+
+      router.push("/dashboard");
+      router.refresh();
+    } catch {
+      setError("root", { message: "Unable to sign in. Try again." });
+    }
+  };
 
   return (
     <div className="flex w-full min-w-0 flex-col gap-6 md:gap-8">
@@ -105,7 +129,7 @@ export function LoginForm() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between">
+          <div className="flex items-center">
             <label className="flex cursor-pointer items-center gap-2 text-[13px] leading-[17px] font-semibold text-text md:text-body-sm">
               <input
                 className="size-[18px] appearance-none rounded-[4px] border-2 border-border bg-background transition-colors duration-200 checked:border-primary checked:bg-[url('/icons/check.svg')] checked:bg-center checked:bg-no-repeat focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary md:size-4 md:border-[1.5px] md:border-text"
@@ -115,19 +139,22 @@ export function LoginForm() {
               Remember me
             </label>
 
-            <button
-              className="text-[13px] leading-[17px] font-semibold text-primary transition-colors duration-200 hover:text-primary-hover md:text-body-sm"
-              onClick={() => {}}
-              type="button"
-            >
-              Forgot password?
-            </button>
           </div>
         </div>
 
         <div className="flex flex-col gap-6 md:gap-8 lg:gap-6">
-          <Button className="h-[46px] w-full md:h-11" type="submit">
-            Sign in
+          {errors.root?.message ? (
+            <p className="text-body-sm text-error" role="alert">
+              {errors.root.message}
+            </p>
+          ) : null}
+
+          <Button
+            className="h-[46px] w-full md:h-11"
+            disabled={isSubmitting}
+            type="submit"
+          >
+            {isSubmitting ? "Signing in..." : "Sign in"}
           </Button>
 
           <aside

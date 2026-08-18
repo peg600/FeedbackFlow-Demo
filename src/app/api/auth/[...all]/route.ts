@@ -1,7 +1,5 @@
-export async function GET() {
-  return Response.json({ error: "Not implemented" }, { status: 501 });
-}
+import { toNextJsHandler } from "better-auth/next-js";
 
-export async function POST() {
-  return Response.json({ error: "Not implemented" }, { status: 501 });
-}
+import { auth } from "@/server/auth";
+
+export const { GET, POST } = toNextJsHandler(auth);
