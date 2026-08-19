@@ -28,7 +28,10 @@ export function createAuthBaseURL({
   vercelURL = process.env.VERCEL_URL,
   vercelBranchURL = process.env.VERCEL_BRANCH_URL,
 }: AuthBaseURLInput): AuthBaseURL {
-  if (vercelEnvironment !== "preview") {
+  const isVercelDeployment =
+    vercelEnvironment === "preview" || vercelEnvironment === "production";
+
+  if (!isVercelDeployment) {
     return configuredURL;
   }
 

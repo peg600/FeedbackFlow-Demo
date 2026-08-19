@@ -20,13 +20,17 @@ Production, and keep the Production secret stable after launch.
 
 Vercel Preview deployments use a branch-scoped `BETTER_AUTH_URL` when one is
 configured. Other Preview branches fall back to the current deployment's
-`VERCEL_URL`, so each commit keeps the correct Better Auth origin. Local and
-Production environments still require an explicit `BETTER_AUTH_URL`.
-The Vercel project must expose System Environment Variables. Better Auth then
-allows only the exact `BETTER_AUTH_URL`, `VERCEL_URL`, and `VERCEL_BRANCH_URL`
-hosts for that deployment. Do not add an all-Preview `BETTER_AUTH_URL`; it would
-add the same fixed host to every Preview deployment's trusted origins and weaken
-branch isolation.
+`VERCEL_URL`, so each commit keeps the correct Better Auth origin. Production
+must set `BETTER_AUTH_URL` to its canonical public origin, while local
+development uses its explicit localhost URL.
+
+The Vercel project must expose System Environment Variables. On both Preview
+and Production deployments, Better Auth uses Dynamic Base URL and allows only
+the exact `BETTER_AUTH_URL`, `VERCEL_URL`, and `VERCEL_BRANCH_URL` hosts for that
+deployment. This supports canonical, branch, and generated deployment URLs
+without trusting every `*.vercel.app` host. Do not add an all-Preview
+`BETTER_AUTH_URL`; it would add the same fixed host to every Preview deployment's
+trusted origins and weaken branch isolation.
 
 Generate and apply auth schema changes through the existing Drizzle workflow:
 
