@@ -2,7 +2,7 @@
 
 本文档是 Figma 设计规范的本地实现快照，供开发、评审、测试和无法连接 Figma 的 Agent 使用。它不替代 Figma 原稿，也不改变 `plan.pdf` 与 `AGENTS.md` 规定的产品范围。
 
-最后同步日期：2026-08-18。
+最后同步日期：2026-08-20。
 
 ## 1. 设计来源与优先级
 
@@ -10,6 +10,8 @@
 - `_tokens` 页面：`35:2`
 - `design-tokens` Frame：`12:376`
 - `_codex-metadata` Frame：`40:14`
+- `_prototype` 页面：`165:2`，用于记录页面间的原型跳转关系。
+- `_components` 页面：`186:2`，定义生产组件的尺寸、状态与交互规范。
 - 当前 Figma 文件没有原生 Variable Collections；本文中的值来自实际画布与 `_codex-metadata`。
 
 发生冲突时按以下顺序处理：
@@ -88,19 +90,21 @@ Landing 使用全宽 Section 与居中的 `max-w-content` 容器。Dashboard 使
 
 | Token | 值 | 用途 |
 | --- | --- | --- |
-| `control-compact` | 42px | Button 高度 |
-| `control` | 48px | Input 和标准表单控件高度 |
+| `component-control` | 40px | 标准 Button 与 Input 高度 |
+| `select-control` | 38px | Dropdown 与 Dashboard 桌面筛选控件高度 |
+| `control-compact` | 42px | 历史页面级紧凑控件高度；新组件优先使用命名尺寸 |
+| `control` | 48px | 历史页面级大控件高度；新组件优先使用命名尺寸 |
 | `icon` | 24px | 默认图标尺寸 |
 | `sidebar` | 240px | Desktop Sidebar 宽度 |
 | `content` | 1280px | 页面内容最大宽度 |
 | `toast` | 400px | Toast 最大宽度 |
 | `radius-placeholder` | 8px | Skeleton 与 Toast |
-| `radius-control` | 10px | Button 与 Input |
+| `radius-control` | 10px | 历史页面级大控件圆角；新组件使用 `radius-placeholder` |
 | `radius-token` | 14px | Badge 与 Token Swatch |
 | `radius-surface` | 16px | 大型 Card/Panel |
 | `radius-pill` | 9999px | Status Badge |
 
-常用组件间距：Button `px-6 py-2.5`，Input `px-4 py-3`，Card `p-6`，Table Row `px-6 py-4`，Toast 距视口右上角 24px。
+常用组件间距：Button `px-[18px] py-2.5`，Input/Dropdown `px-3`，Card 由页面决定内容 padding，Table Cell `px-4`，Toast 距视口右上角 24px。
 
 ## 6. 组件与状态
 
@@ -108,24 +112,39 @@ Landing 使用全宽 Section 与居中的 `max-w-content` 容器。Dashboard 使
 
 ### Button
 
+- Figma 节点：`54:16`。
 - Primary：`primary` 背景、白色文本。
-- Hover：`primary-hover`。
-- Active：`primary-active` 并缩放至 `0.98`。
+- Secondary：白色背景、`border-subtle` 边框。
+- 高度 40px、圆角 8px、水平内边距 18px，14px semibold 文本。
+- Hover：Primary 使用 `primary-hover`；Secondary 使用 `surface-subtle`。
+- Active：Primary 使用 `primary-active`，Secondary 使用 `surface-hover`，均缩放至 `0.98`。
 - Disabled：`opacity: 0.5` 与 `cursor: not-allowed`。
-- Focus-visible：2px `primary` outline，2px offset。
+- Focus-visible：2px `rgb(103 93 255 / 30%)` outline，2px offset。
 
 ### Input
 
-- 默认使用 `border`。
-- Focus 仅使用单层 `primary` 边框，不叠加外侧 focus ring。
-- Error 使用 `error` 边框与 12px 错误文本，并设置 `aria-invalid="true"`、`aria-describedby`。
+- Figma 节点：`54:122`。
+- 高度 40px、圆角 8px、水平内边距 12px，14px 文本，默认使用 `border-subtle`。
+- Focus 使用 `primary` 边框及 2px `rgb(103 93 255 / 15%)` halo。
+- Error 使用 `error` 边框、右侧 16px Alert Circle 图标与 12px 错误文本，不叠加 focus halo，并设置 `aria-invalid="true"`、`aria-describedby`。
 - Success 使用 `status-completed` 边框和 Check 图标。
 - Disabled 使用 `surface-subtle` 背景与 `disabled-foreground` 文本。
 
+### Dropdown
+
+- Figma 节点：`185:4`。
+- 使用共享的 shadcn/Radix Select 组件；收起状态高 38px、圆角 8px、水平内边距 12px，14px medium 文本。
+- 箭头使用该节点导出的 10×10 SVG，并固定在右侧 12px；展开时切换为对应的向上箭头，文本预留右侧空间且不换行。
+- Hover 使用 `surface-subtle` 背景和 `border-hover`；Focus/Open 使用 `primary` 边框与控件 halo；Disabled 使用 50% opacity 和不可用光标。
+- 展开面板的目标宽度为 200px、最大高度 240px，8px 圆角、`0 12px 12px rgb(0 0 0 / 8%)` 阴影、6px 内边距与 2px 项目间距。Radix Popper 以 8px 安全边距进行碰撞检测、自动翻转和位移，并使用其可用宽高变量在窄视口收缩，避免横向滚动。选项高 36px、圆角 6px；已选项使用 Check，状态筛选其余选项使用 Figma 导出的 8px 状态点。
+- Radix 负责点击外部关闭、Enter/Space 选择、Arrow/Home/End 导航、Escape 关闭和焦点回归；保留隐藏表单字段，Dashboard URL 与 Server Action 提交行为不变。
+
 ### Card、Table 与 Navigation
 
-- Card 默认使用轻量阴影和 `border-subtle`；hover 使用 `border-hover`、`shadow-md` 与 `translateY(-2px)`。
-- Table Row hover 使用 `surface-subtle`，可在左侧显示 3px `accent` 标记。
+- Figma 节点：Card/Navigation `58:4`，Table `185:201`。
+- Card 使用 12px 圆角、`#E2E8F0` 边框和 `0 1px 1.5px rgb(0 0 0 / 3%)` 阴影；仅交互式 Card 在 hover 使用 `border-hover`、`0 8px 8px rgb(0 0 0 / 8%)` 和 `translateY(-2px)`，active 回到原位，200ms 动效使用 `cubic-bezier(0.16, 1, 0.3, 1)`。
+- Table 只抽离为 `.ui-table-*` CSS classes，不建立 React Table 组件。容器使用 12px 圆角、`border-subtle` 与 overflow hidden/auto；表头高 40px、`surface-subtle` 背景、12px uppercase semibold；数据行高 56px，hover 使用 `surface-subtle` 并在首个单元格内显示 3px `accent` 强调线。
+- Table 文本左对齐，Status/Votes 居中，日期右对齐；Visibility/Updated 在 tablet 隐藏，mobile 继续使用 Card 布局。
 - Sidebar active 使用 `#EEF2FF` 背景、3px `primary` 左边框和 `primary` 文本。
 - Top Navigation hover 使用更深文本及品牌下划线。
 
@@ -172,6 +191,15 @@ Easing：
 | `/board` | `/p/[slug]` |
 | `/board/[id]` | `/p/[slug]/feedback/[id]` |
 | `/roadmap` | `/p/[slug]/roadmap` |
+
+### 原型导航与路由守卫
+
+- 登录成功默认进入 `/dashboard`；`returnTo` 仅允许归一化后的 `/dashboard/*`、`/onboarding` 与 `/p/*` 站内路径，并拒绝外部 URL、协议相对 URL、反斜杠路径及认证页循环。
+- 未登录访问任意 `/dashboard/*` 路由统一跳转到 `/login?returnTo=/dashboard`。
+- 已登录但尚未创建唯一项目时，访问 `/dashboard/*` 跳转到 `/onboarding`。
+- 已拥有项目的用户访问 `/onboarding` 跳转回 `/dashboard`。
+- Dashboard 导航使用正式路由 `/dashboard`、`/dashboard/settings`、`/dashboard/billing`；公开链接使用 `/p/[slug]` 与 `/p/[slug]/roadmap`。
+- 注册成功后继续进入 `/onboarding`。Figma 中的密码恢复页面不纳入当前实现，除非满足 `AGENTS.md` 对可验证发信域名的条件。
 
 可选密码恢复页面仍受 `AGENTS.md` 的发信域名条件限制，不能因为 Figma 中存在页面就自动加入核心范围。
 

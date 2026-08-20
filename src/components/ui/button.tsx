@@ -4,18 +4,19 @@ import type { ButtonHTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center rounded-control border text-sm font-semibold transition-[background-color,border-color,transform] duration-150 ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]",
+  "inline-flex shrink-0 items-center justify-center whitespace-nowrap rounded-placeholder border text-sm font-semibold transition-[background-color,border-color,transform] duration-150 ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-outline disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98] active:duration-100",
   {
     variants: {
       variant: {
         primary:
           "border-primary bg-primary text-primary-foreground hover:border-primary-hover hover:bg-primary-hover active:border-primary-active active:bg-primary-active",
         secondary:
-          "border-border bg-background text-foreground hover:bg-surface-subtle active:bg-surface-hover",
+          "border-border-subtle bg-background text-foreground hover:bg-surface-subtle active:bg-surface-hover",
       },
       size: {
-        default: "h-11 px-6",
-        compact: "h-control-compact px-6",
+        default: "h-component-control px-[18px]",
+        compact: "h-component-control px-[18px]",
+        small: "h-8 px-3 text-xs",
       },
     },
     defaultVariants: {

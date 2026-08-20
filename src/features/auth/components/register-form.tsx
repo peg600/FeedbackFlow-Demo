@@ -268,7 +268,6 @@ export function RegisterForm() {
 
         <div className="flex flex-col items-stretch gap-6 md:gap-7 lg:gap-4">
           <Button
-            className="h-[46px] md:h-11"
             disabled={isSubmitting}
             type="submit"
           >

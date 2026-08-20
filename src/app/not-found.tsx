@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
 
+import { buttonVariants } from "@/components/ui/button";
 import { iconPaths } from "@/lib/icons";
+import { cn } from "@/lib/utils";
 
 function Brand() {
   return (
@@ -65,13 +67,16 @@ export default function NotFound() {
             <div className="mt-[39px] flex flex-col gap-3 md:mt-[50px] md:flex-row md:justify-between">
               <Link
                 href="/"
-                className="inline-flex h-11 items-center justify-center rounded-control border border-primary bg-primary px-5 text-[13px] font-bold text-primary-foreground transition-colors duration-150 hover:border-primary-hover hover:bg-primary-hover active:border-primary-active active:bg-primary-active md:w-[169px]"
+                className={cn(buttonVariants(), "md:w-[169px]")}
               >
                 Go to homepage
               </Link>
               <Link
                 href="/dashboard"
-                className="inline-flex h-11 items-center justify-center rounded-control border border-border-strong bg-background px-5 text-[13px] font-bold text-text transition-colors duration-150 hover:border-border-hover hover:bg-surface-hover active:bg-surface-subtle md:w-[169px]"
+                className={cn(
+                  buttonVariants({ variant: "secondary" }),
+                  "md:w-[169px]",
+                )}
               >
                 Open dashboard
               </Link>

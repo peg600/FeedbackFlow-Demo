@@ -5,8 +5,17 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
+import { cn } from "@/lib/utils";
 
-export function SignOutButton() {
+type SignOutButtonProps = {
+  className?: string;
+  compact?: boolean;
+};
+
+export function SignOutButton({
+  className,
+  compact = false,
+}: SignOutButtonProps = {}) {
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -35,8 +44,13 @@ export function SignOutButton() {
   }
 
   return (
-    <div className="flex flex-col items-start gap-2">
-      <Button disabled={isPending} onClick={handleSignOut} variant="secondary">
+    <div className={cn("flex flex-col items-start gap-2", className)}>
+      <Button
+        disabled={isPending}
+        onClick={handleSignOut}
+        size={compact ? "small" : "default"}
+        variant="secondary"
+      >
         {isPending ? "Signing out..." : "Sign out"}
       </Button>
       {error ? (
