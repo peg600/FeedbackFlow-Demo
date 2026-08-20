@@ -26,8 +26,8 @@ describe("LoginPage", () => {
     mocks.signInEmail.mockResolvedValue({ data: {}, error: null });
   });
 
-  it("renders the Figma login content and demo credentials", () => {
-    render(<LoginPage />);
+  it("renders the Figma login content and demo credentials", async () => {
+    render(await LoginPage());
 
     expect(
       screen.getByRole("heading", { level: 1, name: "Welcome back" }),
@@ -43,13 +43,13 @@ describe("LoginPage", () => {
     );
     expect(screen.getByText("demo@feedbackflow.app · Demo1234!")).toBeVisible();
     expect(
-      screen.getByRole("link", { name: "Create account" }),
+      screen.getByRole("link", { name: "Sign up" }),
     ).toHaveAttribute("href", "/register");
   });
 
   it("links validation errors to invalid fields", async () => {
     const user = userEvent.setup();
-    render(<LoginPage />);
+    render(await LoginPage());
 
     const email = screen.getByLabelText("Email");
     await user.clear(email);
@@ -62,7 +62,7 @@ describe("LoginPage", () => {
 
   it("signs in with the remember preference and navigates", async () => {
     const user = userEvent.setup();
-    render(<LoginPage />);
+    render(await LoginPage());
 
     await user.type(screen.getByLabelText("Email"), "paul@example.com");
     await user.type(screen.getByLabelText("Password"), "Feedback123!");
@@ -87,7 +87,7 @@ describe("LoginPage", () => {
         message: "Invalid email or password",
       },
     });
-    render(<LoginPage />);
+    render(await LoginPage());
 
     await user.type(screen.getByLabelText("Email"), "paul@example.com");
     await user.type(screen.getByLabelText("Password"), "Feedback123!");
@@ -108,7 +108,7 @@ describe("LoginPage", () => {
       data: null,
       error: { code: "INTERNAL_SERVER_ERROR", message: "database details" },
     });
-    render(<LoginPage />);
+    render(await LoginPage());
 
     await user.type(screen.getByLabelText("Email"), "paul@example.com");
     await user.type(screen.getByLabelText("Password"), "Feedback123!");
@@ -129,7 +129,7 @@ describe("LoginPage", () => {
           resolveSignIn = resolve;
         }),
     );
-    render(<LoginPage />);
+    render(await LoginPage());
 
     await user.type(screen.getByLabelText("Email"), "paul@example.com");
     await user.type(screen.getByLabelText("Password"), "Feedback123!");
@@ -141,9 +141,22 @@ describe("LoginPage", () => {
       screen.getByRole("button", { name: "Signing in..." }),
     ).toBeDisabled();
     expect(
-      screen.queryByRole("link", { name: "Create account" }),
+      screen.queryByRole("link", { name: "Sign up" }),
     ).not.toBeInTheDocument();
 
     resolveSignIn?.({ data: {}, error: null });
+  });
+
+  it("navigates to a safe requested dashboard path after sign in", async () => {
+    const user = userEvent.setup();
+    render(
+      await LoginPage({
+        searchParams: Promise.resolve({ returnTo: "/dashboard?status=planned" }),
+      }),
+    );
+    await user.type(screen.getByLabelText("Email"), "paul@example.com");
+    await user.type(screen.getByLabelText("Password"), "Feedback123!");
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    expect(mocks.push).toHaveBeenCalledWith("/dashboard?status=planned");
   });
 });

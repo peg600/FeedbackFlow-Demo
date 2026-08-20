@@ -23,7 +23,11 @@ const defaultValues: LoginValues = {
   remember: false,
 };
 
-export function LoginForm() {
+type LoginFormProps = {
+  returnTo?: string;
+};
+
+export function LoginForm({ returnTo = "/dashboard" }: LoginFormProps) {
   const router = useRouter();
   const {
     register,
@@ -54,7 +58,7 @@ export function LoginForm() {
         return;
       }
 
-      router.push("/dashboard");
+      router.push(returnTo);
       router.refresh();
     } catch {
       setError("root", { message: "Unable to sign in. Try again." });
@@ -162,7 +166,7 @@ export function LoginForm() {
           ) : null}
 
           <Button
-            className="h-[46px] w-full md:h-11"
+            className="w-full"
             disabled={isSubmitting}
             type="submit"
           >
@@ -184,21 +188,21 @@ export function LoginForm() {
             </p>
           </aside>
 
-          <p className="text-center text-body-sm text-muted-foreground">
+          <p className="text-left text-body-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
             {isSubmitting ? (
               <span
                 aria-disabled="true"
                 className="font-semibold text-disabled-foreground"
               >
-                Create account
+                Sign up
               </span>
             ) : (
               <Link
                 className="rounded-sm font-semibold text-primary transition-colors duration-200 hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 href="/register"
               >
-                Create account
+                Sign up
               </Link>
             )}
           </p>
