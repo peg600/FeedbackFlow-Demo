@@ -1,0 +1,3 @@
+export default function DashboardLoading() {
+  return <main aria-label="Loading dashboard" className="min-h-svh bg-surface p-5 md:p-6 lg:p-8"><div className="h-16 animate-shimmer rounded-placeholder bg-[linear-gradient(90deg,var(--border-subtle),var(--surface-hover),var(--border-subtle))] bg-[length:200%_100%]" /><div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">{[0, 1, 2, 3].map((item) => <div className="h-28 animate-shimmer rounded-surface bg-[linear-gradient(90deg,var(--border-subtle),var(--surface-hover),var(--border-subtle))] bg-[length:200%_100%]" key={item} />)}</div><div className="mt-6 h-80 animate-shimmer rounded-surface bg-[linear-gradient(90deg,var(--border-subtle),var(--surface-hover),var(--border-subtle))] bg-[length:200%_100%]" /></main>;
+}
