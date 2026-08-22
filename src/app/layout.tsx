@@ -10,7 +10,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "FeedbackFlow",
   description:
-    "Collect customer ideas, prioritize what matters, and share product progress.",
+    "Collect customer feedback, prioritize what matters, and share product progress.",
 };
 
 export default function RootLayout({

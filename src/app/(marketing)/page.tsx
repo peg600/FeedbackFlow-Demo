@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = {
   title: "FeedbackFlow | Turn feedback into a trusted roadmap",
   description:
-    "Collect customer ideas, prioritize what matters, and share product progress with FeedbackFlow.",
+    "Collect customer feedback, prioritize what matters, and share product progress with FeedbackFlow.",
 };
 
 export default function HomePage() {
@@ -90,7 +90,7 @@ export default function HomePage() {
             Turn feedback into a roadmap customers trust.
           </h1>
           <p className="mt-8 max-w-xl text-base leading-7 text-muted-foreground md:text-lg">
-            Collect ideas, prioritize what matters, and share progress.
+            Collect feedback, prioritize what matters, and share progress.
           </p>
 
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
