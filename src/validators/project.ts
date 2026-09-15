@@ -23,3 +23,9 @@ export const projectSchema = z.object({
 });
 
 export type ProjectValues = z.infer<typeof projectSchema>;
+
+export const projectSettingsSchema = projectSchema.extend({
+  isPublic: z.boolean(),
+});
+
+export type ProjectSettingsValues = z.infer<typeof projectSettingsSchema>;

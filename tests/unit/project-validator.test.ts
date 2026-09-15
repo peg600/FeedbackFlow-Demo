@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { projectSchema } from "@/validators/project";
+import { projectSchema, projectSettingsSchema } from "@/validators/project";
 
 describe("projectSchema", () => {
   it("normalizes project input", () => {
@@ -35,5 +35,15 @@ describe("projectSchema", () => {
     });
 
     expect(result.success).toBe(false);
+  });
+});
+
+describe("projectSettingsSchema", () => {
+  it("accepts the public visibility setting", () => {
+    expect(projectSettingsSchema.parse({ name: "Acme", slug: "acme-board", description: "Public board", isPublic: false }).isPublic).toBe(false);
+  });
+
+  it("requires visibility to be a server-normalized boolean", () => {
+    expect(projectSettingsSchema.safeParse({ name: "Acme", slug: "acme-board", description: "", isPublic: "false" }).success).toBe(false);
   });
 });
