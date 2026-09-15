@@ -23,11 +23,13 @@ type PublicProjectHeaderProps = {
     slug: string;
   };
   showSubmitFeedback?: boolean;
+  active?: "feedback" | "roadmap";
 };
 
 export function PublicProjectHeader({
   project,
   showSubmitFeedback = true,
+  active = "feedback",
 }: PublicProjectHeaderProps) {
   const boardHref = `/p/${project.slug}`;
 
@@ -53,10 +55,10 @@ export function PublicProjectHeader({
 
         <nav aria-label="Public project navigation" className="flex shrink-0 items-center gap-3 md:gap-8">
           <div className="hidden items-center gap-6 text-[13px] font-semibold md:flex">
-            <Link aria-current="page" className="text-primary" href={boardHref}>
+            <Link aria-current={active === "feedback" ? "page" : undefined} className={active === "feedback" ? "text-primary" : "text-text hover:text-foreground"} href={boardHref}>
               Feedback
             </Link>
-            <Link className="text-text hover:text-foreground" href={`${boardHref}/roadmap`}>
+            <Link aria-current={active === "roadmap" ? "page" : undefined} className={active === "roadmap" ? "text-primary" : "text-text hover:text-foreground"} href={`${boardHref}/roadmap`}>
               Roadmap
             </Link>
           </div>
