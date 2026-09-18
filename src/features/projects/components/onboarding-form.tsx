@@ -1,13 +1,16 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { startTransition, useActionState, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAction } from "next-safe-action/hooks";
 import { useForm, useWatch } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createProjectAction } from "@/features/projects/actions/create-project";
+import { ACTION_NETWORK_ERROR, getActionErrorMessage, getActionFieldError } from "@/lib/action-errors";
 import { projectSchema, type ProjectValues } from "@/validators/project";
 
 const defaultValues: ProjectValues = {
@@ -16,6 +19,7 @@ const defaultValues: ProjectValues = {
   slug: "",
 };
 
+// 把项目名称转换为可用于公开 URL 的小写 Slug，并限制长度、清理首尾分隔符。
 export function createSlug(value: string) {
   return value
     .normalize("NFKD")
@@ -26,11 +30,19 @@ export function createSlug(value: string) {
     .replace(/-+$/g, "");
 }
 
+// 协调首次项目创建表单的客户端校验、自动 Slug、Action 错误展示和未登录跳转。
 export function OnboardingForm() {
-  const [state, formAction, isPending] = useActionState(
-    createProjectAction,
-    null,
-  );
+  const router = useRouter();
+  const [transportError, setTransportError] = useState<string>();
+  const { result: state, execute, isPending } = useAction(createProjectAction, {
+    onExecute: () => setTransportError(undefined),
+    onError: ({ error }) => {
+      if (error.serverError?.code === "UNAUTHENTICATED") {
+        router.push("/login?returnTo=/onboarding");
+      }
+      if (error.thrownError) setTransportError(ACTION_NETWORK_ERROR);
+    },
+  });
   const slugWasEdited = useRef(false);
   const [submittedValues, setSubmittedValues] =
     useState<ProjectValues | null>(null);
@@ -52,36 +64,35 @@ export function OnboardingForm() {
   const nameRegistration = register("name");
   const slugRegistration = register("slug");
   const descriptionRegistration = register("description");
-  const settledState = isPending ? null : state;
+  const settledState = isPending ? undefined : state;
 
+  // 保存本次提交快照，使服务端字段错误只在字段值未被用户继续修改时显示。
   const submit = handleSubmit((values) => {
     setSubmittedValues(getValues());
-    const formData = new FormData();
-    formData.set("name", values.name);
-    formData.set("slug", values.slug);
-    formData.set("description", values.description);
-    startTransition(() => formAction(formData));
+    execute(values);
   });
 
   const nameError =
     errors.name?.message ??
     (submittedValues?.name === name
-      ? settledState?.fieldErrors?.name
+      ? getActionFieldError(settledState, "name")
       : undefined);
   const slugError =
     errors.slug?.message ??
     (submittedValues?.slug === slug
-      ? settledState?.fieldErrors?.slug
+      ? getActionFieldError(settledState, "slug")
       : undefined);
   const descriptionError =
     errors.description?.message ??
     (submittedValues?.description === description
-      ? settledState?.fieldErrors?.description
+      ? getActionFieldError(settledState, "description")
       : undefined);
   const unchangedSinceSubmit =
     submittedValues?.name === name &&
     submittedValues?.slug === slug &&
     submittedValues?.description === description;
+
+  const errorMessage = isPending ? undefined : transportError ?? getActionErrorMessage(settledState);
 
   return (
     <form
@@ -188,9 +199,9 @@ export function OnboardingForm() {
         </p>
       </div>
 
-      {settledState?.error && unchangedSinceSubmit ? (
+      {errorMessage && !settledState?.serverError?.field && unchangedSinceSubmit ? (
         <p className="text-body-sm text-error" role="alert">
-          {settledState.error}
+          {errorMessage}
         </p>
       ) : null}
 

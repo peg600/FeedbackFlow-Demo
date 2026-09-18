@@ -1,17 +1,11 @@
+import { businessError } from "@/lib/errors";
 import { projectSchema, type ProjectValues } from "@/validators/project";
 
-type ProjectField = keyof ProjectValues;
-
-export type CreateProjectResult = {
-  code?: "unauthenticated";
-  error?: string;
-  fieldErrors?: Partial<Record<ProjectField, string>>;
-  ok: boolean;
-  project?: { id: string; slug: string };
-  requestId: string;
+export type ProjectCreationResult = {
+  project: { id: string; slug: string };
 };
 
-type CreateProjectDependencies = {
+export type CreateProjectDependencies = {
   findProjectBySlug: (
     slug: string,
   ) => Promise<{ id: string; userId: string } | null>;
@@ -27,81 +21,31 @@ type CreateProjectDependencies = {
   }) => Promise<{ id: string; slug: string } | null>;
 };
 
-const requestId = () => crypto.randomUUID();
-
-const rejection = (
-  error = "Unable to create your workspace. Try again.",
-  code?: CreateProjectResult["code"],
-) =>
-  ({
-    code,
-    error,
-    ok: false,
-    requestId: requestId(),
-  }) satisfies CreateProjectResult;
-
-function validationFailure(
-  issues: ReadonlyArray<{ message: string; path: PropertyKey[] }>,
-): CreateProjectResult {
-  const fieldErrors: Partial<Record<ProjectField, string>> = {};
-
-  for (const issue of issues) {
-    const field = issue.path[0];
-    if (
-      (field === "name" || field === "slug" || field === "description") &&
-      !fieldErrors[field]
-    ) {
-      fieldErrors[field] = issue.message;
-    }
-  }
-
-  return { fieldErrors, ok: false, requestId: requestId() };
-}
-
+/** 为当前用户创建唯一项目；重复提交复用已有项目，其他 Slug 冲突转为业务错误。 */
 export async function executeProjectCreation(
-  input: unknown,
+  input: ProjectValues,
   dependencies: CreateProjectDependencies,
-): Promise<CreateProjectResult> {
-  const parsed = projectSchema.safeParse(input);
-  if (!parsed.success) return validationFailure(parsed.error.issues);
+): Promise<ProjectCreationResult> {
+  const values = projectSchema.parse(input);
+  const sessionUser = await dependencies.getSessionUser();
+  if (!sessionUser) throw businessError("UNAUTHENTICATED");
 
-  try {
-    const sessionUser = await dependencies.getSessionUser();
-    if (!sessionUser) return rejection(undefined, "unauthenticated");
+  const project = await dependencies.insertProject({
+    description: values.description || null,
+    name: values.name,
+    slug: values.slug,
+    userId: sessionUser.id,
+  });
 
-    const project = await dependencies.insertProject({
-      description: parsed.data.description || null,
-      name: parsed.data.name,
-      slug: parsed.data.slug,
-      userId: sessionUser.id,
-    });
+  if (project) return { project };
 
-    if (project) {
-      return { ok: true, project, requestId: requestId() };
-    }
+  // A repeated submission after a successful insert resolves to the user's
+  // existing project instead of creating a second workspace.
+  const existingProject = await dependencies.findProjectByUser(sessionUser.id);
+  if (existingProject) return { project: existingProject };
 
-    // A repeated submission after a successful insert resolves to the user's
-    // existing project instead of creating a second workspace.
-    const existingProject = await dependencies.findProjectByUser(sessionUser.id);
-    if (existingProject) {
-      return {
-        ok: true,
-        project: existingProject,
-        requestId: requestId(),
-      };
-    }
+  const slugOwner = await dependencies.findProjectBySlug(values.slug);
+  if (slugOwner) throw businessError("PROJECT_SLUG_TAKEN");
 
-    const slugOwner = await dependencies.findProjectBySlug(parsed.data.slug);
-    if (slugOwner) {
-      return {
-        fieldErrors: { slug: "This public URL slug is already in use." },
-        ok: false,
-        requestId: requestId(),
-      };
-    }
-
-    return rejection();
-  } catch {
-    return rejection();
-  }
+  throw new Error("Project insert returned no row without a known conflict.");
 }

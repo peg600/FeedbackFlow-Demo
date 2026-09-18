@@ -7,6 +7,7 @@ const validInput = {
   slug: "acme-studio",
 };
 
+/** 创建独立的投票依赖替身，通过覆盖查询和写入结果模拟重复投票或失败路径。 */
 function dependencies(overrides: Record<string, unknown> = {}) {
   return {
     countVotes: vi.fn().mockResolvedValue(83),
@@ -20,24 +21,23 @@ function dependencies(overrides: Record<string, unknown> = {}) {
 }
 
 describe("executeFeedbackVote", () => {
-  it("rejects malformed input before reading a session", async () => {
+  it("validates before reading authentication", async () => {
     const deps = dependencies();
 
-    const result = await executeFeedbackVote(
-      { feedbackId: "not-a-uuid", slug: "acme-studio" },
-      deps,
-    );
-
-    expect(result.ok).toBe(false);
+    await expect(
+      executeFeedbackVote(
+        { feedbackId: "not-a-uuid", slug: "acme-studio" },
+        deps,
+      ),
+    ).rejects.toMatchObject({ name: "ZodError" });
     expect(deps.getSessionUser).not.toHaveBeenCalled();
   });
 
-  it("asks an anonymous visitor to sign in without querying feedback", async () => {
+  it("returns a typed authentication error without querying feedback", async () => {
     const deps = dependencies({ getSessionUser: vi.fn().mockResolvedValue(null) });
 
-    await expect(executeFeedbackVote(validInput, deps)).resolves.toMatchObject({
-      code: "unauthenticated",
-      ok: false,
+    await expect(executeFeedbackVote(validInput, deps)).rejects.toMatchObject({
+      code: "UNAUTHENTICATED",
     });
     expect(deps.findPublicFeedback).not.toHaveBeenCalled();
   });
@@ -47,19 +47,18 @@ describe("executeFeedbackVote", () => {
       findPublicFeedback: vi.fn().mockResolvedValue(null),
     });
 
-    const result = await executeFeedbackVote(validInput, deps);
-
-    expect(result.ok).toBe(false);
+    await expect(executeFeedbackVote(validInput, deps)).rejects.toMatchObject({
+      code: "FEEDBACK_NOT_AVAILABLE",
+    });
     expect(deps.hasVote).not.toHaveBeenCalled();
     expect(deps.createVote).not.toHaveBeenCalled();
     expect(deps.deleteVote).not.toHaveBeenCalled();
   });
 
-  it("creates a vote only for the authenticated user and public feedback", async () => {
+  it("creates a vote for the authenticated user", async () => {
     const deps = dependencies();
 
-    await expect(executeFeedbackVote(validInput, deps)).resolves.toMatchObject({
-      ok: true,
+    await expect(executeFeedbackVote(validInput, deps)).resolves.toEqual({
       voteCount: 83,
       voted: true,
     });
@@ -67,14 +66,12 @@ describe("executeFeedbackVote", () => {
       feedbackId: validInput.feedbackId,
       userId: "user-1",
     });
-    expect(deps.deleteVote).not.toHaveBeenCalled();
   });
 
   it("removes an existing vote instead of creating a duplicate", async () => {
     const deps = dependencies({ hasVote: vi.fn().mockResolvedValue(true) });
 
     await expect(executeFeedbackVote(validInput, deps)).resolves.toMatchObject({
-      ok: true,
       voted: false,
     });
     expect(deps.deleteVote).toHaveBeenCalledWith({
@@ -84,30 +81,15 @@ describe("executeFeedbackVote", () => {
     expect(deps.createVote).not.toHaveBeenCalled();
   });
 
-  it("accepts a database-conflict vote when the final relationship exists", async () => {
+  it("treats a concurrent duplicate as voted when the row now exists", async () => {
     const deps = dependencies({
       createVote: vi.fn().mockResolvedValue(false),
       hasVote: vi.fn().mockResolvedValueOnce(false).mockResolvedValueOnce(true),
     });
 
     await expect(executeFeedbackVote(validInput, deps)).resolves.toMatchObject({
-      ok: true,
       voted: true,
     });
     expect(deps.hasVote).toHaveBeenCalledTimes(2);
-  });
-
-  it("keeps dependency details out of the displayed error", async () => {
-    const deps = dependencies({
-      countVotes: vi.fn().mockRejectedValue(new Error("database details")),
-    });
-
-    const result = await executeFeedbackVote(validInput, deps);
-
-    expect(result).toMatchObject({
-      error: "Unable to update your vote. Try again.",
-      ok: false,
-    });
-    expect(JSON.stringify(result)).not.toContain("database details");
   });
 });

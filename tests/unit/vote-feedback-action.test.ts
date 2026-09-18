@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { voteFeedbackAction } from "@/features/feedback/actions/vote-feedback";
+import { businessError } from "@/lib/errors";
 
 const mocks = vi.hoisted(() => ({
   executeFeedbackVote: vi.fn(),
@@ -25,17 +26,11 @@ describe("voteFeedbackAction", () => {
     vi.clearAllMocks();
   });
 
-  it("revalidates every page that can show a changed vote", async () => {
-    mocks.executeFeedbackVote.mockResolvedValue({
-      ok: true,
-      requestId: "request-1",
-      voteCount: 83,
-      voted: true,
-    });
+  it("returns domain data and revalidates every affected page", async () => {
+    mocks.executeFeedbackVote.mockResolvedValue({ voteCount: 83, voted: true });
 
-    await expect(voteFeedbackAction(input)).resolves.toMatchObject({
-      ok: true,
-      voteCount: 83,
+    await expect(voteFeedbackAction(input)).resolves.toEqual({
+      data: { voteCount: 83, voted: true },
     });
 
     expect(mocks.executeFeedbackVote).toHaveBeenCalledWith(
@@ -57,15 +52,18 @@ describe("voteFeedbackAction", () => {
     );
   });
 
-  it("does not invalidate routes when a vote was rejected", async () => {
-    mocks.executeFeedbackVote.mockResolvedValue({
-      error: "Sign in to vote for feedback.",
-      ok: false,
-      requestId: "request-2",
+  it("returns a uniform typed server error without invalidating routes", async () => {
+    mocks.executeFeedbackVote.mockRejectedValue(
+      businessError("UNAUTHENTICATED"),
+    );
+
+    const result = await voteFeedbackAction(input);
+
+    expect(result.serverError).toMatchObject({
+      code: "UNAUTHENTICATED",
+      message: expect.any(String),
+      requestId: expect.any(String),
     });
-
-    await voteFeedbackAction(input);
-
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 });

@@ -29,13 +29,32 @@ describe("VoteButton", () => {
     vi.clearAllMocks();
   });
 
+  it("rolls back a failed network request without exposing its details", async () => {
+    mocks.voteFeedbackAction.mockRejectedValue(new Error("internal network details"));
+    const user = userEvent.setup();
+    render(<VoteButton {...props} />);
+    await user.click(screen.getByRole("button", { name: "Vote for this" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Check your connection");
+    expect(screen.getByText("82", { selector: "strong" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Vote for this" })).toHaveAttribute("aria-pressed", "false");
+  });
+
+  it("prevents duplicate votes while waiting for the server", async () => {
+    let resolveVote!: (value: { data: { voteCount: number; voted: boolean } }) => void;
+    mocks.voteFeedbackAction.mockImplementation(() => new Promise((resolve) => { resolveVote = resolve; }));
+    const user = userEvent.setup();
+    render(<VoteButton {...props} />);
+    await user.dblClick(screen.getByRole("button", { name: "Vote for this" }));
+    expect(mocks.voteFeedbackAction).toHaveBeenCalledOnce();
+    expect(screen.getByRole("button", { name: "Updating vote..." })).toBeDisabled();
+    resolveVote({ data: { voteCount: 83, voted: true } });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Voted" })).toBeEnabled());
+  });
+
   it("renders the Figma vote summary and accepts the server-confirmed vote", async () => {
     const user = userEvent.setup();
     mocks.voteFeedbackAction.mockResolvedValue({
-      ok: true,
-      requestId: "request-1",
-      voteCount: 83,
-      voted: true,
+      data: { voteCount: 83, voted: true },
     });
     render(<VoteButton {...props} />);
 
@@ -58,9 +77,7 @@ describe("VoteButton", () => {
   it("rolls back the optimistic total and exposes a safe error", async () => {
     const user = userEvent.setup();
     mocks.voteFeedbackAction.mockResolvedValue({
-      error: "Unable to update your vote. Try again.",
-      ok: false,
-      requestId: "request-2",
+      serverError: { code: "INTERNAL_ERROR", message: "Unable to update your vote. Try again.", requestId: "request-2" },
     });
     render(<VoteButton {...props} />);
 
@@ -81,10 +98,7 @@ describe("VoteButton", () => {
   it("sends anonymous visitors to login with the internal return path", async () => {
     const user = userEvent.setup();
     mocks.voteFeedbackAction.mockResolvedValue({
-      code: "unauthenticated",
-      error: "Sign in to vote for feedback.",
-      ok: false,
-      requestId: "request-3",
+      serverError: { code: "UNAUTHENTICATED", message: "Sign in to vote for feedback.", requestId: "request-3" },
     });
     render(<VoteButton {...props} />);
 

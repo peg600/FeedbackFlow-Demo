@@ -1,12 +1,14 @@
 "use client";
 
-import { useActionState, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAction } from "next-safe-action/hooks";
 
 import { Select, type SelectOption } from "@/components/ui/select";
 import { updateFeedbackStatusAction } from "@/features/feedback/actions/update-feedback-status";
 import { iconPaths } from "@/lib/icons";
 import { cn } from "@/lib/utils";
-import type { UpdateStatusResult } from "@/server/services/dashboard-status";
+import { ACTION_NETWORK_ERROR, getActionErrorMessage } from "@/lib/action-errors";
 import type { DashboardStatus } from "@/validators/dashboard";
 
 const labels: Record<DashboardStatus, string> = {
@@ -46,63 +48,65 @@ const statusOptions: readonly SelectOption[] = [
   },
 ];
 
-const initialActionState: UpdateStatusResult = {
-  ok: false,
-  requestId: "initial",
-};
-
 type StatusSelectProps = {
   feedbackId: string;
   initialStatus: DashboardStatus;
 };
 
+// 乐观显示新的反馈状态；Action 失败时回滚到最后一次由服务端确认的状态并展示统一错误。
 export function StatusSelect({ feedbackId, initialStatus }: StatusSelectProps) {
   const [status, setStatus] = useState(initialStatus);
+  const router = useRouter();
+  const [transportError, setTransportError] = useState<string>();
   const confirmedStatus = useRef(initialStatus);
-  const formRef = useRef<HTMLFormElement>(null);
-  const [state, formAction, isPending] = useActionState(
-    async (previousState: UpdateStatusResult, formData: FormData) => {
-      const result = await updateFeedbackStatusAction(previousState, formData);
-      if (result.ok) {
-        confirmedStatus.current = result.status as DashboardStatus;
-      }
+  const { result, execute, isPending } = useAction(updateFeedbackStatusAction, {
+    onExecute: () => setTransportError(undefined),
+    onSuccess: ({ data }) => {
+      confirmedStatus.current = data.status;
       setStatus(confirmedStatus.current);
-      return result;
     },
-    initialActionState,
-  );
+    onError: ({ error }) => {
+      setStatus(confirmedStatus.current);
+      if (error.serverError?.code === "UNAUTHENTICATED") {
+        router.push("/login?returnTo=/dashboard");
+      }
+      if (error.thrownError) setTransportError(ACTION_NETWORK_ERROR);
+    },
+  });
+  const errorMessage = isPending
+    ? undefined
+    : transportError ?? getActionErrorMessage(result, "This request is invalid. Refresh the page and try again.");
 
   return (
-    <form action={formAction} className="min-w-0" ref={formRef}>
-      <input name="feedbackId" type="hidden" value={feedbackId} />
+    <div className="min-w-0">
       <label className="sr-only" htmlFor={`status-${feedbackId}`}>
         Feedback status
       </label>
       <Select
-        aria-describedby={state.error ? `status-error-${feedbackId}` : undefined}
-        aria-invalid={Boolean(state.error) || undefined}
+        aria-describedby={errorMessage ? `status-error-${feedbackId}` : undefined}
+        aria-invalid={Boolean(errorMessage) || undefined}
         className="w-auto"
         disabled={isPending}
         id={`status-${feedbackId}`}
         name="status"
         onValueChange={(nextStatus) => {
           setStatus(nextStatus as DashboardStatus);
-          formRef.current?.requestSubmit();
+          execute({ feedbackId, status: nextStatus as DashboardStatus });
         }}
         options={statusOptions}
         size="status"
         triggerClassName={cn("max-w-full", statusStyles[status])}
         value={status}
       />
-      {state.error ? (
+      {errorMessage ? (
         <span
           className="mt-1 block max-w-40 text-[10px] leading-4 text-error"
           id={`status-error-${feedbackId}`}
           role="alert"
         >
-          {state.error}
+          {errorMessage}
         </span>
       ) : null}
-    </form>
+    </div>
   );
 }

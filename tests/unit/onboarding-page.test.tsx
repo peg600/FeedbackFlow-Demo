@@ -8,9 +8,10 @@ const mocks = vi.hoisted(() => ({
   createProject: vi.fn(),
   getCurrentProjectAccess: vi.fn(),
   redirect: vi.fn(),
+  push: vi.fn(),
 }));
 
-vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
+vi.mock("next/navigation", () => ({ redirect: mocks.redirect, useRouter: () => ({ push: mocks.push }) }));
 
 vi.mock("@/server/services/project-access", () => ({
   getCurrentProjectAccess: mocks.getCurrentProjectAccess,
@@ -24,9 +25,7 @@ describe("OnboardingPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.createProject.mockResolvedValue({
-      error: "Unable to create your workspace. Try again.",
-      ok: false,
-      requestId: "request-1",
+      serverError: { code: "INTERNAL_ERROR", message: "Unable to create your workspace. Try again.", requestId: "request-1" },
     });
     mocks.getCurrentProjectAccess.mockResolvedValue({
       project: null,
@@ -88,9 +87,7 @@ describe("OnboardingPage", () => {
   it("clears a server slug error after the user edits the submitted value", async () => {
     const user = userEvent.setup();
     mocks.createProject.mockResolvedValueOnce({
-      fieldErrors: { slug: "This public URL slug is already in use." },
-      ok: false,
-      requestId: "request-conflict",
+      serverError: { code: "PROJECT_SLUG_TAKEN", field: "slug", message: "This public URL slug is already in use.", requestId: "request-conflict" },
     });
     render(await OnboardingPage());
 
@@ -118,13 +115,11 @@ describe("OnboardingPage", () => {
   it("does not bind an earlier server error to a new pending submission", async () => {
     const user = userEvent.setup();
     let resolveRetry:
-      | ((value: { error: string; ok: false; requestId: string }) => void)
+      | ((value: { serverError: { code: string; message: string; requestId: string } }) => void)
       | undefined;
     mocks.createProject
       .mockResolvedValueOnce({
-        fieldErrors: { slug: "This public URL slug is already in use." },
-        ok: false,
-        requestId: "request-conflict",
+        serverError: { code: "PROJECT_SLUG_TAKEN", field: "slug", message: "This public URL slug is already in use.", requestId: "request-conflict" },
       })
       .mockImplementationOnce(
         () =>
@@ -153,9 +148,7 @@ describe("OnboardingPage", () => {
     expect(slug).not.toHaveAttribute("aria-invalid");
 
     resolveRetry?.({
-      error: "Unable to create your workspace. Try again.",
-      ok: false,
-      requestId: "request-retry",
+      serverError: { code: "INTERNAL_ERROR", message: "Unable to create your workspace. Try again.", requestId: "request-retry" },
     });
   });
 

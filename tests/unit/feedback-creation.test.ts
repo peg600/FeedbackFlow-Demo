@@ -8,6 +8,7 @@ const validInput = {
   title: "Dark mode for the dashboard",
 };
 
+/** 默认模拟登录用户向公开项目提交成功，允许用例替换配额、可见性或写入结果。 */
 function dependencies(overrides: Record<string, unknown> = {}) {
   return {
     createFeedback: vi.fn().mockResolvedValue({ id: "feedback-1" }),
@@ -21,46 +22,42 @@ function dependencies(overrides: Record<string, unknown> = {}) {
 }
 
 describe("executePublicFeedbackCreation", () => {
-  it("rejects malformed feedback before reading authentication", async () => {
+  it("validates before reading authentication", async () => {
     const deps = dependencies();
 
-    const result = await executePublicFeedbackCreation(
-      { ...validInput, title: "x" },
-      deps,
-    );
-
-    expect(result.ok).toBe(false);
-    expect(result.fieldErrors).toMatchObject({
-      title: "Title must be at least 3 characters.",
-    });
+    await expect(
+      executePublicFeedbackCreation({ ...validInput, title: "x" }, deps),
+    ).rejects.toMatchObject({ name: "ZodError" });
     expect(deps.getSessionUser).not.toHaveBeenCalled();
   });
 
-  it("returns an authentication outcome before resolving the project", async () => {
+  it("returns an authentication error before resolving the project", async () => {
     const deps = dependencies({ getSessionUser: vi.fn().mockResolvedValue(null) });
 
-    await expect(executePublicFeedbackCreation(validInput, deps)).resolves.toMatchObject({
-      code: "unauthenticated",
-      ok: false,
-    });
+    await expect(
+      executePublicFeedbackCreation(validInput, deps),
+    ).rejects.toMatchObject({ code: "UNAUTHENTICATED" });
     expect(deps.findPublicProject).not.toHaveBeenCalled();
   });
 
-  it("does not write when the board is hidden or missing", async () => {
-    const deps = dependencies({ findPublicProject: vi.fn().mockResolvedValue(null) });
+  it("does not write when the board is hidden, missing, or mismatched", async () => {
+    const deps = dependencies({
+      findPublicProject: vi.fn().mockResolvedValue(null),
+    });
 
-    const result = await executePublicFeedbackCreation(validInput, deps);
-
-    expect(result.ok).toBe(false);
+    await expect(
+      executePublicFeedbackCreation(validInput, deps),
+    ).rejects.toMatchObject({ code: "PUBLIC_BOARD_UNAVAILABLE" });
     expect(deps.createFeedback).not.toHaveBeenCalled();
   });
 
-  it("binds the new feedback to the authenticated author and public project", async () => {
+  it("binds feedback to the authenticated author and public project", async () => {
     const deps = dependencies();
 
-    await expect(executePublicFeedbackCreation(validInput, deps)).resolves.toMatchObject({
+    await expect(
+      executePublicFeedbackCreation(validInput, deps),
+    ).resolves.toEqual({
       feedback: { id: "feedback-1", slug: "acme-studio" },
-      ok: true,
     });
     expect(deps.createFeedback).toHaveBeenCalledWith({
       description: validInput.description,
@@ -71,29 +68,34 @@ describe("executePublicFeedbackCreation", () => {
     });
   });
 
-  it("exposes the server-enforced Free feedback limit", async () => {
+  it("exposes the server-enforced feedback limit as a business error", async () => {
     const deps = dependencies({
       createFeedback: vi.fn().mockResolvedValue("feedback_limit"),
     });
 
-    await expect(executePublicFeedbackCreation(validInput, deps)).resolves.toMatchObject({
-      code: "feedback_limit",
-      error: "This public board has reached its 50 feedback limit.",
-      ok: false,
-    });
+    await expect(
+      executePublicFeedbackCreation(validInput, deps),
+    ).rejects.toMatchObject({ code: "FEEDBACK_LIMIT_REACHED" });
   });
 
-  it("does not leak database details", async () => {
+  it("reports a board changed during the transaction as unavailable", async () => {
     const deps = dependencies({
-      createFeedback: vi.fn().mockRejectedValue(new Error("database details")),
+      createFeedback: vi.fn().mockResolvedValue("public_board_unavailable"),
     });
 
-    const result = await executePublicFeedbackCreation(validInput, deps);
+    await expect(
+      executePublicFeedbackCreation(validInput, deps),
+    ).rejects.toMatchObject({ code: "PUBLIC_BOARD_UNAVAILABLE" });
+  });
 
-    expect(result).toMatchObject({
-      error: "Unable to submit feedback. Try again.",
-      ok: false,
+  it("lets infrastructure failures reach the action boundary", async () => {
+    const databaseError = new Error("database details");
+    const deps = dependencies({
+      createFeedback: vi.fn().mockRejectedValue(databaseError),
     });
-    expect(JSON.stringify(result)).not.toContain("database details");
+
+    await expect(
+      executePublicFeedbackCreation(validInput, deps),
+    ).rejects.toBe(databaseError);
   });
 });

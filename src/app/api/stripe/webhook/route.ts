@@ -1,3 +1,8 @@
+import { businessError } from "@/lib/errors";
+
 export async function POST() {
-  return Response.json({ error: "Not implemented" }, { status: 501 });
+  return Response.json(
+    { error: businessError("BILLING_NOT_IMPLEMENTED").toPayload() },
+    { status: 501 },
+  );
 }

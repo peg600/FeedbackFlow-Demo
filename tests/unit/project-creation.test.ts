@@ -8,6 +8,7 @@ const validInput = {
   slug: "acme-studio",
 };
 
+/** 为每个用例创建独立的身份与数据库替身，默认模拟无冲突创建成功。 */
 function dependencies() {
   return {
     findProjectBySlug: vi.fn(
@@ -31,30 +32,20 @@ function dependencies() {
 describe("executeProjectCreation", () => {
   it("validates before reading identity or writing", async () => {
     const deps = dependencies();
-    const result = await executeProjectCreation(
-      { ...validInput, slug: "not valid" },
-      deps,
-    );
 
-    expect(result.ok).toBe(false);
-    expect(result.fieldErrors?.slug).toBeDefined();
+    await expect(
+      executeProjectCreation({ ...validInput, slug: "not valid" }, deps),
+    ).rejects.toMatchObject({ name: "ZodError" });
     expect(deps.getSessionUser).not.toHaveBeenCalled();
     expect(deps.insertProject).not.toHaveBeenCalled();
   });
 
-  it("creates one public workspace for the authenticated user", async () => {
+  it("creates one workspace for the authenticated user", async () => {
     const deps = dependencies();
-    const result = await executeProjectCreation(
-      { ...validInput, isPublic: false, userId: "attacker" },
-      deps,
-    );
 
-    expect(result).toEqual(
-      expect.objectContaining({
-        ok: true,
-        project: { id: "project-1", slug: "acme-studio" },
-      }),
-    );
+    await expect(executeProjectCreation(validInput, deps)).resolves.toEqual({
+      project: { id: "project-1", slug: "acme-studio" },
+    });
     expect(deps.insertProject).toHaveBeenCalledWith({
       description: validInput.description,
       name: validInput.name,
@@ -63,15 +54,13 @@ describe("executeProjectCreation", () => {
     });
   });
 
-  it("does not write without a fresh session", async () => {
+  it("returns a typed authentication failure without writing", async () => {
     const deps = dependencies();
     deps.getSessionUser.mockResolvedValue(null);
 
-    const result = await executeProjectCreation(validInput, deps);
-
-    expect(result.ok).toBe(false);
-    expect(result.code).toBe("unauthenticated");
-    expect(result.error).toBe("Unable to create your workspace. Try again.");
+    await expect(executeProjectCreation(validInput, deps)).rejects.toMatchObject({
+      code: "UNAUTHENTICATED",
+    });
     expect(deps.insertProject).not.toHaveBeenCalled();
   });
 
@@ -83,18 +72,13 @@ describe("executeProjectCreation", () => {
       slug: "acme-studio",
     });
 
-    const result = await executeProjectCreation(validInput, deps);
-
-    expect(result).toEqual(
-      expect.objectContaining({
-        ok: true,
-        project: { id: "existing-project", slug: "acme-studio" },
-      }),
-    );
+    await expect(executeProjectCreation(validInput, deps)).resolves.toEqual({
+      project: { id: "existing-project", slug: "acme-studio" },
+    });
     expect(deps.findProjectBySlug).not.toHaveBeenCalled();
   });
 
-  it("reports a unique slug conflict after an insert conflict", async () => {
+  it("maps a known slug conflict to a stable business code", async () => {
     const deps = dependencies();
     deps.insertProject.mockResolvedValue(null);
     deps.findProjectBySlug.mockResolvedValue({
@@ -102,22 +86,19 @@ describe("executeProjectCreation", () => {
       userId: "user-2",
     });
 
-    const result = await executeProjectCreation(validInput, deps);
-
-    expect(result.ok).toBe(false);
-    expect(result.fieldErrors).toEqual({
-      slug: "This public URL slug is already in use.",
+    await expect(executeProjectCreation(validInput, deps)).rejects.toMatchObject({
+      code: "PROJECT_SLUG_TAKEN",
+      field: "slug",
     });
   });
 
-  it("does not expose database failures", async () => {
+  it("lets unknown infrastructure failures reach the action boundary", async () => {
     const deps = dependencies();
-    deps.insertProject.mockRejectedValue(new Error("connection details"));
+    const databaseError = new Error("connection details");
+    deps.insertProject.mockRejectedValue(databaseError);
 
-    const result = await executeProjectCreation(validInput, deps);
-
-    expect(result.ok).toBe(false);
-    expect(result.error).toBe("Unable to create your workspace. Try again.");
-    expect(JSON.stringify(result)).not.toContain("connection details");
+    await expect(executeProjectCreation(validInput, deps)).rejects.toBe(
+      databaseError,
+    );
   });
 });

@@ -1,11 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createPublicFeedbackAction } from "@/features/feedback/actions/create-public-feedback";
+import { businessError } from "@/lib/errors";
 
 const mocks = vi.hoisted(() => ({
   executePublicFeedbackCreation: vi.fn(),
   redirect: vi.fn((path: string) => {
-    throw new Error(`NEXT_REDIRECT:${path}`);
+    const error = new Error("NEXT_REDIRECT");
+    Object.assign(error, { digest: `NEXT_REDIRECT;replace;${path};307;` });
+    throw error;
   }),
   revalidatePath: vi.fn(),
 }));
@@ -19,36 +22,29 @@ vi.mock("@/server/services/feedback-creation", () => ({
   executePublicFeedbackCreation: mocks.executePublicFeedbackCreation,
 }));
 
-function formData() {
-  const data = new FormData();
-  data.set("description", "A comfortable theme for reviewing updates after hours.");
-  data.set("slug", "acme-studio");
-  data.set("title", "Dark mode for the dashboard");
-  return data;
-}
+const input = {
+  description: "A comfortable theme for reviewing updates after hours.",
+  slug: "acme-studio",
+  title: "Dark mode for the dashboard",
+};
 
 describe("createPublicFeedbackAction", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it("revalidates the owner and public pages before opening the new feedback", async () => {
+  it("revalidates public pages before opening the new feedback", async () => {
     mocks.executePublicFeedbackCreation.mockResolvedValue({
       feedback: { id: "feedback-1", slug: "acme-studio" },
-      ok: true,
-      requestId: "request-1",
     });
 
-    await expect(createPublicFeedbackAction(null, formData())).rejects.toThrow(
-      "NEXT_REDIRECT:/p/acme-studio/feedback/feedback-1",
-    );
+    await expect(createPublicFeedbackAction(input)).rejects.toMatchObject({
+      digest:
+        "NEXT_REDIRECT;replace;/p/acme-studio/feedback/feedback-1;307;",
+    });
 
     expect(mocks.executePublicFeedbackCreation).toHaveBeenCalledWith(
-      {
-        description: "A comfortable theme for reviewing updates after hours.",
-        slug: "acme-studio",
-        title: "Dark mode for the dashboard",
-      },
+      input,
       expect.objectContaining({
         createFeedback: expect.any(Function),
         findPublicProject: expect.any(Function),
@@ -57,22 +53,17 @@ describe("createPublicFeedbackAction", () => {
     );
     expect(mocks.revalidatePath).toHaveBeenNthCalledWith(1, "/dashboard");
     expect(mocks.revalidatePath).toHaveBeenNthCalledWith(2, "/p/acme-studio");
-    expect(mocks.redirect).toHaveBeenCalledWith(
-      "/p/acme-studio/feedback/feedback-1",
-    );
   });
 
   it("redirects an expired session to the validated internal board", async () => {
-    mocks.executePublicFeedbackCreation.mockResolvedValue({
-      code: "unauthenticated",
-      error: "Unable to submit feedback. Try again.",
-      ok: false,
-      requestId: "request-2",
-    });
-
-    await expect(createPublicFeedbackAction(null, formData())).rejects.toThrow(
-      "NEXT_REDIRECT:/login?returnTo=%2Fp%2Facme-studio",
+    mocks.executePublicFeedbackCreation.mockRejectedValue(
+      businessError("UNAUTHENTICATED"),
     );
+
+    await expect(createPublicFeedbackAction(input)).rejects.toMatchObject({
+      digest:
+        "NEXT_REDIRECT;replace;/login?returnTo=%2Fp%2Facme-studio;307;",
+    });
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 });

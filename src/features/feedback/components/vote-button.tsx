@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { voteFeedbackAction } from "@/features/feedback/actions/vote-feedback";
+import { ACTION_NETWORK_ERROR, getActionErrorMessage } from "@/lib/action-errors";
 
 type VoteButtonProps = {
   feedbackId: string;
@@ -19,6 +20,7 @@ type VoteState = {
   voted: boolean;
 };
 
+// 在界面中乐观切换投票和票数，再用 Action 返回值确认；失败时自动回滚并给出安全提示。
 export function VoteButton({
   feedbackId,
   initialVoteCount,
@@ -39,7 +41,9 @@ export function VoteButton({
   const [isPending, startTransition] = useTransition();
   const descriptionId = `vote-status-${feedbackId}`;
 
+  // 防止 pending 期间重复提交，并把认证失败、业务失败和网络失败分流到对应的恢复路径。
   function handleVote() {
+    if (isPending) return;
     const nextVote = {
       voteCount: optimisticVote.voteCount + (optimisticVote.voted ? -1 : 1),
       voted: !optimisticVote.voted,
@@ -51,22 +55,22 @@ export function VoteButton({
       try {
         const result = await voteFeedbackAction({ feedbackId, slug });
 
-        if (result.code === "unauthenticated") {
+        if (result.serverError?.code === "UNAUTHENTICATED") {
           router.push(`/login?returnTo=${encodeURIComponent(returnTo)}`);
           return;
         }
 
-        if (!result.ok || result.voteCount === undefined || result.voted === undefined) {
-          setError(result.error ?? "Unable to update your vote. Try again.");
+        if (!result.data) {
+          setError(getActionErrorMessage(result, "This request is invalid. Refresh the page and try again.") ?? "Unable to update your vote. Try again.");
           return;
         }
 
         setConfirmedVote({
-          voteCount: result.voteCount,
-          voted: result.voted,
+          voteCount: result.data.voteCount,
+          voted: result.data.voted,
         });
       } catch {
-        setError("Unable to update your vote. Try again.");
+        setError(ACTION_NETWORK_ERROR);
       }
     });
   }

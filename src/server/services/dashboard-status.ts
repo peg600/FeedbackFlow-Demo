@@ -1,58 +1,46 @@
-import { updateFeedbackStatusSchema } from "@/validators/dashboard";
+import { businessError } from "@/lib/errors";
+import {
+  updateFeedbackStatusSchema,
+  type DashboardStatus,
+} from "@/validators/dashboard";
 
-export type UpdateStatusResult = {
-  error?: string;
-  feedbackId?: string;
-  ok: boolean;
-  requestId: string;
-  status?: string;
+export type OwnerStatusUpdateResult = {
+  feedbackId: string;
+  status: DashboardStatus;
 };
 
-type UpdateStatusDependencies = {
+export type UpdateStatusDependencies = {
   findOwnedProject: (userId: string) => Promise<{ id: string } | null>;
   getSessionUser: () => Promise<{ id: string } | null>;
   updateOwnedFeedback: (input: {
     feedbackId: string;
     projectId: string;
-    status: "completed" | "in_progress" | "planned" | "under_review";
+    status: DashboardStatus;
   }) => Promise<boolean>;
 };
 
-const rejection = () => ({
-  error: "Unable to update feedback. Try again.",
-  ok: false,
-  requestId: crypto.randomUUID(),
-}) satisfies UpdateStatusResult;
-
+/** 验证当前用户的项目后更新其反馈状态，将资源不存在或不归属该项目统一视为不可用。 */
 export async function executeOwnerStatusUpdate(
-  input: unknown,
+  input: { feedbackId: string; status: DashboardStatus },
   dependencies: UpdateStatusDependencies,
-): Promise<UpdateStatusResult> {
-  const parsed = updateFeedbackStatusSchema.safeParse(input);
-  if (!parsed.success) return rejection();
+): Promise<OwnerStatusUpdateResult> {
+  const values = updateFeedbackStatusSchema.parse(input);
+  const sessionUser = await dependencies.getSessionUser();
+  if (!sessionUser) throw businessError("UNAUTHENTICATED");
 
-  try {
-    const sessionUser = await dependencies.getSessionUser();
-    if (!sessionUser) return rejection();
+  const project = await dependencies.findOwnedProject(sessionUser.id);
+  if (!project) throw businessError("PROJECT_NOT_FOUND");
 
-    const project = await dependencies.findOwnedProject(sessionUser.id);
-    if (!project) return rejection();
+  const updated = await dependencies.updateOwnedFeedback({
+    feedbackId: values.feedbackId,
+    projectId: project.id,
+    status: values.status,
+  });
 
-    const updated = await dependencies.updateOwnedFeedback({
-      feedbackId: parsed.data.feedbackId,
-      projectId: project.id,
-      status: parsed.data.status,
-    });
+  if (!updated) throw businessError("FEEDBACK_NOT_AVAILABLE");
 
-    if (!updated) return rejection();
-
-    return {
-      feedbackId: parsed.data.feedbackId,
-      ok: true,
-      requestId: crypto.randomUUID(),
-      status: parsed.data.status,
-    };
-  } catch {
-    return rejection();
-  }
+  return {
+    feedbackId: values.feedbackId,
+    status: values.status,
+  };
 }

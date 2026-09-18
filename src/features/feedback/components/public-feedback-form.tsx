@@ -1,13 +1,16 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { startTransition, useActionState, useState } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useAction } from "next-safe-action/hooks";
 import { useForm, useWatch } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createPublicFeedbackAction } from "@/features/feedback/actions/create-public-feedback";
+import { ACTION_NETWORK_ERROR, getActionErrorMessage, getActionFieldError } from "@/lib/action-errors";
 import {
   createPublicFeedbackSchema,
   type CreatePublicFeedbackValues,
@@ -22,11 +25,19 @@ type PublicFeedbackFormProps = {
   slug: string;
 };
 
+// 协调公开反馈提交的客户端校验、登录跳转以及统一 Action 字段/服务端错误展示。
 export function PublicFeedbackForm({ slug }: PublicFeedbackFormProps) {
-  const [state, formAction, isPending] = useActionState(
-    createPublicFeedbackAction,
-    null,
-  );
+  const router = useRouter();
+  const [transportError, setTransportError] = useState<string>();
+  const { result: state, execute, isPending } = useAction(createPublicFeedbackAction, {
+    onExecute: () => setTransportError(undefined),
+    onError: ({ error }) => {
+      if (error.serverError?.code === "UNAUTHENTICATED") {
+        router.push(`/login?returnTo=${encodeURIComponent(`/p/${slug}`)}`);
+      }
+      if (error.thrownError) setTransportError(ACTION_NETWORK_ERROR);
+    },
+  });
   const [submittedValues, setSubmittedValues] = useState<
     Omit<CreatePublicFeedbackValues, "slug"> | null
   >(null);
@@ -46,26 +57,25 @@ export function PublicFeedbackForm({ slug }: PublicFeedbackFormProps) {
   });
   const titleRegistration = register("title");
   const descriptionRegistration = register("description");
-  const settledState = isPending ? null : state;
+  const settledState = isPending ? undefined : state;
   const titleError =
     errors.title?.message ??
-    (submittedValues?.title === title ? settledState?.fieldErrors?.title : undefined);
+    (submittedValues?.title === title ? getActionFieldError(settledState, "title") : undefined);
   const descriptionError =
     errors.description?.message ??
     (submittedValues?.description === description
-      ? settledState?.fieldErrors?.description
+      ? getActionFieldError(settledState, "description")
       : undefined);
   const unchangedSinceSubmit =
     submittedValues?.title === title && submittedValues?.description === description;
 
+  // 记录提交时的字段快照，避免用户修改内容后仍看到上一次请求返回的错误。
   const submit = handleSubmit((values) => {
     setSubmittedValues(getValues());
-    const formData = new FormData();
-    formData.set("description", values.description);
-    formData.set("slug", slug);
-    formData.set("title", values.title);
-    startTransition(() => formAction(formData));
+    execute({ ...values, slug });
   });
+
+  const errorMessage = isPending ? undefined : transportError ?? getActionErrorMessage(settledState);
 
   return (
     <form
@@ -126,9 +136,9 @@ export function PublicFeedbackForm({ slug }: PublicFeedbackFormProps) {
         </div>
       </div>
 
-      {settledState?.error && unchangedSinceSubmit ? (
+      {errorMessage && unchangedSinceSubmit ? (
         <p className="mt-4 text-sm text-error" role="alert">
-          {settledState.error}
+          {errorMessage}
         </p>
       ) : null}
 
