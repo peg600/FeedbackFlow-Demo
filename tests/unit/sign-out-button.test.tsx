@@ -46,7 +46,7 @@ describe("SignOutButton", () => {
     await user.click(screen.getByRole("button", { name: "Sign out" }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
-      "Sign out failed.",
+      "Unable to sign out. Try again.",
     );
     expect(mocks.push).not.toHaveBeenCalled();
   });

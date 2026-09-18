@@ -13,20 +13,12 @@ import {
 import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getAuthErrorMessage } from "@/features/auth/auth-error";
+import { getAuthError } from "@/features/auth/auth-error";
 import { authClient } from "@/lib/auth-client";
 import {
   registerSchema,
   type RegisterValues,
 } from "@/validators/auth";
-
-const visibleSignUpErrorCodes = new Set([
-  "INVALID_EMAIL",
-  "PASSWORD_TOO_LONG",
-  "PASSWORD_TOO_SHORT",
-  "USER_ALREADY_EXISTS",
-  "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL",
-]);
 
 const defaultValues: RegisterValues = {
   name: "",
@@ -41,6 +33,7 @@ type PasswordStrength = {
   value: number;
 };
 
+// 根据密码长度和字符种类计算仅用于界面提示的强度等级，不替代注册 Schema 的安全校验。
 function getPasswordStrength(password: string): PasswordStrength {
   if (!password) {
     return {
@@ -133,6 +126,7 @@ function RegisterField({
   );
 }
 
+// 组合注册表单校验、密码强度反馈和 Better Auth 注册流程，成功后进入首次项目创建页。
 export function RegisterForm() {
   const router = useRouter();
   const {
@@ -149,6 +143,7 @@ export function RegisterForm() {
     useWatch({ control, name: "password" }),
   );
 
+  // 调用 Better Auth 创建账号，并将上游失败统一转换为可安全展示的本地错误。
   const onSubmit: SubmitHandler<RegisterValues> = async (values) => {
     try {
       const result = await authClient.signUp.email({
@@ -159,11 +154,7 @@ export function RegisterForm() {
 
       if (result.error) {
         setError("root", {
-          message: getAuthErrorMessage(
-            result.error,
-            visibleSignUpErrorCodes,
-            "Unable to create your account. Check your details and try again.",
-          ),
+          message: getAuthError(result.error, "signUp").message,
         });
         return;
       }
@@ -172,7 +163,7 @@ export function RegisterForm() {
       router.refresh();
     } catch {
       setError("root", {
-        message: "Unable to create your account. Try again.",
+        message: getAuthError(undefined, "signUp").message,
       });
     }
   };

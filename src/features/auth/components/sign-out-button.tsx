@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { getAuthError } from "@/features/auth/auth-error";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
@@ -12,6 +13,7 @@ type SignOutButtonProps = {
   compact?: boolean;
 };
 
+// 管理退出登录的并发保护、错误提示和成功后的路由刷新，确保服务端组件读取到最新会话。
 export function SignOutButton({
   className,
   compact = false,
@@ -20,6 +22,7 @@ export function SignOutButton({
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // pending 期间忽略重复点击，并把 Better Auth 或网络异常转换为统一的安全提示。
   async function handleSignOut() {
     if (isPending) return;
 
@@ -30,14 +33,14 @@ export function SignOutButton({
       const result = await authClient.signOut();
 
       if (result.error) {
-        setError(result.error.message ?? "Unable to sign out. Try again.");
+        setError(getAuthError(result.error, "signOut").message);
         return;
       }
 
       router.push("/login");
       router.refresh();
     } catch {
-      setError("Unable to sign out. Try again.");
+      setError(getAuthError(undefined, "signOut").message);
     } finally {
       setIsPending(false);
     }

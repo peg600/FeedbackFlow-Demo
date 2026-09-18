@@ -8,14 +8,9 @@ import { useForm, type SubmitHandler } from "react-hook-form";
 import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { getAuthErrorMessage } from "@/features/auth/auth-error";
+import { getAuthError } from "@/features/auth/auth-error";
 import { authClient } from "@/lib/auth-client";
 import { loginSchema, type LoginValues } from "@/validators/auth";
-
-const visibleSignInErrorCodes = new Set([
-  "INVALID_EMAIL",
-  "INVALID_EMAIL_OR_PASSWORD",
-]);
 
 const defaultValues: LoginValues = {
   email: "",
@@ -27,6 +22,7 @@ type LoginFormProps = {
   returnTo?: string;
 };
 
+// 先用 Zod 校验登录表单，再调用 Better Auth，并只展示本地白名单中的认证错误文案。
 export function LoginForm({ returnTo = "/dashboard" }: LoginFormProps) {
   const router = useRouter();
   const {
@@ -39,6 +35,7 @@ export function LoginForm({ returnTo = "/dashboard" }: LoginFormProps) {
     resolver: zodResolver(loginSchema),
   });
 
+  // 将通过校验的凭据交给 Better Auth，成功后跳到已验证的 returnTo 页面并刷新服务端状态。
   const onSubmit: SubmitHandler<LoginValues> = async (values) => {
     try {
       const result = await authClient.signIn.email({
@@ -49,11 +46,7 @@ export function LoginForm({ returnTo = "/dashboard" }: LoginFormProps) {
 
       if (result.error) {
         setError("root", {
-          message: getAuthErrorMessage(
-            result.error,
-            visibleSignInErrorCodes,
-            "Unable to sign in. Check your credentials and try again.",
-          ),
+          message: getAuthError(result.error, "signIn").message,
         });
         return;
       }
@@ -61,7 +54,7 @@ export function LoginForm({ returnTo = "/dashboard" }: LoginFormProps) {
       router.push(returnTo);
       router.refresh();
     } catch {
-      setError("root", { message: "Unable to sign in. Try again." });
+      setError("root", { message: getAuthError(undefined, "signIn").message });
     }
   };
 
