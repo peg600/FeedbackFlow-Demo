@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 
 import { auth } from "@/server/auth";
+import { revalidatePublicProjectPages } from "@/server/cache/project-pages";
 import { db } from "@/server/db";
 import { feedback, projects, votes } from "@/server/db/schema";
 import { actionClient } from "@/server/safe-action";
@@ -82,10 +83,7 @@ export const voteFeedbackAction = actionClient
     });
 
     revalidatePath("/dashboard");
-    revalidatePath(`/p/${parsedInput.slug}`);
-    revalidatePath(
-      `/p/${parsedInput.slug}/feedback/${parsedInput.feedbackId}`,
-    );
+    revalidatePublicProjectPages(parsedInput.slug, parsedInput.feedbackId);
 
     return result;
   });

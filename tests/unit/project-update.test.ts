@@ -20,7 +20,12 @@ function dependencies(overrides: Record<string, unknown> = {}) {
       slug: "old-slug",
     }),
     findSlugConflict: vi.fn().mockResolvedValue(null),
-    updateProject: vi.fn().mockResolvedValue({ slug: "acme-studio" }),
+    updateProject: vi.fn().mockResolvedValue({
+      description: "A public feedback board.",
+      isPublic: true,
+      name: "Acme Studio",
+      slug: "acme-studio",
+    }),
     ...overrides,
   };
 }
@@ -31,7 +36,12 @@ describe("updateOwnedProject", () => {
 
     await expect(updateOwnedProject("user-1", input, deps)).resolves.toEqual({
       oldSlug: "old-slug",
-      project: { slug: "acme-studio" },
+      project: {
+        description: "A public feedback board.",
+        isPublic: true,
+        name: "Acme Studio",
+        slug: "acme-studio",
+      },
     });
     expect(deps.updateProject).toHaveBeenCalledWith({
       description: input.description,

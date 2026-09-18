@@ -44,10 +44,10 @@ describe("voteFeedbackAction", () => {
         hasVote: expect.any(Function),
       }),
     );
-    expect(mocks.revalidatePath).toHaveBeenNthCalledWith(1, "/dashboard");
-    expect(mocks.revalidatePath).toHaveBeenNthCalledWith(2, "/p/acme-studio");
-    expect(mocks.revalidatePath).toHaveBeenNthCalledWith(
-      3,
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/dashboard");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/p/acme-studio");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/p/acme-studio/roadmap");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith(
       "/p/acme-studio/feedback/c0a80121-7ac0-4f4e-a1d8-2fe804b6c401",
     );
   });

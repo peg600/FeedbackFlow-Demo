@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
+import { revalidatePublicProjectPages } from "@/server/cache/project-pages";
 import { actionClient } from "@/server/safe-action";
 import { requireDashboardAccess } from "@/server/services/project-access";
 import { updateOwnedProject } from "@/server/services/project-update";
@@ -16,11 +17,14 @@ export const updateProjectAction = actionClient
     const result = await updateOwnedProject(session.user.id, parsedInput);
 
     revalidatePath("/dashboard");
+    revalidatePath("/dashboard", "layout");
     revalidatePath("/dashboard/settings");
     for (const slug of new Set([result.oldSlug, result.project.slug])) {
-      revalidatePath(`/p/${slug}`);
-      revalidatePath(`/p/${slug}/roadmap`);
+      revalidatePublicProjectPages(slug);
     }
 
-    return { message: "Project settings saved." as const };
+    return {
+      message: "Project settings saved." as const,
+      project: result.project,
+    };
   });

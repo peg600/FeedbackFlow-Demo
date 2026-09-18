@@ -19,10 +19,11 @@ describe("ProjectSettingsForm", () => {
     } });
     const user = userEvent.setup();
     render(<ProjectSettingsForm project={project} />);
+    await user.type(screen.getByLabelText("Public URL slug"), "-new");
     await user.click(screen.getByRole("button", { name: "Save changes" }));
     await waitFor(() => expect(screen.getByLabelText("Public URL slug")).toHaveAttribute("aria-invalid", "true"));
     expect(screen.getByLabelText("Public URL slug")).toHaveAttribute("aria-describedby", "slug-error");
-    expect(mocks.update).toHaveBeenCalledWith(project);
+    expect(mocks.update).toHaveBeenCalledWith({ ...project, slug: "acme-new" });
     await user.click(screen.getByRole("checkbox"));
     await user.type(screen.getByLabelText("Description"), " More details.");
     expect(screen.getByLabelText("Public URL slug")).toHaveAttribute("aria-invalid", "true");
@@ -33,20 +34,26 @@ describe("ProjectSettingsForm", () => {
 
   it("renders flattened field validation and successful saves", async () => {
     mocks.update.mockResolvedValueOnce({ validationErrors: { formErrors: [], fieldErrors: { name: ["Project name is required."] } } })
-      .mockResolvedValueOnce({ data: { message: "Project settings saved." } });
+      .mockResolvedValueOnce({ data: {
+        message: "Project settings saved.",
+        project: { ...project, name: "Acme Studio" },
+      } });
     const user = userEvent.setup();
     render(<ProjectSettingsForm project={project} />);
+    await user.clear(screen.getByLabelText("Project name"));
     await user.click(screen.getByRole("button", { name: "Save changes" }));
     expect(await screen.findByText("Project name is required.")).toBeVisible();
-    await user.type(screen.getByLabelText("Project name"), " Studio");
+    await user.type(screen.getByLabelText("Project name"), "Acme Studio");
     await user.click(screen.getByRole("button", { name: "Save changes" }));
     expect(await screen.findByText("Project settings saved.")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Save changes" })).toBeDisabled();
   });
 
   it("handles transport failures without showing the thrown message", async () => {
     mocks.update.mockRejectedValue(new Error("internal transport details"));
     const user = userEvent.setup();
     render(<ProjectSettingsForm project={project} />);
+    await user.type(screen.getByLabelText("Description"), " More details.");
     await user.click(screen.getByRole("button", { name: "Save changes" }));
     expect(await screen.findByText("Unable to reach the server. Check your connection and try again.")).toBeVisible();
     expect(screen.queryByText("internal transport details")).not.toBeInTheDocument();
@@ -56,7 +63,22 @@ describe("ProjectSettingsForm", () => {
     mocks.update.mockResolvedValue({ serverError: { code: "UNAUTHENTICATED", message: "Sign in again.", requestId: "r-2" } });
     const user = userEvent.setup();
     render(<ProjectSettingsForm project={project} />);
+    await user.click(screen.getByRole("checkbox"));
     await user.click(screen.getByRole("button", { name: "Save changes" }));
     await waitFor(() => expect(mocks.push).toHaveBeenCalledWith("/login?returnTo=/dashboard/settings"));
+  });
+
+  it("previews the edited slug on the current origin and disables unchanged saves", async () => {
+    const user = userEvent.setup();
+    render(<ProjectSettingsForm project={project} />);
+
+    expect(screen.getByText("http://localhost:3000/p/acme")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Save changes" })).toBeDisabled();
+
+    await user.clear(screen.getByLabelText("Public URL slug"));
+    await user.type(screen.getByLabelText("Public URL slug"), "New-Board");
+
+    expect(screen.getByText("http://localhost:3000/p/new-board")).toBeVisible();
+    expect(screen.getByRole("button", { name: "Save changes" })).toBeEnabled();
   });
 });

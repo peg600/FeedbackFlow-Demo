@@ -7,7 +7,8 @@ A full-stack SaaS application built with Next.js.
 Landing includes Features, Pricing, and links to the public demo `/p/demo`.
 `/profile` is a static maker profile, not an editable account page. Public
 roadmaps show up to four requests per status plus the total; View all opens the
-existing filtered, paginated feedback board.
+existing filtered, paginated feedback board. Settings saves refresh the project
+navigation and old/new public URLs, including feedback details.
 
 Billing, Checkout, Portal, and Stripe webhooks remain placeholders. Pricing is
 a preview, not an offer to charge a card. Password recovery and feedback

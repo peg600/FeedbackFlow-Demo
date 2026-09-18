@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ChangeEvent } from "react";
+import { useState, useSyncExternalStore, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
 
@@ -15,17 +15,47 @@ type Props = {
   project: { name: string; slug: string; description: string | null; isPublic: boolean };
 };
 
+function toFormValues(project: Props["project"]): ProjectSettingsValues {
+  return { ...project, description: project.description ?? "" };
+}
+
+function valuesMatch(
+  left: ProjectSettingsValues | undefined,
+  right: ProjectSettingsValues,
+) {
+  return Boolean(
+    left &&
+      left.name === right.name &&
+      left.slug === right.slug &&
+      left.description === right.description &&
+      left.isPublic === right.isPublic,
+  );
+}
+
+const subscribeToOrigin = () => () => {};
+const getBrowserOrigin = () => window.location.origin;
+const getServerOrigin = () => "";
+
 // 管理项目设置的受控表单，并按提交快照区分仍然有效的字段错误与已经过期的错误。
 export function ProjectSettingsForm({ project }: Props) {
   const router = useRouter();
   const [transportError, setTransportError] = useState<string>();
-  const [values, setValues] = useState<ProjectSettingsValues>({
-    ...project,
-    description: project.description ?? "",
-  });
+  const [values, setValues] = useState<ProjectSettingsValues>(() =>
+    toFormValues(project),
+  );
+  const [savedValues, setSavedValues] = useState<ProjectSettingsValues>(() =>
+    toFormValues(project),
+  );
   const [submittedValues, setSubmittedValues] = useState<ProjectSettingsValues>();
   const { result, execute, isPending: pending } = useAction(updateProjectAction, {
     onExecute: () => setTransportError(undefined),
+    onSuccess: ({ data }) => {
+      const saved = toFormValues(data.project);
+      setValues(saved);
+      setSavedValues(saved);
+      setSubmittedValues(saved);
+      router.refresh();
+    },
     onError: ({ error }) => {
       if (error.serverError?.code === "UNAUTHENTICATED") {
         router.push("/login?returnTo=/dashboard/settings");
@@ -34,15 +64,19 @@ export function ProjectSettingsForm({ project }: Props) {
     },
   });
   const state = pending ? undefined : result;
-  const unchangedSinceSubmit = submittedValues?.name === values.name &&
-    submittedValues?.slug === values.slug &&
-    submittedValues?.description === values.description &&
-    submittedValues?.isPublic === values.isPublic;
+  const unchangedSinceSubmit = valuesMatch(submittedValues, values);
+  const isDirty = !valuesMatch(savedValues, values);
   const message = pending || !unchangedSinceSubmit
     ? undefined
     : transportError ?? getActionErrorMessage(state) ?? state?.data?.message;
   const fieldError = (name: "name" | "slug" | "description") =>
     submittedValues?.[name] === values[name] ? getActionFieldError(state, name) : undefined;
+  const previewSlug = values.slug.trim().toLowerCase() || "your-project";
+  const browserOrigin = useSyncExternalStore(
+    subscribeToOrigin,
+    getBrowserOrigin,
+    getServerOrigin,
+  );
   // 为文本字段统一生成值、可访问性属性和修改处理，字段改变后自动隐藏旧的服务端错误。
   const field = (name: "name" | "slug" | "description") => {
     const error = fieldError(name);
@@ -62,6 +96,7 @@ export function ProjectSettingsForm({ project }: Props) {
       className="flex flex-col gap-7"
       onSubmit={(event) => {
         event.preventDefault();
+        if (pending || !isDirty) return;
         setSubmittedValues(values);
         execute(values);
       }}
@@ -76,7 +111,9 @@ export function ProjectSettingsForm({ project }: Props) {
       <div className="grid gap-2">
         <label className="text-xs font-semibold" htmlFor="slug">Public URL slug</label>
         <Input disabled={pending} id="slug" name="slug" {...field("slug")} />
-        <p className="text-[11px] text-muted-foreground">feedbackflow.app/p/{project.slug}</p>
+        <p className="break-all text-[11px] text-muted-foreground">
+          {browserOrigin}/p/{previewSlug}
+        </p>
         {fieldError("slug") ? (
           <p className="text-xs text-error" id="slug-error" role="alert">{fieldError("slug")}</p>
         ) : null}
@@ -107,7 +144,7 @@ export function ProjectSettingsForm({ project }: Props) {
       </label>
       <div className="flex flex-wrap items-center justify-end gap-4">
         <p aria-live="polite" className={state?.data ? "text-xs text-success" : "text-xs text-error"}>{message}</p>
-        <Button disabled={pending} type="submit">{pending ? "Saving..." : "Save changes"}</Button>
+        <Button disabled={pending || !isDirty} type="submit">{pending ? "Saving..." : "Save changes"}</Button>
       </div>
     </form>
   );

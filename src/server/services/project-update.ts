@@ -10,7 +10,12 @@ import {
 
 export type ProjectUpdateResult = {
   oldSlug: string;
-  project: { slug: string };
+  project: {
+    description: string | null;
+    isPublic: boolean;
+    name: string;
+    slug: string;
+  };
 };
 
 export type ProjectUpdateDependencies = {
@@ -28,7 +33,12 @@ export type ProjectUpdateDependencies = {
     name: string;
     slug: string;
     userId: string;
-  }) => Promise<{ slug: string } | null>;
+  }) => Promise<{
+    description: string | null;
+    isPublic: boolean;
+    name: string;
+    slug: string;
+  } | null>;
 };
 
 const defaultDependencies: ProjectUpdateDependencies = {
@@ -62,7 +72,12 @@ const defaultDependencies: ProjectUpdateDependencies = {
         updatedAt: new Date(),
       })
       .where(and(eq(projects.id, input.id), eq(projects.userId, input.userId)))
-      .returning({ slug: projects.slug });
+      .returning({
+        description: projects.description,
+        isPublic: projects.isPublic,
+        name: projects.name,
+        slug: projects.slug,
+      });
     return project ?? null;
   },
 };
