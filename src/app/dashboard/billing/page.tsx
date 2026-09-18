@@ -8,6 +8,7 @@ export const metadata: Metadata = { title: "Billing | FeedbackFlow" };
 const free = ["1 project", "50 feedback items", "Voting and roadmap", "Public sharing"];
 const pro = ["Unlimited feedback", "Voting and roadmap", "Stripe customer portal", "Priority roadmap controls"];
 
+// 为当前项目读取本地套餐预览和用量，Stripe 尚未启用时不执行任何支付写操作。
 export default async function BillingPage() {
   const { project } = await requireDashboardAccess();
   const billing = await getBillingPreview(project.id);

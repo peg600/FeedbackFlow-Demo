@@ -4,6 +4,7 @@ import { Brand } from "@/components/brand";
 import { OnboardingForm } from "@/features/projects/components/onboarding-form";
 import { getCurrentProjectAccess } from "@/server/services/project-access";
 
+// 根据会话和现有项目决定进入登录、控制台或首次项目创建流程。
 export default async function OnboardingPage() {
   const { project, session } = await getCurrentProjectAccess();
 

@@ -12,12 +12,14 @@ const laneMeta = {
   completed: { label: "Completed", tone: "bg-surface-success text-success" },
 } as const;
 
+// 根据公开项目生成路线图 SEO 信息，不存在时返回明确的未找到标题。
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const data = await getPublicRoadmap(slug);
   return data ? { title: `${data.project.name} roadmap | FeedbackFlow`, description: `Public roadmap for ${data.project.name}.` } : { title: "Roadmap not found | FeedbackFlow" };
 }
 
+// 读取由反馈状态派生的公开路线图，并按 Planned、In progress、Completed 三列展示。
 export default async function RoadmapPage({ params }: Props) {
   const { slug } = await params;
   const data = await getPublicRoadmap(slug);

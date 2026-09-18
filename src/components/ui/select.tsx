@@ -46,6 +46,7 @@ type SelectProps = {
   value?: string;
 };
 
+/** 封装受控或非受控选择器，同步隐藏表单字段，并协调下拉层关闭时的焦点行为。 */
 export function Select({
   "aria-describedby": ariaDescribedBy,
   "aria-invalid": ariaInvalid,
@@ -71,6 +72,7 @@ export function Select({
   const shouldBlurTriggerOnCloseRef = useRef(false);
   const [isOpen, setIsOpen] = useState(false);
 
+  // 请求更新内部状态并立即同步隐藏字段，再通知父组件，使同步读取表单时拿到本次选择值。
   function handleValueChange(nextValue: string) {
     if (!isControlled) setUncontrolledValue(nextValue);
     if (inputRef.current) inputRef.current.value = nextValue;

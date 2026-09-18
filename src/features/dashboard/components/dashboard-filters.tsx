@@ -39,11 +39,13 @@ const sortOptions: readonly SelectOption[] = [
   { label: "Most votes", value: "votes" },
 ];
 
+// 将搜索、状态和排序写入 URL，使控制台筛选结果可刷新、可分享并由服务端重新查询。
 export function DashboardFilters({ params }: { params: DashboardSearchParams }) {
   const pathname = usePathname();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
 
+  // 省略默认筛选值以保持 URL 简洁，同时在筛选变化时隐式回到第一页。
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);

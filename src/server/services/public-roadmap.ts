@@ -6,6 +6,7 @@ import { feedback, projects, votes } from "@/server/db/schema";
 
 const statuses = ["planned", "in_progress", "completed"] as const;
 
+/** 从公开反馈的三个路线图状态派生分栏并汇总票数，不维护额外的路线图数据副本。 */
 export const getPublicRoadmap = cache(async (slug: string) => {
   const [project] = await db.select({ description: projects.description, id: projects.id, name: projects.name, slug: projects.slug }).from(projects).where(and(eq(projects.slug, slug), eq(projects.isPublic, true))).limit(1);
   if (!project) return null;

@@ -32,6 +32,7 @@ function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
+/** 解析公开反馈板的查询参数并限制长度与页码范围，防止任意 URL 输入直接进入查询。 */
 export function parsePublicFeedbackSearchParams(
   input: RawSearchParams | undefined,
 ): PublicFeedbackSearchParams {

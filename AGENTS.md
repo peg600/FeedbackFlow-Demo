@@ -25,6 +25,7 @@ FeedbackFlow 是一个用于作品展示的产品反馈与公开路线图 SaaS�
 - pnpm，并在 `package.json` 中固定 Node.js 与 pnpm 版本
 - Tailwind CSS + shadcn/ui
 - React Hook Form + Zod
+- next-safe-action（业务 Action 的校验与结果格式）+ pg-error-enum（PostgreSQL SQLSTATE 枚举）
 - Neon PostgreSQL + Drizzle ORM/Drizzle Kit
 - Better Auth，邮箱密码登录；核心版本不做 OAuth
 - Stripe Sandbox/Test：Checkout、Customer Portal、Webhook
@@ -149,6 +150,19 @@ tests/
 - Webhook 的去重记录和订阅更新应在事务中完成；重复事件不能产生重复副作用。
 - 日志采用结构化、可定位的上下文信息，但不输出密码、Cookie、Token、Secret、完整数据库连接串或支付信息。
 
+## 7.1 统一错误处理约定
+
+- 业务 Server Action 统一使用 `src/server/safe-action.ts` 的 `actionClient`，通过 `.metadata({ operation })` 标记操作，使用 `.inputSchema(...)` 在服务端验证普通对象输入。
+- 保留 next-safe-action 原生结果分支：成功为 `data`；输入校验失败为扁平化 `validationErrors: { formErrors, fieldErrors }`；业务或系统失败为 `serverError: { code, message, requestId, field? }`。创建成功后的导航继续使用 Next.js `redirect`。
+- 业务错误码、默认安全文案和可选字段归属集中定义在 `src/lib/errors.ts` 的 `ERROR_CATALOG`。服务层抛出 `businessError(code)`，由 Action 边界统一序列化；不在各接口分散拼接错误协议或按文案判断错误。
+- `pg-error-enum` 只提供 SQLSTATE 的语义化枚举，不自动理解业务。数据库错误统一由 `src/server/errors/database.ts` 沿 Drizzle `cause` 提取，并按“操作 + SQLSTATE + 精确约束名”映射；未知约束不得仅凭 `23503`、`23505` 等编号推断业务含义。
+- 未知异常统一返回 `INTERNAL_ERROR` 和安全提示，日志仅保留操作、错误关联标识及受控数据库诊断字段。不得把原始异常、SQL、参数或提交内容传到前端或日志。Next.js 导航信号必须继续抛出，不能转换为失败提示。
+- 数据库异常在事务边界之外统一转换，保留事务回滚语义；已有唯一约束、配额锁、所有权校验和 `onConflictDoNothing` 处理不得因统一错误而被移除。
+- 前端通过 `src/lib/action-errors.ts` 的 `getActionFieldError`、`getActionErrorMessage` 提取提示；网络失败使用 `ACTION_NETWORK_ERROR`，业务分支判断稳定的 `code`。字段错误需关联输入控件，编辑其他字段不应清除仍然有效的字段错误。
+- 当前只统一错误结构与提取方式，具体展示仍由表单或操作组件负责，未实现全局自动 Toast 或自动接入所有表单的公共 Hook。新增表单仍需显式接入校验结果、业务错误和网络失败展示。
+- Better Auth 保留原生 HTTP 协议，通过 `src/features/auth/auth-error.ts` 映射前端文案；读取页面沿用 Next.js Error/Not Found 边界。Stripe Webhook 当前仍是 HTTP 501 占位，返回 `{ error: AppServerError }`，不描述为已完成支付集成。
+- 新增错误时同步维护目录、必要的数据库映射及相关回归测试。详细流程、示例和扩展步骤见本地 `docs/backend-handbook/14-error-handling.md`；`docs/` 暂不纳入 Git，仓库约定以本节为准。
+
 ## 8. 环境变量与环境隔离
 
 只提交 `.env.example`，不得提交任何真实值。需要维护以下变量：
@@ -254,6 +268,9 @@ pnpm test:e2e
 
 ## 15. 语言相关
 
-- 项目中所有注释使用英文
+- 较大或较复杂的函数定义上方必须添加简短中文用途注释（通常 1–2 句），说明其业务目的，并按需指出权限、事务、并发、错误转换或副作用等关键边界。
+- 该要求包括业务服务、Action、查询/校验工具、包含业务编排的组件，以及具有独立复杂逻辑的内部回调；由 `cache` 或 Action builder 包装的函数在对应声明上方说明。
+- 简单透传、显而易见的一行工具、纯静态展示、测试用例回调和生成代码不机械添加注释。复杂测试辅助函数仍应说明用途。注释应解释用途或原因，不逐行复述实现，不作实现未提供的保证。
+- 新增或维护函数说明时使用中文，并随实现同步更新；已有准确的英文内联注释无需为语言统一而批量重写。注释不得包含真实 Secret 或用户数据。
 - 前端元素中文本为英文
 - commit message使用英文

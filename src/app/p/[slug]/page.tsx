@@ -22,6 +22,7 @@ type PublicFeedbackPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
+// 保留当前筛选条件并只替换页码，用于生成可分享的服务端分页链接。
 function pageHref(
   slug: string,
   params: PublicFeedbackSearchParams,
@@ -39,6 +40,7 @@ function descriptionPreview(description: string | null) {
   return description || "No additional details were provided.";
 }
 
+// 只为合法且公开存在的项目生成动态 SEO 信息，避免泄露隐藏项目。
 export async function generateMetadata({
   params,
 }: Pick<PublicFeedbackPageProps, "params">): Promise<Metadata> {
@@ -58,6 +60,7 @@ export async function generateMetadata({
   };
 }
 
+// 校验路由和查询参数后读取公开看板，并渲染筛选、分页、空状态与反馈提交入口。
 export default async function PublicFeedbackPage({
   params,
   searchParams,

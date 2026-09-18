@@ -18,6 +18,7 @@ import type {
 
 export const DASHBOARD_PAGE_SIZE = 4;
 
+/** 为后台筛选生成参数化子串搜索条件，空搜索不增加过滤条件。 */
 function searchCondition(search: string) {
   if (!search) return undefined;
 
@@ -27,6 +28,7 @@ function searchCondition(search: string) {
   );
 }
 
+/** 对调用方已授权的项目汇总统计与分页列表；统计并行查询，列表按筛选条件稳定排序。 */
 export async function getDashboardData(
   projectId: string,
   params: DashboardSearchParams,

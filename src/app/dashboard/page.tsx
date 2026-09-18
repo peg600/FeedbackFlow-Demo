@@ -10,6 +10,7 @@ import { parseDashboardSearchParams } from "@/validators/dashboard";
 
 type DashboardPageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 
+/** 将近期更新时间转为简短相对时间，满 30 天则显示日期，未来时间按刚刚更新处理。 */
 function formatUpdatedAt(date: Date) {
   const seconds = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
   if (seconds < 60) return "Just now";
@@ -22,6 +23,7 @@ function formatUpdatedAt(date: Date) {
   return new Intl.DateTimeFormat("en", { day: "numeric", month: "short" }).format(date);
 }
 
+// 在分页链接中保留非默认筛选条件，确保控制台状态可刷新和分享。
 function pageHref(params: ReturnType<typeof parseDashboardSearchParams>, page: number) {
   const query = new URLSearchParams();
   if (params.search) query.set("search", params.search);
@@ -31,6 +33,7 @@ function pageHref(params: ReturnType<typeof parseDashboardSearchParams>, page: n
   return query.size ? `/dashboard?${query}` : "/dashboard";
 }
 
+// 完成控制台访问授权、查询参数规范化和项目级数据读取，再渲染指标、筛选及分页结果。
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const { project } = await requireDashboardAccess();
   const params = parseDashboardSearchParams(await searchParams);

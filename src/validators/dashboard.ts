@@ -33,6 +33,7 @@ function first(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
 }
 
+/** 规范化后台 URL 的搜索、筛选、排序和页码，对缺失或无效参数使用安全默认值。 */
 export function parseDashboardSearchParams(
   input: RawSearchParams | undefined,
 ): DashboardSearchParams {

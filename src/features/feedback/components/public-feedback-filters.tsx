@@ -21,6 +21,7 @@ const statusOptions: readonly SelectOption[] = [
   { label: "Completed", value: "completed" },
 ];
 
+// 把公开看板的搜索、排序和状态筛选同步到 URL，供服务端查询和分页链接复用。
 export function PublicFeedbackFilters({
   params,
 }: {
@@ -30,6 +31,7 @@ export function PublicFeedbackFilters({
   const pathname = usePathname();
   const router = useRouter();
 
+  // 规范化表单值并省略默认参数，筛选变化时回到第一页。
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const data = new FormData(event.currentTarget);

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+/** 提取项目名称前两个词的首字符作为头像缩写，空名称使用 FF 兜底。 */
 function getInitials(name: string) {
   return (
     name

@@ -7,6 +7,7 @@ import type { PublicFeedbackSearchParams } from "@/validators/public-feedback";
 
 export const PUBLIC_FEEDBACK_PAGE_SIZE = 4;
 
+/** 构造参数化的标题与描述搜索条件，按普通子串匹配，避免把输入解释成通配符。 */
 function searchCondition(search: string) {
   if (!search) return undefined;
 
@@ -16,6 +17,7 @@ function searchCondition(search: string) {
   );
 }
 
+/** 查询公开项目的可见反馈，合并筛选、投票统计与稳定排序，并将页码限制在实际范围内。 */
 export const getPublicFeedbackBoard = cache(
   async (slug: string, params: PublicFeedbackSearchParams) => {
     const [project] = await db
@@ -93,6 +95,7 @@ export const getPublicFeedbackBoard = cache(
   },
 );
 
+/** 联表校验 Slug 与反馈 ID 的归属及双方公开状态，返回详情与票数，避免跨项目读取。 */
 export const getPublicFeedbackDetail = cache(
   async (slug: string, feedbackId: string) => {
     const voteCount = count(votes.feedbackId);
@@ -134,6 +137,7 @@ export const getPublicFeedbackDetail = cache(
   },
 );
 
+/** 在调用方确认反馈可访问后读取当前用户的投票状态；匿名用户直接返回未投票。 */
 export async function getPublicFeedbackVoteState(
   feedbackId: string,
   userId: string | undefined,

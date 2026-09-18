@@ -32,6 +32,7 @@ type DashboardShellProps = {
   user: { email: string; name: string };
 };
 
+// 为受保护的控制台页面提供响应式导航、当前项目/用户上下文和移动端菜单状态管理。
 export function DashboardShell({ children, project, user }: DashboardShellProps) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);

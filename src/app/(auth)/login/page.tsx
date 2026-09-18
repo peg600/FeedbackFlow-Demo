@@ -13,6 +13,7 @@ type LoginPageProps = {
   searchParams?: Promise<{ returnTo?: string | string[] }>;
 };
 
+// 读取并安全规范化 returnTo 参数，再交给登录表单用于成功后的站内跳转。
 export default async function LoginPage({ searchParams }: LoginPageProps = {}) {
   const params = searchParams ? await searchParams : undefined;
 

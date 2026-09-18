@@ -23,6 +23,7 @@ type FeedbackDetailPageProps = {
   params: Promise<{ id: string; slug: string }>;
 };
 
+// 将近期时间格式化为相对时间，较早记录回退为稳定的本地化日期。
 function formatRelativeTime(date: Date) {
   const elapsedSeconds = Math.max(
     0,
@@ -46,6 +47,7 @@ function formatRelativeTime(date: Date) {
   }).format(date);
 }
 
+/** 将反馈状态转换为面向访客的路线图说明，不额外推断排期或交付日期。 */
 function roadmapDescription(status: FeedbackStatus) {
   switch (status) {
     case "completed":
@@ -59,6 +61,7 @@ function roadmapDescription(status: FeedbackStatus) {
   }
 }
 
+// 仅在反馈属于指定公开项目时生成动态标题和描述。
 export async function generateMetadata({
   params,
 }: FeedbackDetailPageProps): Promise<Metadata> {
@@ -81,6 +84,7 @@ export async function generateMetadata({
   };
 }
 
+// 绑定 Slug 与反馈 ID 查询公开详情，并结合可选会话初始化当前用户的投票状态。
 export default async function FeedbackDetailPage({
   params,
 }: FeedbackDetailPageProps) {

@@ -16,6 +16,7 @@ export const auth = betterAuth({
   }),
   logger: {
     level: "error",
+    // 仅记录认证组件和日志级别，避免输出库传入的请求信息或原始异常。
     log(level) {
       console.error(
         JSON.stringify({

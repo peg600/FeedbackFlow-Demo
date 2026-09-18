@@ -9,6 +9,7 @@ type AuthBaseURLInput = {
   vercelBranchURL?: string;
 };
 
+/** 将配置中的域名或完整 URL 解析为主机名和端口，忽略缺失或无法解析的值。 */
 function getHost(value: string | undefined) {
   if (!value) {
     return undefined;
@@ -22,6 +23,7 @@ function getHost(value: string | undefined) {
   }
 }
 
+/** 非 Vercel Preview/Production 环境使用固定认证地址；这两种部署模式仅允许配置中的精确 HTTPS 主机。 */
 export function createAuthBaseURL({
   configuredURL,
   vercelEnvironment = process.env.VERCEL_ENV,
