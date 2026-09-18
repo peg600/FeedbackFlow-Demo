@@ -9,6 +9,7 @@ import { revalidatePublicProjectPages } from "@/server/cache/project-pages";
 import { db } from "@/server/db";
 import { feedback, projects, votes } from "@/server/db/schema";
 import { actionClient } from "@/server/safe-action";
+import { enforceWriteRateLimit } from "@/server/rate-limit";
 import { executeFeedbackVote } from "@/server/services/feedback-voting";
 import { publicFeedbackRouteSchema } from "@/validators/public-feedback";
 
@@ -64,6 +65,7 @@ export const voteFeedbackAction = actionClient
       },
       getSessionUser: async () => {
         const session = await auth.api.getSession({ headers: await headers() });
+        if (session) await enforceWriteRateLimit(session.user.id, "feedback.vote");
         return session ? { id: session.user.id } : null;
       },
       // 查询用户与反馈这一对记录，用于判断当前状态和确认并发插入冲突后的结果。

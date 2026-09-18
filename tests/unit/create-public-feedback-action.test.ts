@@ -17,6 +17,7 @@ vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 vi.mock("@/server/auth", () => ({ auth: {} }));
 vi.mock("@/server/db", () => ({ db: {} }));
+vi.mock("@/server/rate-limit", () => ({ enforceWriteRateLimit: vi.fn() }));
 vi.mock("@/server/db/schema", () => ({ feedback: {}, projects: {} }));
 vi.mock("@/server/services/feedback-creation", () => ({
   executePublicFeedbackCreation: mocks.executePublicFeedbackCreation,

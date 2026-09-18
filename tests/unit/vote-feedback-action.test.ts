@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("@/server/auth", () => ({ auth: {} }));
 vi.mock("@/server/db", () => ({ db: {} }));
+vi.mock("@/server/rate-limit", () => ({ enforceWriteRateLimit: vi.fn() }));
 vi.mock("@/server/db/schema", () => ({ feedback: {}, projects: {}, votes: {} }));
 vi.mock("@/server/services/feedback-voting", () => ({
   executeFeedbackVote: mocks.executeFeedbackVote,

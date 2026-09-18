@@ -21,6 +21,9 @@ export const ERROR_CATALOG = {
   PUBLIC_BOARD_UNAVAILABLE: {
     message: "This public board is unavailable.",
   },
+  RATE_LIMITED: {
+    message: "Too many requests. Please wait a minute before trying again.",
+  },
   UNAUTHENTICATED: {
     message: "Your session has expired. Sign in and try again.",
   },

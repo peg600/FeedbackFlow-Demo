@@ -214,6 +214,8 @@ EMAIL_FROM=
 
 测试必须使用独立配置和数据。禁止让自动化测试连接 Production 数据库或 Stripe Live 环境。
 
+- next-safe-action（业务 Action 的校验与结果格式）+ pg-error-enum（PostgreSQL SQLSTATE 枚举）
+
 ## 11. 常用质量门禁
 
 以 `package.json` 中实际脚本为准；建立项目骨架时至少提供并保持以下命令可用：

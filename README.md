@@ -14,6 +14,43 @@ Billing, Checkout, Portal, and Stripe webhooks remain placeholders. Pricing is
 a preview, not an offer to charge a card. Password recovery and feedback
 hide/restore controls are outside this implementation.
 
+## Local setup and verification
+
+Use Node.js 24 and the pnpm version pinned in `package.json`.
+
+```bash
+pnpm install
+pnpm db:migrate
+pnpm dev
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+```
+
+Migration commands change the explicitly configured database: inspect the target
+first. Do not migrate Production without approval. The new shared limiter needs
+`drizzle/0001_unknown_winter_soldier.sql` before login/signup or feedback writes
+are used. Build requires the existing Google-hosted Inter font to be reachable
+and valid server environment variables; a successful build alone does not prove
+that a deployment has been migrated.
+
+## Shared abuse limits
+
+Feedback creation allows 5 attempts/minute per authenticated user, and voting
+30 attempts/minute per user. Both use a database-time fixed window with an atomic
+UPSERT, outside the business transaction. Rejected business attempts still consume
+capacity. Authentication uses Better Auth's native HTTP 429 response with shared
+Postgres storage: email sign-in 10/minute, signup 5/minute, and built-in sensitive
+endpoint rules are retained. Random catch-all paths share bounded key classes.
+
+Only HMAC-derived keys are stored, and expired rows are cleaned in bounded batches.
+On Vercel, the limiter uses the platform's `x-vercel-forwarded-for` header; see
+[Vercel request headers](https://vercel.com/docs/headers/request-headers#x-vercel-forwarded-for).
+Outside Vercel, forwarded headers are not trusted and authentication uses a shared
+fallback bucket; configure a verified proxy policy before self-hosting publicly.
+These application controls complement, not replace, platform DDoS protection.
+
 ## Authentication setup
 
 FeedbackFlow uses Better Auth email/password authentication with database-backed
@@ -60,8 +97,10 @@ transaction-capable Neon connection for atomic user, credential, and session
 writes. Production
 deployments must use an HTTPS `BETTER_AUTH_URL`. Email ownership is not verified
 in the core demo, so `emailVerified` must not be treated as proof of identity.
-Before public deployment, add shared rate limiting at the platform or WAF layer;
-Better Auth's in-memory limiter is not shared across serverless instances.
+Authentication and feedback writes use PostgreSQL-backed shared rate limiting.
+Apply all Drizzle migrations before running this version; an unavailable rate-limit
+store does not silently permit writes. Platform/WAF protection is still useful
+against volumetric abuse; application limits are not DDoS protection.
 
 ## Action results and errors
 
