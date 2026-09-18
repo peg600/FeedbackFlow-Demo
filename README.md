@@ -35,6 +35,88 @@ are used. Build requires the existing Google-hosted Inter font to be reachable
 and valid server environment variables; a successful build alone does not prove
 that a deployment has been migrated.
 
+## Isolated Neon integration and browser tests
+
+Use a dedicated **test branch**, separate from develop, preview, and production.
+Creating a branch/compute consumes Neon quota and requires project-owner approval.
+Never run tests on a production snapshot branch unless it is the explicitly
+approved, isolated test target; tests preserve copied records and clean only
+their own uniquely identified fixtures.
+
+Put these server-only values in ignored `.env.test.local`:
+
+```dotenv
+TEST_DATABASE_URL=
+TEST_DATABASE_URL_UNPOOLED=
+TEST_DATABASE_EXPECTED_HOST=
+TEST_DATABASE_GUARD_TOKEN=
+TEST_BETTER_AUTH_SECRET=
+```
+
+Verify the test branch and its endpoint in Neon first. `TEST_DATABASE_EXPECTED_HOST`
+is the exact direct endpoint hostname, not a connection string or branch name.
+Pooled/direct URLs must select the same database. The guard rejects known local
+application endpoints from development/production env files; it never loads those
+files as a fallback test connection.
+
+Before the first test migration, an operator must initialize the following marker
+**only on the confirmed test branch**, using a cryptographically random token of
+at least 32 characters. Store the token in `TEST_DATABASE_GUARD_TOKEN`, and store
+only its SHA-256 hex digest in the table below. Do not commit or print the token.
+Do not run this SQL on any application branch. This extra marker is intentionally
+not part of application migrations: a copied production URL must not become an
+approved test target merely by running a migration.
+
+```sql
+CREATE TABLE public.__feedbackflow_test_guard (
+  id integer PRIMARY KEY CHECK (id = 1),
+  token_hash text NOT NULL CHECK (token_hash ~ '^[a-f0-9]{64}$')
+);
+INSERT INTO public.__feedbackflow_test_guard (id, token_hash)
+VALUES (1, '<SHA-256 hex digest of the test-only token>');
+```
+
+```bash
+pnpm db:test:migrate
+pnpm test:integration
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
+
+All three commands require the endpoint allowlist and matching database marker
+before test writes/migrations. They fail instead of falling back when configuration
+is missing. Playwright uses port 3100, one worker, its own server, and an independent
+auth secret of at least 32 characters; it never reuses your running dev server.
+The suites cover uniqueness, concurrent quota/votes, shared rate limits, repeated
+seed execution, the core browser flow, a replayed unauthorized Server Action,
+and responsive navigation/layout. Unit tests require no database.
+
+## Idempotent public demo seed
+
+First apply the reviewed migrations to the intended environment. Prepare a
+separate ignored `.env.seed.local` containing `DATABASE_URL_UNPOOLED`,
+`BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, `DEMO_USER_EMAIL`, `DEMO_USER_PASSWORD`,
+and `DEMO_SEED_CONFIRM=true`. Use a direct connection, a strong unique password,
+and explicitly verify the target before running:
+
+```bash
+node --env-file=.env.seed.local scripts/run-seed-demo.mjs
+```
+
+Alternatively, export these values securely and run `pnpm seed:demo`. The seed
+does not implicitly load development or production env files. It creates a
+Better Auth credential account and a fixed `/p/demo` project, with feedback in
+all four statuses. Existing credentials must match; conflicting Slug/IDs fail
+safely. Repeat execution only fills missing records, preserves edits, and respects
+the 50-item quota under the same transaction lock as regular feedback submission.
+If the seeded project was renamed or made private, resolve that deliberately;
+the script does not reset user changes. No secret is printed. Public browsing
+requires no demo password; do not publish the owner's credential.
+
+Creating accounts, seeding Production, or deploying to Production requires
+separate confirmation. The migration and seed are not automatically run by
+application requests or build commands.
+
 ## Shared abuse limits
 
 Feedback creation allows 5 attempts/minute per authenticated user, and voting

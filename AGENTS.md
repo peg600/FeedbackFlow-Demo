@@ -214,7 +214,9 @@ EMAIL_FROM=
 
 测试必须使用独立配置和数据。禁止让自动化测试连接 Production 数据库或 Stripe Live 环境。
 
-- next-safe-action（业务 Action 的校验与结果格式）+ pg-error-enum（PostgreSQL SQLSTATE 枚举）
+- 数据库集成测试与 E2E 使用 Neon 专用 test 分支，不复用 develop/preview/production；运行前校验测试连接与允许的 endpoint，pooled/direct 指向同一测试分支。
+- 测试数据使用唯一运行标识并精确清理自身记录，不清库、不使用 TRUNCATE。幂等 Demo Seed 仅补齐约定演示数据，不覆盖用户修改。
+- 认证和业务写操作使用 PostgreSQL 共享原子限流；业务限流在 Session 验证后、业务事务外消费额度，数据库不可用时不放行。
 
 ## 11. 常用质量门禁
 
