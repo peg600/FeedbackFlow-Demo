@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Paul Li | Full-Stack Developer", des
 
 const skills = ["React", "TypeScript", "Node.js", "Next.js", "PostgreSQL", "Redis", "AWS", "Docker", "GraphQL", "Tailwind CSS", "Git", "Figma"];
 const projects = [
-  { name: "FeedbackFlow", description: "User feedback collection and roadmap tool built to help product teams organize feature requests.", href: "/" },
+  { name: "FeedbackFlow", description: "User feedback collection and roadmap tool built to help product teams organize feature requests.", href: "/p/demo" },
   { name: "DevMetrics", description: "Developer productivity analytics dashboard displaying pull request velocity and cycle times.", href: "https://github.com/peg600" },
   { name: "CloudSync", description: "Real-time file synchronization service built with scalable WebSockets and secure storage.", href: "https://github.com/peg600" },
 ];

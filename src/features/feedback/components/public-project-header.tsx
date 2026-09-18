@@ -36,42 +36,78 @@ export function PublicProjectHeader({
 
   return (
     <header className="border-b border-border bg-background">
-      <div className="mx-auto flex min-h-[68px] w-full max-w-content items-center justify-between gap-4 px-5 py-3 md:min-h-[82px] md:px-8 xl:px-12">
-        <Link className="flex min-w-0 items-center gap-3" href={boardHref}>
-          <span
-            aria-hidden="true"
-            className="flex size-10 shrink-0 items-center justify-center rounded-control bg-surface-brand text-sm font-bold text-primary"
-          >
-            {getInitials(project.name)}
-          </span>
-          <span className="min-w-0">
-            <span className="block truncate text-[15px] font-bold text-foreground">
-              {project.name}
-            </span>
-            <span className="hidden truncate text-[11px] text-muted-foreground md:block">
-              {project.description || "Help us build a better product"}
-            </span>
-          </span>
-        </Link>
-
-        <nav aria-label="Public project navigation" className="flex shrink-0 items-center gap-3 md:gap-8">
-          <div className="hidden items-center gap-6 text-[13px] font-semibold md:flex">
-            <Link aria-current={active === "feedback" ? "page" : undefined} className={active === "feedback" ? "text-primary" : "text-text hover:text-foreground"} href={boardHref}>
-              Feedback
-            </Link>
-            <Link aria-current={active === "roadmap" ? "page" : undefined} className={active === "roadmap" ? "text-primary" : "text-text hover:text-foreground"} href={`${boardHref}/roadmap`}>
-              Roadmap
-            </Link>
-          </div>
-          {showSubmitFeedback ? (
-            <Link
-              className={cn(buttonVariants(), "px-4 text-[13px]")}
-              href={`${boardHref}#submit-feedback`}
+      <div className="mx-auto w-full max-w-content px-5 md:px-8 xl:px-12">
+        <div className="flex min-h-[68px] items-center justify-between gap-4 py-3 md:min-h-[82px]">
+          <Link className="flex min-w-0 items-center gap-3" href={boardHref}>
+            <span
+              aria-hidden="true"
+              className="flex size-10 shrink-0 items-center justify-center rounded-control bg-surface-brand text-sm font-bold text-primary"
             >
-              <span className="md:hidden">Submit</span>
-              <span className="hidden md:inline">Submit feedback</span>
-            </Link>
-          ) : null}
+              {getInitials(project.name)}
+            </span>
+            <span className="min-w-0">
+              <span className="block truncate text-[15px] font-bold text-foreground">
+                {project.name}
+              </span>
+              <span className="hidden truncate text-[11px] text-muted-foreground md:block">
+                {project.description || "Help us build a better product"}
+              </span>
+            </span>
+          </Link>
+
+          <div className="flex shrink-0 items-center gap-3 md:gap-8">
+            <nav
+              aria-label="Public project navigation"
+              className="hidden items-center gap-6 text-[13px] font-semibold md:flex"
+            >
+              <Link aria-current={active === "feedback" ? "page" : undefined} className={active === "feedback" ? "text-primary" : "text-text hover:text-foreground"} href={boardHref}>
+                Feedback
+              </Link>
+              <Link aria-current={active === "roadmap" ? "page" : undefined} className={active === "roadmap" ? "text-primary" : "text-text hover:text-foreground"} href={`${boardHref}/roadmap`}>
+                Roadmap
+              </Link>
+            </nav>
+
+            {showSubmitFeedback ? (
+              <Link
+                className={cn(buttonVariants(), "px-4 text-[13px]")}
+                href={`${boardHref}#submit-feedback`}
+              >
+                <span className="md:hidden">Submit</span>
+                <span className="hidden md:inline">Submit feedback</span>
+              </Link>
+            ) : null}
+          </div>
+        </div>
+
+        <nav
+          aria-label="Public project mobile navigation"
+          className="grid grid-cols-2 border-t border-border text-center text-[13px] font-semibold md:hidden"
+        >
+          <Link
+            aria-current={active === "feedback" ? "page" : undefined}
+            className={cn(
+              "border-b-2 px-3 py-3",
+              active === "feedback"
+                ? "border-primary text-primary"
+                : "border-transparent text-text",
+            )}
+            href={boardHref}
+          >
+            Feedback
+          </Link>
+          <Link
+            aria-current={active === "roadmap" ? "page" : undefined}
+            className={cn(
+              "border-b-2 px-3 py-3",
+              active === "roadmap"
+                ? "border-primary text-primary"
+                : "border-transparent text-text",
+            )}
+            href={`${boardHref}/roadmap`}
+          >
+            Roadmap
+          </Link>
         </nav>
       </div>
     </header>

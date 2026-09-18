@@ -20,7 +20,22 @@ describe("HomePage", () => {
     );
     expect(
       screen.getByRole("link", { name: "View live demo" }),
-    ).toHaveAttribute("href", "/login");
+    ).toHaveAttribute("href", "/p/demo");
+    expect(
+      screen.getByRole("heading", {
+        name: "Everything needed for the feedback loop",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("heading", {
+        name: "Start focused, grow when you need to",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getAllByRole("link", { name: "About the maker" }),
+    ).toSatisfy((links: HTMLElement[]) =>
+      links.every((link) => link.getAttribute("href") === "/profile"),
+    );
     expect(
       screen.queryByText("To get started, edit the page.tsx file."),
     ).not.toBeInTheDocument();

@@ -11,5 +11,9 @@ describe("ProfilePage", () => {
     expect(screen.getByRole("heading", { name: "Tech Stack" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Featured Projects" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "GitHub" })).toHaveAttribute("rel", "noreferrer");
+    expect(screen.getByRole("link", { name: /FeedbackFlow/ })).toHaveAttribute(
+      "href",
+      "/p/demo",
+    );
   });
 });

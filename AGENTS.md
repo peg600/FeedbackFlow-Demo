@@ -67,6 +67,7 @@ FeedbackFlow 是一个用于作品展示的产品反馈与公开路线图 SaaS�
 | 路由 | 责任 |
 | --- | --- |
 | `/` | Landing、功能摘要、价格、CTA、SEO |
+| `/profile` | 静态作者介绍与作品展示；不提供编辑功能 |
 | `/login`、`/register` | 邮箱密码身份流程及错误状态 |
 | `/onboarding` | 首次登录创建每用户唯一项目 |
 | `/dashboard` | Owner 统计、筛选、分页和反馈管理 |
@@ -79,6 +80,8 @@ FeedbackFlow 是一个用于作品展示的产品反馈与公开路线图 SaaS�
 | `/api/stripe/webhook` | Stripe 签名验证与幂等处理 |
 
 可选：仅在已有可验证发信域名时实现 `/forgot-password` 和 `/reset-password`。无自有域名时，不强制邮箱验证，也不让招聘方依赖邮件流程。
+
+当前用户确认范围：Profile 使用静态内容；不新增反馈隐藏/恢复操作。Billing 和 Stripe 保持占位，不实现支付链路；路线图插件导致的 `startTime/reportAllChanges` 报错不属于应用修复范围。
 
 明确不做：平台管理员、评论、Logo/文件上传、OAuth、独立价格页、复杂多租户/RBAC、Redis、队列、微服务、实时通信、国际化、拖拽路线图、真实 Stripe 收款。
 

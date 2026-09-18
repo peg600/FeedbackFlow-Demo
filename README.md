@@ -2,6 +2,17 @@
 
 A full-stack SaaS application built with Next.js.
 
+## Current product scope
+
+Landing includes Features, Pricing, and links to the public demo `/p/demo`.
+`/profile` is a static maker profile, not an editable account page. Public
+roadmaps show up to four requests per status plus the total; View all opens the
+existing filtered, paginated feedback board.
+
+Billing, Checkout, Portal, and Stripe webhooks remain placeholders. Pricing is
+a preview, not an offer to charge a card. Password recovery and feedback
+hide/restore controls are outside this implementation.
+
 ## Authentication setup
 
 FeedbackFlow uses Better Auth email/password authentication with database-backed
