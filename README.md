@@ -2,6 +2,21 @@
 
 A full-stack SaaS application built with Next.js.
 
+## Architecture decision records
+
+The [ADR index](docs/adr/README.md) records the context, alternatives, choices,
+tradeoffs, and consequences behind technical decisions. Read the relevant records
+before changing an established approach. Each new or revised technical decision
+directly affecting project code must be documented alongside the change using the
+[ADR template](docs/adr/template.md), with the index kept up to date.
+
+Accepted decisions remain part of the history. Replace them with a new, linked
+record when the approach changes instead of overwriting the original rationale.
+See [AGENTS.md](AGENTS.md#21-技术决策记录adr) for the required workflow.
+These records cover application architecture, data, security, interfaces, and
+test architecture; personal development tools and documentation administration
+are outside their scope.
+
 ## Current product scope
 
 Landing includes Features, Pricing, and links to the public demo `/p/demo`.
@@ -221,7 +236,8 @@ not rendered directly. The Stripe webhook remains an unimplemented HTTP 501
 endpoint, not a Server Action. Read-only Server Components continue to use
 Next.js error and not-found boundaries.
 
-`design/` and `docs/` contain local working material and are excluded from Git.
+`design/` and most of `docs/` contain local working material excluded from Git.
+Markdown records under `docs/adr/` are included in version control.
 
 Client forms share `getActionFieldError` and `getActionErrorMessage` from
 `src/lib/action-errors.ts`; transport failures use `ACTION_NETWORK_ERROR`.

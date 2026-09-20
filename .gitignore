@@ -51,4 +51,7 @@ plan.pdf
 
 # Local design assets and documentation
 /design/
-/docs/
+/docs/*
+!/docs/adr/
+/docs/adr/*
+!/docs/adr/*.md
