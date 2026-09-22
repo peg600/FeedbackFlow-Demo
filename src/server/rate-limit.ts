@@ -8,6 +8,10 @@ export const rateLimitStore = createRateLimitStore(db, env.BETTER_AUTH_SECRET);
 const actionRules = {
   "feedback.create": { window: 60, max: 5 },
   "feedback.vote": { window: 60, max: 30 },
+  "billing.checkout": { window: 60, max: 5 },
+  "billing.portal": { window: 60, max: 5 },
+  "billing.status": { window: 60, max: 30 },
+  "billing.reconcile": { window: 60, max: 3 },
 } as const;
 
 /** 按已验证的 Session 用户限制写入频率；独立于业务事务，失败请求不会回滚已消费的额度。 */

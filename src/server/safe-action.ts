@@ -23,6 +23,10 @@ const operationFailureMessages: Record<ActionOperation, string> = {
   "feedback.vote": "Unable to update your vote. Try again.",
   "project.create": "Unable to create your workspace. Try again.",
   "project.update": "Settings could not be saved. Please try again.",
+  "billing.checkout": "Unable to start checkout. Refresh billing status before trying again.",
+  "billing.portal": "Unable to open billing management. Please try again.",
+  "billing.status": "Unable to read billing status. Please try again.",
+  "billing.reconcile": "Unable to refresh billing status. Please try again shortly.",
 };
 
 /** 输出已知业务错误或数据库映射结果；未知异常生成安全提示与关联标识，并记录脱敏日志。 */

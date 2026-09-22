@@ -6,14 +6,14 @@ FeedbackFlow 是一个用于作品展示的产品反馈与公开路线图 SaaS�
 
 核心用户闭环：
 
-`注册/登录 -> 创建唯一项目 -> 获得公开反馈板 -> 提交反馈和投票 -> Owner 管理状态 -> 公开路线图更新 -> Stripe 测试 Checkout -> Webhook 同步本地订阅状态`
+`注册/登录 -> 创建唯一项目 -> 获得公开反馈板 -> 提交反馈和投票 -> Owner 管理状态 -> 公开路线图更新 -> Paddle Sandbox Checkout -> Webhook 同步本地订阅状态`
 
-`plan.pdf` 是产品范围和六周实施顺序的主要依据。本文件将其转化为代码代理的执行约束；两者冲突时，先指出冲突并请求用户确认，不擅自扩大范围。
+`plan.pdf` 是原始产品范围和六周实施顺序依据。2026-09-21 用户明确将支付提供方从 Stripe 改为 Paddle，并授权实现完整 Sandbox Billing；原计划中 Stripe 和 Billing 占位内容由本文件及 ADR 0010—0012 替代。其他范围冲突先指出并请求确认，不擅自扩大范围。
 
 ## 2. 当前状态与执行原则
 
-- Day 1 的可部署 Next.js 工程骨架已完成；下一阶段按计划进入数据库与领域模型。
-- 按“可部署骨架 -> 数据库 -> 身份与项目 -> 反馈 -> 投票 -> Stripe -> 生产与测试”的依赖顺序推进。
+- 身份、项目、反馈、投票与路线图已实现；当前阶段实现 Paddle Sandbox Billing，云端配置和端到端验收须单独记录。
+- 按“可部署骨架 -> 数据库 -> 身份与项目 -> 反馈 -> 投票 -> Paddle -> 生产与测试”的依赖顺序推进。
 - 每次只完成当前需求所需的最小纵向切片，不提前实现后续阶段的大功能。
 - 默认使用 Server Component；仅把需要浏览器状态、事件或 Web API 的最小交互岛标记为 Client Component。
 - 不为追求形式上的通用性增加无需求支撑的抽象、依赖或基础设施。
@@ -40,7 +40,7 @@ FeedbackFlow 是一个用于作品展示的产品反馈与公开路线图 SaaS�
 - next-safe-action（业务 Action 的校验与结果格式）+ pg-error-enum（PostgreSQL SQLSTATE 枚举）
 - Neon PostgreSQL + Drizzle ORM/Drizzle Kit
 - Better Auth，邮箱密码登录；核心版本不做 OAuth
-- Stripe Sandbox/Test：Checkout、Customer Portal、Webhook
+- Paddle Sandbox：Paddle.js Checkout、Customer Portal、Webhook；包括部署在 Vercel Production 的 Demo，均不得使用 Live
 - Vitest + React Testing Library + Playwright
 - Vercel Hobby：Preview 与 Production
 - Resend 仅为可选扩展，不得阻塞公开 Demo
@@ -89,13 +89,14 @@ FeedbackFlow 是一个用于作品展示的产品反馈与公开路线图 SaaS�
 | `/p/[slug]/feedback/[id]` | 反馈详情、动态 Metadata、投票 |
 | `/p/[slug]/roadmap` | Planned/In Progress/Completed 路线图 |
 | `/api/auth/[...all]` | Better Auth Handler |
-| `/api/stripe/webhook` | Stripe 签名验证与幂等处理 |
+| `/api/paddle/webhook` | Paddle 原始 Body 验签、事务幂等与订阅同步 |
+| `/api/cron/billing-reconcile` | Bearer Secret 保护的每日账务核对 |
 
 可选：仅在已有可验证发信域名时实现 `/forgot-password` 和 `/reset-password`。无自有域名时，不强制邮箱验证，也不让招聘方依赖邮件流程。
 
-当前用户确认范围：Profile 使用静态内容；不新增反馈隐藏/恢复操作。Billing 和 Stripe 保持占位，不实现支付链路；路线图插件导致的 `startTime/reportAllChanges` 报错不属于应用修复范围。
+当前用户确认范围：Profile 使用静态内容；不新增反馈隐藏/恢复操作。Billing 使用 Paddle Sandbox 实现结账、客户门户、订阅同步及恢复，成功回跳复用 `/dashboard/billing`；路线图插件导致的 `startTime/reportAllChanges` 报错不属于应用修复范围。
 
-明确不做：平台管理员、评论、Logo/文件上传、OAuth、独立价格页、复杂多租户/RBAC、Redis、队列、微服务、实时通信、国际化、拖拽路线图、真实 Stripe 收款。
+明确不做：平台管理员、评论、Logo/文件上传、OAuth、独立价格页、复杂多租户/RBAC、Redis、队列、微服务、实时通信、国际化、拖拽路线图、任何真实收款。
 
 ## 5. 推荐代码结构
 
@@ -116,7 +117,8 @@ src/
       feedback/[id]/page.tsx
     api/
       auth/[...all]/route.ts
-      stripe/webhook/route.ts
+      paddle/webhook/route.ts
+      cron/billing-reconcile/route.ts
   features/
     auth/
     projects/
@@ -130,7 +132,7 @@ src/
     services/
   lib/
     env.ts
-    stripe.ts
+    paddle-config.ts
   validators/
   components/ui/
 drizzle/
@@ -145,10 +147,12 @@ tests/
 - `projects`：`owner_id` 唯一，`slug` 唯一；一个用户核心版本只能拥有一个项目。
 - `feedback`：关联 project 和 author；包含 title、description、status、`is_public`；为公开查询和排序建立必要索引。
 - `votes`：`(user_id, feedback_id)` 复合唯一；并发重复投票由数据库约束兜底。
-- `subscriptions`：`user_id`、Stripe customer ID、Stripe subscription ID 分别保持唯一。
-- `stripe_events`：`event_id` 唯一，用于 Webhook 幂等。
+- `billing_customers`：用户 ID 主键、Paddle customer ID 唯一、随机 provisioning ID 唯一。不能根据未验证邮箱自动关联已有 Customer；有账务记录时禁止直接删除用户。
+- `billing_checkouts`：每用户一个当前结账意图，attempt ID 和非空 transaction ID 唯一；先持久化意图再调用 Paddle，结果未知时禁止盲目重复 POST。
+- `subscriptions`：Paddle subscription ID 主键、初始 transaction ID 唯一，customer ID 外键允许多条历史订阅。旧订阅取消只更新自身，不覆盖新订阅。
+- `paddle_events`：`event_id` 主键；事件账本和订阅写入在同一事务中提交，不存储完整支付 Payload。
 - 路线图完全由反馈状态派生，只展示 Planned、In Progress、Completed。
-- Free 套餐最多 50 条反馈，限制必须在服务端执行；Pro 由有效的本地订阅状态解锁。
+- Free 套餐最多 50 条反馈；在原项目 advisory lock 事务内读取 Owner 本地权益。Pro 需要 active、配置的 Pro 价格、未来的计费周期结束时间，且取消/暂停尚未生效。无试用和欠费宽限；降级不删除已有数据。
 - Schema 变更必须通过 Drizzle migration，禁止在普通请求中自动执行迁移。
 - Seed 必须可重复执行；生产 Seed 只能补齐演示账号、项目和示例数据，不清空已有数据。
 
@@ -158,10 +162,12 @@ tests/
 - 所有写入先用 Zod 验证输入；不能依靠表单校验、按钮隐藏或客户端传入的 owner/user ID。
 - 公开查询不返回隐藏项目或隐藏反馈；按 Slug 和反馈 ID 查询时仍要验证二者归属关系。
 - 项目创建/更新校验 Slug 唯一；冲突应返回可展示的领域错误。
-- Stripe Checkout/Portal 必须验证当前用户与 Customer 的归属。
-- Webhook 使用原始请求 Body 验签；仅由签名通过的 Webhook 更新订阅状态。
+- Paddle Checkout/Portal 每次自读 Session 并验证当前用户与 Customer 的本地归属。客户端不提供用户、Customer 或价格；Paddle.js 只打开服务端持久化的 transaction ID。
+- Webhook 使用原始请求 Body 验签；订阅仅由已验签事件或服务端认证 Paddle API 对账更新。签名不是 customData 中用户归属的证明。
 - Checkout Success 页面只显示结果，绝不直接把用户改为 Pro。
-- Webhook 至少处理 `checkout.session.completed`、`customer.subscription.updated`、`customer.subscription.deleted`；未知事件安全忽略并记录。
+- Webhook 处理 `transaction.completed` 及 subscription.created/updated/activated/canceled/paused/resumed/past_due/trialing；未知事件安全记录忽略。Customer 在服务端创建时绑定，通过 API 恢复，不依赖邮箱匹配的 customer.created 事件。
+- 首次订阅必须关联本地已知交易，并匹配 Customer；后续事件按订阅 ID 更新。资源 updatedAt 为主版本、事件 occurredAt 同版本定序；API 对账不能用本地时间覆盖提供方版本。
+- Billing 回跳短时轮询本地状态，限流主动对账补偿丢失事件。Vercel 每日 Cron 使用 CRON_SECRET，最多核对 50 个客户，按上次尝试时间轮转；Preview 和本地无自动 Cron。
 - Webhook 的去重记录和订阅更新应在事务中完成；重复事件不能产生重复副作用。
 - 日志采用结构化、可定位的上下文信息，但不输出密码、Cookie、Token、Secret、完整数据库连接串或支付信息。
 
@@ -175,7 +181,7 @@ tests/
 - 数据库异常在事务边界之外统一转换，保留事务回滚语义；已有唯一约束、配额锁、所有权校验和 `onConflictDoNothing` 处理不得因统一错误而被移除。
 - 前端通过 `src/lib/action-errors.ts` 的 `getActionFieldError`、`getActionErrorMessage` 提取提示；网络失败使用 `ACTION_NETWORK_ERROR`，业务分支判断稳定的 `code`。字段错误需关联输入控件，编辑其他字段不应清除仍然有效的字段错误。
 - 当前只统一错误结构与提取方式，具体展示仍由表单或操作组件负责，未实现全局自动 Toast 或自动接入所有表单的公共 Hook。新增表单仍需显式接入校验结果、业务错误和网络失败展示。
-- Better Auth 保留原生 HTTP 协议，通过 `src/features/auth/auth-error.ts` 映射前端文案；读取页面沿用 Next.js Error/Not Found 边界。Stripe Webhook 当前仍是 HTTP 501 占位，返回 `{ error: AppServerError }`，不描述为已完成支付集成。
+- Better Auth 保留原生 HTTP 协议，通过 `src/features/auth/auth-error.ts` 映射前端文案；读取页面沿用 Next.js Error/Not Found 边界。Paddle Webhook 失败返回 `{ error: AppServerError }` 和非 2xx，不泄露原始异常；代码通过不代表外部 Sandbox 联调完成。
 - 新增错误时同步维护目录、必要的数据库映射及相关回归测试。详细流程、示例和扩展步骤见本地 `docs/backend-handbook/14-error-handling.md`；除 `docs/adr/` 下的 Markdown 外，`docs/` 暂不纳入 Git，仓库约定以本节为准。
 
 ## 8. 环境变量与环境隔离
@@ -187,9 +193,11 @@ DATABASE_URL=
 DATABASE_URL_UNPOOLED=
 BETTER_AUTH_SECRET=
 BETTER_AUTH_URL=http://localhost:3000
-STRIPE_SECRET_KEY=
-STRIPE_WEBHOOK_SECRET=
-STRIPE_PRICE_ID_PRO=
+PADDLE_API_KEY=
+PADDLE_NOTIFICATION_WEBHOOK_SECRET=
+PADDLE_PRICE_ID_PRO=
+NEXT_PUBLIC_PADDLE_CLIENT_TOKEN=
+CRON_SECRET=
 RESEND_API_KEY=
 EMAIL_FROM=
 ```
@@ -199,7 +207,8 @@ EMAIL_FROM=
 - Development/Preview 可使用 dev 数据库；Production 必须使用独立 prod 数据库。
 - Better Auth Secret 按本地、Preview、Production 分离，至少 32 字符；Production Secret 建立后保持稳定。
 - `BETTER_AUTH_URL` 必须对应当前环境；修改 Vercel 变量后需重新部署。
-- Stripe 始终使用测试 Key。CLI Webhook Secret 与线上 Endpoint Secret 不可混用。
+- Paddle 始终使用 `pdl_sdbx_apikey_` API Key 和 `test_` Client Token，SDK 环境固定 sandbox。Webhook Secret 属于特定 Notification Destination，不同部署目标不可混用。
+- `src/lib/paddle-config.ts` 用 Zod 延迟校验支付配置；缺失时公开浏览与 Free 保持可用，所有支付入口关闭。`NEXT_PUBLIC_PADDLE_CLIENT_TOKEN` 是公开客户端标识，不是服务端 Secret。CRON_SECRET 至少 32 字符。
 - 默认不创建 `NEXT_PUBLIC_` Secret，也不在 `next.config.ts` 的 `env` 中硬编码 Secret。
 - Agent 不得要求用户在对话、Issue、README、日志或截图中粘贴真实 Secret。排错时只检查是否存在、前缀、长度和环境归属。
 
@@ -210,7 +219,7 @@ EMAIL_FROM=
 - 投票使用 Optimistic UI，但必须支持 pending、防重复交互、失败回滚，并接受服务端最终计数。
 - 每条用户路径都提供 Loading、Empty、Error 和 Not Found 状态；错误消息可行动且不泄露内部信息。
 - Landing、公开反馈板和路线图应响应式、可直接访问，并具备合理 Metadata。
-- 公开站点和 Billing 明确标识 Stripe 为 Test mode；主要浏览体验不要求招聘方注册或真实付费。
+- 公开站点和 Billing 明确标识 Paddle Sandbox；主要浏览体验不要求招聘方注册或真实付费。
 - 准备演示账号、演示项目和若干反馈；具体凭据通过安全的部署配置或文档化演示方案管理。
 
 ## 10. 测试策略
@@ -218,13 +227,13 @@ EMAIL_FROM=
 测试优先覆盖高风险领域，而不是追求机械覆盖率：
 
 - 单元/领域测试：Zod schema、权限判断、状态转换、分页参数、套餐限制。
-- 数据库集成测试：唯一 Slug、每用户一个项目、投票复合唯一、Stripe event 幂等。
+- 数据库集成测试：唯一 Slug、每用户一个项目、投票复合唯一、Paddle event 幂等、结账并发与订阅乱序。
 - 组件测试：FeedbackForm、VoteButton、Billing 状态及错误/回滚。
 - E2E：注册/登录 -> 创建项目 -> 提交反馈 -> 投票 -> Owner 改状态 -> 路线图更新 -> Checkout 入口。
 - 安全回归：第二个账号不能读取或修改第一个账号的受保护资源。
-- Stripe 测试：错误签名失败、重复事件无重复写入、未知事件安全忽略、事件顺序不会错误升级权限。
+- Paddle 测试：错误签名失败、重复事件无重复写入、未知事件安全忽略、事件顺序不会错误升级权限、未知创建结果不重复 POST。
 
-测试必须使用独立配置和数据。禁止让自动化测试连接 Production 数据库或 Stripe Live 环境。
+测试必须使用独立配置和数据。禁止让自动化测试连接 Production 数据库或 Paddle Live 环境。
 
 - 数据库集成测试与 E2E 使用 Neon 专用 test 分支，不复用 develop/preview/production；运行前校验测试连接与允许的 endpoint，pooled/direct 指向同一测试分支。
 - 测试数据使用唯一运行标识并精确清理自身记录，不清库、不使用 TRUNCATE。幂等 Demo Seed 仅补齐约定演示数据，不覆盖用户修改。
@@ -263,7 +272,7 @@ pnpm test:e2e
 5. 运行相关质量门禁，并汇报结果、剩余风险及新增环境/部署操作。
 6. 将本次技术决策、取舍和验证证据同步到 ADR 与索引；最终交付说明相关 ADR，或说明本次未产生新的技术决策。
 
-涉及账号注册、真实云资源创建、Vercel Production 部署、生产迁移/Seed、Stripe Endpoint 或其他外部写操作时，先向用户说明目标和影响并取得确认。绝不使用 Stripe Live Key 或触发真实收款。
+涉及账号注册、真实云资源创建、Vercel Production 部署、生产迁移/Seed、Paddle Notification Destination 或其他外部写操作时，先向用户说明目标和影响并取得确认。绝不使用 Paddle Live Key 或触发真实收款。
 
 ## 13. 完成定义
 
@@ -283,7 +292,7 @@ pnpm test:e2e
 - Vercel Production 可公开访问，无需 Vercel 账号。
 - dev/Preview 与 Production 数据库隔离，运行时和迁移连接类型正确。
 - Production migration、幂等 Demo Seed、Smoke Test 和核心 E2E 已执行。
-- Stripe 全链路处于测试环境，Webhook 验签和幂等通过。
+- Paddle 全链路处于 Sandbox，真实测试结账、Webhook 验签、幂等和门户取消流程通过。
 - 演示账号和公开项目可用，招聘方无需真实付费即可体验主要功能。
 - README 包含启动、环境变量、迁移、Seed、测试、部署、测试卡、架构与故障定位说明。
 - 发布前确认仓库、Git 历史、构建日志和页面中没有 Secret。

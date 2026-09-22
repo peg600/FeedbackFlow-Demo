@@ -29,6 +29,8 @@
     "@better-auth/drizzle-adapter": "1.6.25",
     "@hookform/resolvers": "^5.7.1",
     "@neondatabase/serverless": "1.1.0",
+    "@paddle/paddle-js": "^1.6.5",
+    "@paddle/paddle-node-sdk": "^3.10.0",
     "better-auth": "1.6.25",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

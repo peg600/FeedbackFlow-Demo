@@ -13,7 +13,7 @@ const registerBenefits = [
   "A public feedback board",
   "Owner-only project controls",
   "A roadmap generated from status",
-  "Stripe test-mode upgrade flow",
+  "Paddle sandbox upgrade flow",
 ] as const;
 
 function LoginProductProof() {

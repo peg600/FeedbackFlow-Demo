@@ -30,10 +30,11 @@ type DashboardShellProps = {
   children: ReactNode;
   project: { name: string; slug: string };
   user: { email: string; name: string };
+  plan?: "Free" | "Pro";
 };
 
 // 为受保护的控制台页面提供响应式导航、当前项目/用户上下文和移动端菜单状态管理。
-export function DashboardShell({ children, project, user }: DashboardShellProps) {
+export function DashboardShell({ children, project, user, plan = "Free" }: DashboardShellProps) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -78,7 +79,7 @@ export function DashboardShell({ children, project, user }: DashboardShellProps)
               </span>
               <span className="min-w-0">
                 <span className="block truncate text-xs font-semibold">{project.name}</span>
-                <span className="block text-[10px] text-muted-foreground">Free plan</span>
+                <span className="block text-[10px] text-muted-foreground">{plan} plan</span>
               </span>
             </div>
           </section>

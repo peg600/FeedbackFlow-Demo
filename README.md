@@ -25,9 +25,13 @@ roadmaps show up to four requests per status plus the total; View all opens the
 existing filtered, paginated feedback board. Settings saves refresh the project
 navigation and old/new public URLs, including feedback details.
 
-Billing, Checkout, Portal, and Stripe webhooks remain placeholders. Pricing is
-a preview, not an offer to charge a card. Password recovery and feedback
-hide/restore controls are outside this implementation.
+Billing uses Paddle **Sandbox only**: authenticated transaction checkout,
+customer portal, verified webhooks, local subscription entitlements, and recovery
+through status refresh and a daily reconciliation job. Pro is USD 19/month with
+no trial; final taxes are shown at checkout. No real money is charged, including
+when this demo is hosted on Vercel Production. Password recovery and feedback
+hide/restore controls are outside this implementation. Cloud setup and actual
+sandbox checkout verification are separate from passing local tests.
 
 ## Local setup and verification
 
@@ -46,7 +50,8 @@ pnpm build
 Migration commands change the explicitly configured database: inspect the target
 first. Do not migrate Production without approval. The new shared limiter needs
 `drizzle/0001_unknown_winter_soldier.sql` before login/signup or feedback writes
-are used. Build requires the existing Google-hosted Inter font to be reachable
+are used. Paddle billing additionally requires `drizzle/0002_paddle_billing.sql`
+before enabling its environment variables. Build requires the existing Google-hosted Inter font to be reachable
 and valid server environment variables; a successful build alone does not prove
 that a deployment has been migrated.
 
@@ -201,8 +206,8 @@ against volumetric abuse; application limits are not DDoS protection.
 
 ## Action results and errors
 
-The five application mutations (project creation/settings, feedback creation,
-voting, and owner status updates) use `next-safe-action`. They accept validated
+Application mutations (project creation/settings, feedback creation,
+voting, owner status updates, and billing actions) use `next-safe-action`. They accept validated
 objects and return the library's native result branches:
 
 - `data`: successful business data. Creation actions navigate after success.
@@ -232,8 +237,8 @@ behavior for repeated/concurrent submissions.
 
 Better Auth retains its own HTTP protocol. Its client error codes are mapped to
 owned messages in `src/features/auth/auth-error.ts`; upstream error messages are
-not rendered directly. The Stripe webhook remains an unimplemented HTTP 501
-endpoint, not a Server Action. Read-only Server Components continue to use
+not rendered directly. The Paddle webhook is a Route Handler with raw-body
+signature verification and atomic event deduplication, not a Server Action. Read-only Server Components continue to use
 Next.js error and not-found boundaries.
 
 `design/` and most of `docs/` contain local working material excluded from Git.
@@ -250,6 +255,178 @@ The maintained repository rules are in [AGENTS.md](AGENTS.md#71-统一错误处�
 For local study, the ignored `docs/backend-handbook/14-error-handling.md` explains
 the complete request flow, the Slug conflict example, and how to add new errors.
 This local handbook is not included in a fresh clone.
+
+## Paddle Sandbox setup
+
+This implementation replaces the former Stripe placeholder. See
+[ADR 0010](docs/adr/0010-paddle-sandbox-billing.md),
+[local entitlements and reconciliation](docs/adr/0011-local-entitlements-and-reconciliation.md),
+and [customer ownership and checkout recovery](docs/adr/0012-paddle-customer-and-checkout-ownership.md).
+Paddle Node SDK handles server API calls and signature verification; Paddle.js
+opens a checkout for a transaction created by the authenticated server action.
+Installing or authenticating an MCP server does not configure the app's runtime
+credentials, catalog, database, or notification destination.
+
+1. Apply reviewed migrations through `pnpm db:migrate` to the intended development
+   database. Apply them separately to the guarded test branch with
+   `pnpm db:test:migrate`. Review and approve any Production migration separately.
+2. In the **Paddle Sandbox** dashboard, create an active Pro product and recurring
+   price: **USD 19.00, every one month, no trial**, quantity one. Set its appropriate
+   product tax category. The server verifies amount, currency, cadence, and trial
+   settings before checkout; changing the plan requires a coordinated code change.
+3. Create a sandbox API key with `customer.read`, `customer.write`, `price.read`,
+   `transaction.read`, `transaction.write`, `subscription.read`, and
+   `customer_portal_session.write`. Use a separate key for catalog administration.
+   Create a sandbox client-side token. Configure the default payment link under
+   Checkout settings as `https://<your-app-origin>/dashboard/billing`; for local
+   development use the permitted local URL or a secure tunnel. See
+   [Paddle checkout setup](https://developer.paddle.com/build/checkout/build-overlay-checkout/)
+   and [API permissions](https://developer.paddle.com/api-reference/about/permissions/).
+4. Create an active Notification Destination for
+   `https://<your-app-origin>/api/paddle/webhook` (a public HTTPS tunnel for local
+   development). Select `subscription.created`, `subscription.updated`,
+   `subscription.activated`, `subscription.canceled`, `subscription.paused`,
+   `subscription.resumed`, `subscription.past_due`, `subscription.trialing`, and
+   `transaction.completed`. Use the secret belonging to **that destination**.
+   Delivery must reach the handler without a login or Vercel deployment-protection
+   challenge; configure the endpoint deliberately, not a blanket public bypass.
+5. Store the following values only in ignored local env files or the deployment's
+   environment settings, then restart/redeploy. Never paste secrets into source,
+   issues, logs, or chat:
+
+| Variable | Value and visibility |
+| --- | --- |
+| `PADDLE_API_KEY` | Server-only sandbox key, prefix `pdl_sdbx_apikey_` |
+| `PADDLE_NOTIFICATION_WEBHOOK_SECRET` | Server-only destination signing secret |
+| `PADDLE_PRICE_ID_PRO` | Sandbox monthly Pro price ID, prefix `pri_` |
+| `NEXT_PUBLIC_PADDLE_CLIENT_TOKEN` | Public sandbox token, prefix `test_`; this is not an API key |
+| `CRON_SECRET` | Server-only random secret, at least 32 characters |
+
+Use isolated databases and Paddle sandbox accounts/catalogs or appropriately
+separated customers/destinations across local, Preview, and Production. Never
+reuse real customer records for tests. Every deployed environment remains in
+**Sandbox**, even Vercel Production. Live credentials are rejected. With missing
+or invalid Paddle settings, public browsing and Free remain available; Checkout
+is disabled and the webhook returns 503. Existing Pro access also fails closed,
+so avoid changing these variables independently on a configured deployment.
+
+## Checkout, permissions, and recovery
+
+`Upgrade to Pro` authenticates the user, checks project ownership and rate limits,
+binds a Paddle Customer, persists a checkout intent, and creates/reuses its
+transaction. Only that server-returned transaction is passed to Paddle.js.
+The default-payment-link `_ptxn` parameter is removed before SDK initialization;
+the user resumes their own saved checkout using the Billing button. Arbitrary
+transaction links cannot select another user's checkout.
+Paddle-generated payment-update links are not automatically opened by this page;
+use the authenticated Customer Portal to resolve an existing subscription's
+payment method. Supporting emailed transaction links would require an additional
+server-side ownership-checked entry point.
+
+Payment returns to `/dashboard/billing?checkout=return`; a refresh during payment
+can also recover from the persisted intent. Neither this parameter nor the
+browser completion event grants Pro. The page polls the local status every three
+seconds for up to 20 attempts, with provider reconciliation at the beginning/end.
+Once confirmed, it refreshes Billing and the dashboard plan label. After timeout,
+it explains the delay and offers `Refresh status`; do not start a second purchase
+after paying. Requests are serial, so slow responses extend the elapsed time.
+
+Verified webhook processing records the event and subscription change atomically.
+Duplicate events have no additional effect; older snapshots cannot overwrite newer
+ones. Server-side API reconciliation uses the same subscription writer. The
+ordinary feature authorization path reads the local database, never Paddle per
+request. Pro requires the configured price, active status, an unexpired billing
+period, and no effective cancellation/pause. This demo deliberately grants no
+trial or past-due grace period. A scheduled end-of-period cancellation preserves
+Pro until its effective time. Free permits 50 feedback items; Pro removes that
+limit. Expiry preserves existing feedback but blocks new items above the Free cap.
+
+`Manage billing` creates a fresh authenticated Paddle Customer Portal session for
+the current user's bound customer. Use it for invoices/history, payment-method
+changes, and cancellation. Returning/focusing Billing or pressing `Refresh status`
+reconciles the result. Existing active, trialing, paused, or past-due subscriptions
+must be managed there rather than bought again. Because email ownership is not
+verified in this demo, a same-email customer without the server's provisioning
+marker is a conflict requiring operator review; email matching never grants
+portal access.
+
+For an unknown Customer/Transaction POST result, recovery searches the provider
+before any retry. A complete search with no match can release the intent after
+five minutes during reconciliation; a subsequent explicit Upgrade creates a new
+one. Delayed results from an abandoned attempt cannot be opened. Do not manually
+delete customer bindings, mark payments successful, or grant Pro to clear a wait.
+
+## Scheduled reconciliation and troubleshooting
+
+`vercel.json` schedules authenticated `GET /api/cron/billing-reconcile` daily at
+03:00 UTC. Vercel owns the schedule: no in-process timers or restart hooks are
+needed. Cron runs on **Production deployments only**; Preview/local require an
+explicit authenticated request. Vercel supplies `Authorization: Bearer <CRON_SECRET>`.
+Hobby timing is approximate and failed invocations are not automatically retried;
+see [Cron limitations](https://vercel.com/docs/cron-jobs/usage-and-pricing) and
+[management](https://vercel.com/docs/cron-jobs/manage-cron-jobs).
+
+A run handles up to 50 least-recently-attempted customers, stops starting work
+after four minutes, and has a five-minute function limit. One customer's failure
+does not prevent later customers being attempted. Responses contain only counts
+and `hasMore`; a partial failure returns 503. This is a bounded demo safety net,
+not a promise to refresh every customer daily at larger scale. Monitor failures
+and backlog, then introduce pagination/more frequent scheduling if needed.
+
+| Symptom | Checks and recovery |
+| --- | --- |
+| Checkout disabled | Confirm all sandbox variables, price format, and migration 0002; redeploy after env changes. |
+| Checkout cannot start | Check API-key permissions, active monthly USD 19 price, default payment link, and Paddle.js network access. |
+| Paid but still Free | Use Refresh status; inspect notification delivery and local subscription period/status. Check destination secret, server clock, correct environment, and database connectivity. Replay failed notifications from Paddle after fixing the cause. |
+| Webhook 503 | Check configuration, original request body/signature, clock skew, migration and DB availability; retries must reach the handler. Logs contain only safe correlation/event fields. |
+| Customer conflict | Check the server provisioning marker and account ownership manually; never bind an existing customer merely by matching email. |
+| Cron 401/503 or backlog | Check `CRON_SECRET`, Production deployment, Paddle access, provider rate limits and Vercel duration; rerun with secure authorization after resolving failure. |
+
+## Billing verification
+
+Unit/component tests cover signature verification, invalid/future/stale signatures,
+configuration, entitlements, Session ownership, polling/timeout behavior, and cron
+authorization. `tests/integration/billing.test.ts` exercises real guarded Postgres
+transactions with a mocked provider: concurrent checkout, unknown-result recovery,
+event rollback/deduplication/order, historical subscriptions, and Free/Pro quota.
+These tests do not substitute for a real Paddle Sandbox checkout.
+
+For manual sandbox acceptance, use the official
+[Paddle test cards](https://developer.paddle.com/sdks/sandbox/):
+`4242 4242 4242 4242`, future expiry, security code `100`; the decline card is
+`4000 0000 0000 0002`. Verify successful payment, decline/retry, refresh during
+payment, delayed/replayed notifications, two simultaneous Upgrade clicks,
+Portal cancellation, expired access, and the 51st feedback submission. Verify
+another account cannot manage the first account's customer or subscription.
+Use sandbox notification replay/simulation for lifecycle changes, never live cards.
+
+Implementation verification on 2026-09-21: lint, TypeScript, and 191 unit/component
+tests across 49 files passed. Production build passed with the existing
+`.env.local` values explicitly loaded into the build process and font network
+access enabled. Plain `pnpm build` was blocked by the pre-existing empty
+`BETTER_AUTH_SECRET` in `.env.production.local`; no environment file was modified.
+The database suite was attempted but its guard stopped execution
+because `.env.test.local` / `TEST_DATABASE_URL` is absent. Migration 0002 has not
+been applied to Neon. At that time, Paddle MCP tools and runtime credentials
+were unavailable, so external setup and payment verification were not performed.
+
+Sandbox setup verified on 2026-09-22: registered `paddle-sandbox` using a bearer
+token environment variable and verified the remote MCP handshake and API calls.
+Created and read back **FeedbackFlow Pro**, tax category `saas`, with an active
+**USD 19/month** price, no trial, quantity fixed to one, tax calculated separately.
+Created an active sandbox client-side token. The price ID, client token, local
+sandbox API key, and a random Cron secret are stored in the ignored, untracked
+`.env.local`; no credentials are stored in this document or MCP configuration.
+The catalog administration key is used only for local sandbox setup/testing;
+use the separate least-privilege runtime key described above for deployments.
+Native MCP tool discovery may require restarting Codex; these setup calls were
+verified directly against the registered remote MCP endpoint.
+
+The callback environment still needs to be selected before configuring a
+Notification Destination and its signing secret. Development migration 0002,
+runtime API permission checks, default payment link, test-card checkout, Portal,
+remote webhook delivery, Cron deployment, and browser E2E remain unverified.
+Local configuration alone does not mean that the payment flow is ready.
 
 ## Function comments
 

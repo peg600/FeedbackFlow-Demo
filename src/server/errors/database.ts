@@ -8,6 +8,10 @@ export const actionOperations = [
   "feedback.vote",
   "project.create",
   "project.update",
+  "billing.checkout",
+  "billing.portal",
+  "billing.status",
+  "billing.reconcile",
 ] as const;
 
 export type ActionOperation = (typeof actionOperations)[number];

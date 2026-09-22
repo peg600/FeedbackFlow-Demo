@@ -1,11 +1,11 @@
 # 0009 — Billing 保持预览，暂不接入支付权限
 
-- 状态：Accepted
+- 状态：Superseded
 - 记录日期：2026-09-19
 - 决策日期：2026-09-03 确认；2026-09-18 重申当前范围
 - 记录性质：历史补录
 - 替代：无（原计划中的完整支付链路尚未实施）
-- 被替代：无
+- 被替代：[0010 — Paddle Sandbox 替代 Stripe 与 Billing 占位](0010-paddle-sandbox-billing.md)（2026-09-21）
 
 ## 背景与约束
 
@@ -42,4 +42,4 @@ Billing 只读取当前 Owner 项目的反馈使用量并显示 Free/Pro 预览�
 - 会话 `01a0657d-e5e2-7b30-b24b-6ae4b735fc8e`：2026-09-03 要求 Billing 暂不实现 Stripe，2026-09-18 再次排除 Billing。
 - 会话 `01a0b3bc-081d-7f40-96c6-940b8ba2505f`：2026-09-18 讨论完整支付链路与恢复机制；仅作为未落地讨论来源，不作为已实现证据。
 - 提交 `e1c96d2`。
-- [Billing 预览](../../src/server/services/billing-preview.ts)、[Webhook 占位](../../src/app/api/stripe/webhook/route.ts)、[占位测试](../../tests/unit/stripe-webhook.test.ts)、[反馈配额](../../src/server/services/feedback-write.ts)。
+- 历史实现位于提交 `29ee06d`：[Billing 预览](https://github.com/peg600/FeedbackFlow-Demo/blob/29ee06d/src/server/services/billing-preview.ts)、[Webhook 占位](https://github.com/peg600/FeedbackFlow-Demo/blob/29ee06d/src/app/api/stripe/webhook/route.ts)、[占位测试](https://github.com/peg600/FeedbackFlow-Demo/blob/29ee06d/tests/unit/stripe-webhook.test.ts)。这些文件在替代方案中移除；本记录保留原阶段事实。

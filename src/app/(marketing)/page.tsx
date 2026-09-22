@@ -35,7 +35,7 @@ const features = [
 ] as const;
 
 const freeFeatures = ["1 public project", "50 feedback items", "Voting and roadmap"];
-const proFeatures = ["Unlimited feedback", "Everything in Free", "Customer portal preview"];
+const proFeatures = ["Unlimited feedback", "Everything in Free", "Self-service billing portal"];
 
 function Header() {
   return (
@@ -181,7 +181,7 @@ export default function HomePage() {
             <div className="text-center">
               <p className="text-xs font-bold tracking-widest text-primary">PRICING</p>
               <h2 className="mt-3 text-2xl font-bold tracking-tight md:text-heading-lg">Start focused, grow when you need to</h2>
-              <p className="mt-3 text-sm text-muted-foreground">Payment actions remain disabled while Stripe is in preview.</p>
+              <p className="mt-3 text-sm text-muted-foreground">Try Pro with Paddle sandbox payments. No real money is charged.</p>
             </div>
             <div className="mt-9 grid gap-5 md:grid-cols-2">
               <PricingCard description="For one focused public feedback board." features={freeFeatures} price="$0" title="Free" />
@@ -238,7 +238,7 @@ function PricingCard({
         {features.map((feature) => <li key={feature}>✓ {feature}</li>)}
       </ul>
       <Link className={cn(buttonVariants({ variant: title === "Free" ? "primary" : "secondary" }), "mt-8 w-full")} href={title === "Free" ? "/register" : "/login?returnTo=/dashboard/billing"}>
-        {title === "Free" ? "Start free" : "View plan preview"}
+        {title === "Free" ? "Start free" : "Try Pro in sandbox"}
       </Link>
     </article>
   );

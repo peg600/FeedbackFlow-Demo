@@ -4,7 +4,7 @@
 
 ## 决策索引
 
-以下记录均于 2026-09-19 根据本机项目历史对话、Git 提交和当前代码补录。
+0001—0009 于 2026-09-19 根据本机项目历史对话、Git 提交和代码补录；0010 起为新增决策的当次记录。
 
 | 编号 | 决策 | 状态 | 决策时间或可确认范围 |
 | --- | --- | --- | --- |
@@ -16,7 +16,10 @@
 | 0006 | [统一 Server Action 错误协议](0006-standardized-server-action-errors.md) | Accepted | 2026-09-17 |
 | 0007 | [PostgreSQL 共享原子限流](0007-shared-postgresql-rate-limits.md) | Accepted | 2026-09-18 |
 | 0008 | [独立测试数据库与受保护的数据写入](0008-isolated-database-tests-and-seeding.md) | Accepted | 2026-09-18 |
-| 0009 | [Billing 保持预览，暂不接入支付权限](0009-billing-preview-without-payment-entitlements.md) | Accepted | 2026-09-03；2026-09-18 重申 |
+| 0009 | [Billing 保持预览，暂不接入支付权限](0009-billing-preview-without-payment-entitlements.md) | Superseded by 0010 | 2026-09-03；2026-09-18 重申 |
+| 0010 | [Paddle Sandbox 替代 Stripe 与 Billing 占位](0010-paddle-sandbox-billing.md) | Accepted | 2026-09-21 |
+| 0011 | [本地订阅权益、Webhook 与 API 对账](0011-local-entitlements-and-reconciliation.md) | Accepted | 2026-09-21 |
+| 0012 | [客户归属与持久化结账恢复](0012-paddle-customer-and-checkout-ownership.md) | Accepted | 2026-09-21 |
 
 ## 范围与维护
 

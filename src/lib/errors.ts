@@ -1,7 +1,11 @@
 export const ERROR_CATALOG = {
-  BILLING_NOT_IMPLEMENTED: {
-    message: "Billing is not available yet.",
-  },
+  BILLING_NOT_CONFIGURED: { message: "Sandbox billing is not configured yet. Please try again later." },
+  BILLING_PENDING: { message: "Your previous checkout is still being verified. Refresh billing status before trying again." },
+  BILLING_ALREADY_SUBSCRIBED: { message: "You already have a subscription. Use Manage billing to make changes." },
+  BILLING_CUSTOMER_CONFLICT: { message: "We could not safely link your billing account. Please contact support." },
+  BILLING_NO_CUSTOMER: { message: "Start a checkout before opening the billing portal." },
+  BILLING_INVALID_TRANSACTION: { message: "This checkout is unavailable for your account. Refresh billing status." },
+  BILLING_UNAVAILABLE: { message: "Billing is temporarily unavailable. Please try again shortly." },
   FEEDBACK_LIMIT_REACHED: {
     message: "This public board has reached its 50 feedback limit.",
   },
