@@ -427,8 +427,8 @@ tests across 49 files passed. Production build passed with the existing
 access enabled. Plain `pnpm build` was blocked by the pre-existing empty
 `BETTER_AUTH_SECRET` in `.env.production.local`; no environment file was modified.
 The database suite was attempted but its guard stopped execution
-because `.env.test.local` / `TEST_DATABASE_URL` is absent. Migration 0002 has not
-been applied to Neon. At that time, Paddle MCP tools and runtime credentials
+because `.env.test.local` / `TEST_DATABASE_URL` is absent. Migration 0002 had not
+yet been applied to Neon. At that time, Paddle MCP tools and runtime credentials
 were unavailable, so external setup and payment verification were not performed.
 
 Sandbox setup verified on 2026-09-22: registered `paddle-sandbox` using a bearer
@@ -444,10 +444,22 @@ Native MCP tool discovery may require restarting Codex; these setup calls were
 verified directly against the registered remote MCP endpoint.
 
 The callback environment still needs to be selected before configuring a
-Notification Destination and its signing secret. Development migration 0002,
-runtime API permission checks, default payment link, test-card checkout, Portal,
+Notification Destination and its signing secret. Runtime API permission checks,
+default payment link, test-card checkout, Portal,
 remote webhook delivery, Cron deployment, and browser E2E remain unverified.
 Local configuration alone does not mean that the payment flow is ready.
+
+Development migration verified on 2026-09-23: applied `0002_paddle_billing`
+through Drizzle Kit using the direct Neon connection configured in `.env.local`,
+after confirming it differs from the Production endpoint. The preflight verified
+the 0000/0001 ledger entries and absence of the four Billing tables. Post-migration
+checks confirmed the 0002 ledger hash, all four new tables, four primary keys,
+three foreign keys, six explicit indexes, and the customer-ID unique constraint;
+existing table columns were unchanged. Production and the dedicated test database
+were not migrated. Lint, TypeScript, and all 201 unit/component tests across 50
+files passed. No application code, schema definition, or build configuration
+changed, so a production build was not rerun. Database integration tests and
+Sandbox end-to-end payment verification remain pending.
 
 ## Function comments
 
