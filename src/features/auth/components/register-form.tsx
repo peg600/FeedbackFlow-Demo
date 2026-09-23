@@ -18,7 +18,7 @@ import { authClient } from "@/lib/auth-client";
 import {
   registerSchema,
   type RegisterValues,
-} from "@/validators/auth";
+} from "@/features/auth/schemas";
 
 const defaultValues: RegisterValues = {
   name: "",

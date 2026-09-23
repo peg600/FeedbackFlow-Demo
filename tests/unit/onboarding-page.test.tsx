@@ -13,7 +13,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect, useRouter: () => ({ push: mocks.push }) }));
 
-vi.mock("@/server/services/project-access", () => ({
+vi.mock("@/features/projects/server/access", () => ({
   getCurrentProjectAccess: mocks.getCurrentProjectAccess,
 }));
 

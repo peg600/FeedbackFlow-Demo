@@ -42,5 +42,5 @@ Vercel Preview 和 Production 都使用 Better Auth Dynamic Base URL，只允许
 - 历史会话 `01a00fdd-8859-7800-944a-47044b37910a`：2026-08-18 用户要求其他 Preview 分支支持 Dynamic Base URL；2026-08-19 反馈 Production `INVALID_ORIGIN` 并要求修复。
 - 回跳实现见提交 `c51f55f`；2026-09-15 会话 `01a09f21-849f-7653-812b-9ec60de24621` 进一步解释虚拟来源和回跳边界，属于对既有实现的讲解。
 - 提交 `e801ee4`：Production 动态来源修复。
-- [来源构造](../../src/server/auth/base-url.ts)、[环境解析](../../src/lib/env.ts)、[认证配置](../../src/server/auth/index.ts)、[安全回跳](../../src/features/auth/safe-return-to.ts)。
+- [来源构造](../../src/server/auth/base-url.ts)、[环境解析](../../src/server/env.ts)、[认证配置](../../src/server/auth/index.ts)、[安全回跳](../../src/features/auth/safe-return-to.ts)。
 - [来源测试](../../tests/unit/auth-base-url.test.ts)、[回跳测试](../../tests/unit/safe-return-to.test.ts)。

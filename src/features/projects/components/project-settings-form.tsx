@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { updateProjectAction } from "@/features/projects/actions/update-project";
 import { ACTION_NETWORK_ERROR, getActionErrorMessage, getActionFieldError } from "@/lib/action-errors";
-import type { ProjectSettingsValues } from "@/validators/project";
+import type { ProjectSettingsValues } from "@/features/projects/schemas";
 
 type Props = {
   project: { name: string; slug: string; description: string | null; isPublic: boolean };

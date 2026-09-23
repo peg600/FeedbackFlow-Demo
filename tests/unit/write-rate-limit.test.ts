@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ consume: vi.fn() }));
-vi.mock("@/lib/env", () => ({ env: { BETTER_AUTH_SECRET: "test-secret" } }));
+vi.mock("@/server/env", () => ({ env: { BETTER_AUTH_SECRET: "test-secret" } }));
 vi.mock("@/server/db", () => ({ db: {} }));
-vi.mock("@/server/services/rate-limit-store", () => ({
+vi.mock("@/server/rate-limit/store", () => ({
   createRateLimitStore: () => ({ consume: mocks.consume }),
 }));
 

@@ -17,6 +17,27 @@ These records cover application architecture, data, security, interfaces, and
 test architecture; personal development tools and documentation administration
 are outside their scope.
 
+## Code organization
+
+Business code is grouped by feature under `src/features/`: components, actions,
+schemas, and feature-owned `server/` modules live together. Feedback owns votes
+and roadmap queries; Billing owns Paddle configuration, SDK access, checkout,
+and subscription synchronization. Dashboard owns its reporting queries and URL
+filters. Projects owns project creation, settings, access checks, and public
+project cache invalidation.
+
+Actions validate input, read the session, apply existing rate limits, invoke
+business functions, and handle cache invalidation or redirects. Database queries
+and transactions belong in the feature's server modules. Authenticated user IDs
+passed to those modules come from server sessions, never from action input.
+
+`src/server/` contains shared infrastructure: database/schema, authentication,
+error translation, rate limiting, server environment validation, and the safe
+action client. `src/components/` contains shared UI; `src/lib/` contains shared
+support code. Server module names are an organizational convention, not an
+automatic security boundary. Client code must not import them at runtime.
+See [ADR 0013](docs/adr/0013-feature-owned-server-modules.md).
+
 ## Current product scope
 
 Landing includes Features, Pricing, and links to the public demo `/p/demo`.

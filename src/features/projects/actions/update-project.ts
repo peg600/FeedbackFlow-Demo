@@ -2,11 +2,11 @@
 
 import { revalidatePath } from "next/cache";
 
-import { revalidatePublicProjectPages } from "@/server/cache/project-pages";
+import { revalidatePublicProjectPages } from "@/features/projects/server/cache";
 import { actionClient } from "@/server/safe-action";
-import { requireDashboardAccess } from "@/server/services/project-access";
-import { updateOwnedProject } from "@/server/services/project-update";
-import { projectSettingsSchema } from "@/validators/project";
+import { requireDashboardAccess } from "@/features/projects/server/access";
+import { updateOwnedProject } from "@/features/projects/server/settings";
+import { projectSettingsSchema } from "@/features/projects/schemas";
 
 // 仅允许项目所有者更新设置，并同时刷新新旧 Slug 对应的公开页面缓存。
 export const updateProjectAction = actionClient

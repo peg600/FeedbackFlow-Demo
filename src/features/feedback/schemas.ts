@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { projectSchema } from "@/validators/project";
+import { projectSchema } from "@/features/projects/schemas";
 
 export const publicFeedbackRouteSchema = z.object({
   feedbackId: z.uuid(),
@@ -9,21 +9,21 @@ export const publicFeedbackRouteSchema = z.object({
 
 export type PublicFeedbackRoute = z.infer<typeof publicFeedbackRouteSchema>;
 
-export const publicFeedbackStatuses = [
+export const feedbackStatuses = [
   "under_review",
   "planned",
   "in_progress",
   "completed",
 ] as const;
 
-export const publicFeedbackStatusSchema = z.enum(publicFeedbackStatuses);
+export const feedbackStatusSchema = z.enum(feedbackStatuses);
 export const publicFeedbackSortSchema = z.enum(["votes", "newest", "oldest"]);
 
 export type PublicFeedbackSearchParams = {
   page: number;
   search: string;
   sort: z.infer<typeof publicFeedbackSortSchema>;
-  status: "all" | z.infer<typeof publicFeedbackStatusSchema>;
+  status: "all" | z.infer<typeof feedbackStatusSchema>;
 };
 
 type RawSearchParams = Record<string, string | string[] | undefined>;
@@ -54,7 +54,7 @@ export function parsePublicFeedbackSearchParams(
       .catch("votes")
       .parse(first(input?.sort)),
     status: z
-      .enum(["all", ...publicFeedbackStatuses])
+      .enum(["all", ...feedbackStatuses])
       .catch("all")
       .parse(first(input?.status)),
   };
@@ -77,3 +77,10 @@ export const createPublicFeedbackSchema = z.object({
 export type CreatePublicFeedbackValues = z.infer<
   typeof createPublicFeedbackSchema
 >;
+
+export type FeedbackStatus = z.infer<typeof feedbackStatusSchema>;
+
+export const updateFeedbackStatusSchema = z.object({
+  feedbackId: z.uuid(),
+  status: feedbackStatusSchema,
+});

@@ -6,7 +6,7 @@ import { projects } from "@/server/db/schema";
 import {
   projectSettingsSchema,
   type ProjectSettingsValues,
-} from "@/validators/project";
+} from "@/features/projects/schemas";
 
 export type ProjectUpdateResult = {
   oldSlug: string;

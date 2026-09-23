@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { projectSchema, projectSettingsSchema } from "@/validators/project";
+import { projectSchema, projectSettingsSchema } from "@/features/projects/schemas";
 
 describe("projectSchema", () => {
   it("normalizes project input", () => {

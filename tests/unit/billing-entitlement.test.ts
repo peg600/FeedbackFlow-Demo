@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
 import { hasProEntitlement } from "@/features/billing/entitlement";
-import { readPaddleConfig } from "@/lib/paddle-config";
-import { parseSubscriptionSnapshot } from "@/server/services/billing-sync";
+import { readPaddleConfig } from "@/features/billing/server/config";
+import { parseSubscriptionSnapshot } from "@/features/billing/server/sync";
 
 const now = new Date("2026-09-21T12:00:00Z");
 const priceId = `pri_${"a".repeat(26)}`;

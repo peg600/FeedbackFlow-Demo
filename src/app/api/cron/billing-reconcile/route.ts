@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 
-import { readPaddleConfig } from "@/lib/paddle-config";
-import { reconcileBillingBatch } from "@/server/services/billing";
+import { readPaddleConfig } from "@/features/billing/server/config";
+import { reconcileBillingBatch } from "@/features/billing/server/billing";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;

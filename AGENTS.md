@@ -123,23 +123,32 @@ src/
     auth/
     projects/
     feedback/
-    votes/
+    dashboard/
     billing/
+    # 各功能按需包含 components/、actions/（或 actions.ts）、schemas.ts、server/
   server/
     auth/
     db/
-    permissions/
-    services/
-  lib/
+    errors/
+    rate-limit/
     env.ts
-    paddle-config.ts
-  validators/
+    safe-action.ts
+  lib/
+    errors.ts
+    action-errors.ts
+    utils.ts
   components/ui/
 drizzle/
 tests/
 ```
 
-功能域负责该领域的 UI、Action 和类型；跨领域的服务端基础能力放入 `server/`。不要从 Client Component 导入服务端模块或 Secret。
+功能域负责该领域的 UI、Action、校验、类型与服务端业务实现，不再使用顶层 `server/services/` 和 `validators/` 聚合业务文件。详见 [ADR 0013](docs/adr/0013-feature-owned-server-modules.md)。
+
+- `features/<功能>/server/` 放业务查询、资源授权、数据库事务和第三方接入；Paddle SDK、支付配置与订阅同步归 Billing，投票与路线图归 Feedback。多个页面、Action、Webhook 或 Cron 调用同一业务模块，不改变其业务归属。
+- Action 在服务端校验输入、读取 Session、接入限流，再调用功能模块，并处理缓存刷新与导航；不在 Action 中组装数据库 CRUD 实现。传给业务函数的用户 ID 必须来自服务端 Session，不能来自客户端输入。
+- 顶层 `server/` 保留数据库、认证、错误适配、限流和服务端环境配置等共享基础设施；共享 UI 放 `components/`，共享支持代码放 `lib/`。
+- 功能间通过具体模块显式引用；不要建立混合客户端与服务端导出的总入口。Client Component 不能运行时导入 `server/` 模块或 Secret，纯类型导入不产生运行时依赖。目录名本身不提供隔离保障。
+- 按复杂度划分文件，不强制建立 Service/Repository 等多层透传。已有支持业务失败、并发回归测试的依赖替身入口可以保留；修改时优先保持完整业务流程容易阅读。
 
 ## 6. 数据与领域约束
 
@@ -202,13 +211,13 @@ RESEND_API_KEY=
 EMAIL_FROM=
 ```
 
-- 在 `src/lib/env.ts` 中用 Zod 校验服务端必需变量，缺失时快速失败。
+- 在 `src/server/env.ts` 中用 Zod 校验服务端必需变量，缺失时快速失败。
 - `DATABASE_URL` 使用 Neon pooled 连接供应用运行；`DATABASE_URL_UNPOOLED` 使用 direct 连接执行迁移和管理脚本。
 - Development/Preview 可使用 dev 数据库；Production 必须使用独立 prod 数据库。
 - Better Auth Secret 按本地、Preview、Production 分离，至少 32 字符；Production Secret 建立后保持稳定。
 - `BETTER_AUTH_URL` 必须对应当前环境；修改 Vercel 变量后需重新部署。
 - Paddle 始终使用 `pdl_sdbx_apikey_` API Key 和 `test_` Client Token，SDK 环境固定 sandbox。Webhook Secret 属于特定 Notification Destination，不同部署目标不可混用。
-- `src/lib/paddle-config.ts` 用 Zod 延迟校验支付配置；缺失时公开浏览与 Free 保持可用，所有支付入口关闭。`NEXT_PUBLIC_PADDLE_CLIENT_TOKEN` 是公开客户端标识，不是服务端 Secret。CRON_SECRET 至少 32 字符。
+- `src/features/billing/server/config.ts` 用 Zod 延迟校验支付配置；缺失时公开浏览与 Free 保持可用，所有支付入口关闭。`NEXT_PUBLIC_PADDLE_CLIENT_TOKEN` 是公开客户端标识，不是服务端 Secret。CRON_SECRET 至少 32 字符。
 - 默认不创建 `NEXT_PUBLIC_` Secret，也不在 `next.config.ts` 的 `env` 中硬编码 Secret。
 - Agent 不得要求用户在对话、Issue、README、日志或截图中粘贴真实 Secret。排错时只检查是否存在、前缀、长度和环境归属。
 

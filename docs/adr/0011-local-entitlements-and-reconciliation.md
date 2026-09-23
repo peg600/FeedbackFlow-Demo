@@ -40,7 +40,7 @@ Paddle 是外部账务事实来源，但每次 Pro 请求调用 Paddle 会增加
 
 ## 实施与验证
 
-参见 [同步服务](../../src/server/services/billing-sync.ts)、[对账服务](../../src/server/services/billing.ts)、[权限](../../src/features/billing/entitlement.ts)、[数据库用例](../../tests/integration/billing.test.ts)、[签名测试](../../tests/unit/paddle-webhook.test.ts)。本次单元测试真实执行 SDK HMAC 验签；数据库集成用例需要独立 test 配置，未配置时不得使用 develop/production 替代。外部 Sandbox 流程尚未验收，详见 README。
+参见 [同步服务](../../src/features/billing/server/sync.ts)、[对账服务](../../src/features/billing/server/billing.ts)、[权限](../../src/features/billing/entitlement.ts)、[数据库用例](../../tests/integration/billing.test.ts)、[签名测试](../../tests/unit/paddle-webhook.test.ts)。本次单元测试真实执行 SDK HMAC 验签；数据库集成用例需要独立 test 配置，未配置时不得使用 develop/production 替代。外部 Sandbox 流程尚未验收，详见 README。
 
 ## 重新评估条件
 

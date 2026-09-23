@@ -3,7 +3,7 @@ import { cache } from "react";
 
 import { db } from "@/server/db";
 import { feedback, projects, user, votes } from "@/server/db/schema";
-import type { PublicFeedbackSearchParams } from "@/validators/public-feedback";
+import type { PublicFeedbackSearchParams } from "@/features/feedback/schemas";
 
 export const PUBLIC_FEEDBACK_PAGE_SIZE = 4;
 

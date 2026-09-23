@@ -7,7 +7,7 @@ vi.mock("@/server/db", async () => {
   return { db: createTestDatabase() };
 });
 const provider = vi.hoisted(() => ({ getTransaction: vi.fn(), listTransactions: vi.fn(), createTransaction: vi.fn(), listSubscriptions: vi.fn(), getSubscription: vi.fn(), getPrice: vi.fn() }));
-vi.mock("@/server/paddle", () => ({ getPaddle: () => ({
+vi.mock("@/features/billing/server/paddle", () => ({ getPaddle: () => ({
   transactions: { get: provider.getTransaction, list: provider.listTransactions, create: provider.createTransaction },
   subscriptions: { list: provider.listSubscriptions, get: provider.getSubscription },
   prices: { get: provider.getPrice },
@@ -15,9 +15,9 @@ vi.mock("@/server/paddle", () => ({ getPaddle: () => ({
 
 import { db } from "@/server/db";
 import { billingCheckouts, billingCustomers, feedback, paddleEvents, projects, subscriptions, user } from "@/server/db/schema";
-import { createBillingCheckout, reconcileBilling } from "@/server/services/billing";
-import { processPaddleEvent } from "@/server/services/billing-sync";
-import { insertPublicFeedback } from "@/server/services/feedback-write";
+import { createBillingCheckout, reconcileBilling } from "@/features/billing/server/billing";
+import { processPaddleEvent } from "@/features/billing/server/sync";
+import { insertPublicFeedback } from "@/features/feedback/server/write";
 
 const id = (prefix: string) => `${prefix}_${randomUUID().replaceAll("-", "").slice(0, 26)}`;
 let userId: string, customerId: string, priceId: string, transactionId: string, subId: string, projectId: string, slug: string;

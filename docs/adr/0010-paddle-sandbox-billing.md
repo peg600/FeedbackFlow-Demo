@@ -51,5 +51,5 @@
 ## 相关证据
 
 - 2026-09-21 本会话用户明确“支付系统改用 paddle……弃用 stripe……实现 billing 的支付流程”。
-- [Billing 页面](../../src/app/dashboard/billing/page.tsx)、[Paddle 配置](../../src/lib/paddle-config.ts)、[服务端 SDK](../../src/server/paddle.ts)、[迁移](../../drizzle/0002_paddle_billing.sql)。
+- [Billing 页面](../../src/app/dashboard/billing/page.tsx)、[Paddle 配置](../../src/features/billing/server/config.ts)、[服务端 SDK](../../src/features/billing/server/paddle.ts)、[迁移](../../drizzle/0002_paddle_billing.sql)。
 - [Paddle transaction checkout](https://developer.paddle.com/build/transactions/pass-transaction-checkout/)、[Customer Portal](https://developer.paddle.com/build/customers/integrate-customer-portal/)。

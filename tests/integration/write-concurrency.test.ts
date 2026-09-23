@@ -10,8 +10,8 @@ import {
   rateLimitBuckets,
   user,
 } from "../../src/server/db/schema";
-import { createRateLimitStore } from "../../src/server/services/rate-limit-store";
-import { insertPublicFeedback } from "../../src/server/services/feedback-write";
+import { createRateLimitStore } from "../../src/server/rate-limit/store";
+import { insertPublicFeedback } from "../../src/features/feedback/server/write";
 
 const db = createTestDatabase();
 const rateLimitSecret = "integration-test-secret-only";

@@ -43,5 +43,5 @@
 
 - 会话 `01a09f21-849f-7653-812b-9ec60de24621`：2026-09-15—17 关于约束、普通事务、advisory lock、行锁与外键的学习讨论，确认了现有实现与限制。
 - 提交 `05437f6`、`870bf7a`、`630e6a2`、`d897223`；`9ba247f` 提取共享反馈写入；`a55546a` 增加集成用例。
-- [项目约束](../../src/server/db/schema/projects.ts)、[投票约束](../../src/server/db/schema/votes.ts)、[创建项目 Action](../../src/features/projects/actions/create-project.ts)、[投票 Action](../../src/features/feedback/actions/vote-feedback.ts)、[配额写入](../../src/server/services/feedback-write.ts)。
+- [项目约束](../../src/server/db/schema/projects.ts)、[投票约束](../../src/server/db/schema/votes.ts)、[创建项目 Action](../../src/features/projects/actions/create-project.ts)、[投票 Action](../../src/features/feedback/actions/vote-feedback.ts)、[配额写入](../../src/features/feedback/server/write.ts)。
 - [数据库约束用例](../../tests/integration/database-constraints.test.ts)、[并发用例](../../tests/integration/write-concurrency.test.ts)、[历史 Billing 边界](0009-billing-preview-without-payment-entitlements.md)、[当前 Paddle Billing 决策](0010-paddle-sandbox-billing.md)。

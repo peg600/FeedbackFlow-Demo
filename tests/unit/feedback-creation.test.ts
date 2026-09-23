@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { executePublicFeedbackCreation } from "@/server/services/feedback-creation";
+import { executePublicFeedbackCreation } from "@/features/feedback/server/creation";
+
+vi.mock("@/server/db", () => ({ db: {} }));
 
 const validInput = {
   description: "A comfortable theme for reviewing updates after hours.",
@@ -16,26 +18,25 @@ function dependencies(overrides: Record<string, unknown> = {}) {
       id: "project-1",
       slug: "acme-studio",
     }),
-    getSessionUser: vi.fn().mockResolvedValue({ id: "user-1" }),
     ...overrides,
   };
 }
 
 describe("executePublicFeedbackCreation", () => {
-  it("validates before reading authentication", async () => {
+  it("validates before accessing the database", async () => {
     const deps = dependencies();
 
     await expect(
-      executePublicFeedbackCreation({ ...validInput, title: "x" }, deps),
+      executePublicFeedbackCreation({ ...validInput, title: "x" }, "user-1", deps),
     ).rejects.toMatchObject({ name: "ZodError" });
-    expect(deps.getSessionUser).not.toHaveBeenCalled();
+    expect(deps.findPublicProject).not.toHaveBeenCalled();
   });
 
   it("returns an authentication error before resolving the project", async () => {
-    const deps = dependencies({ getSessionUser: vi.fn().mockResolvedValue(null) });
+    const deps = dependencies();
 
     await expect(
-      executePublicFeedbackCreation(validInput, deps),
+      executePublicFeedbackCreation(validInput, null, deps),
     ).rejects.toMatchObject({ code: "UNAUTHENTICATED" });
     expect(deps.findPublicProject).not.toHaveBeenCalled();
   });
@@ -46,7 +47,7 @@ describe("executePublicFeedbackCreation", () => {
     });
 
     await expect(
-      executePublicFeedbackCreation(validInput, deps),
+      executePublicFeedbackCreation(validInput, "user-1", deps),
     ).rejects.toMatchObject({ code: "PUBLIC_BOARD_UNAVAILABLE" });
     expect(deps.createFeedback).not.toHaveBeenCalled();
   });
@@ -55,7 +56,7 @@ describe("executePublicFeedbackCreation", () => {
     const deps = dependencies();
 
     await expect(
-      executePublicFeedbackCreation(validInput, deps),
+      executePublicFeedbackCreation(validInput, "user-1", deps),
     ).resolves.toEqual({
       feedback: { id: "feedback-1", slug: "acme-studio" },
     });
@@ -74,7 +75,7 @@ describe("executePublicFeedbackCreation", () => {
     });
 
     await expect(
-      executePublicFeedbackCreation(validInput, deps),
+      executePublicFeedbackCreation(validInput, "user-1", deps),
     ).rejects.toMatchObject({ code: "FEEDBACK_LIMIT_REACHED" });
   });
 
@@ -84,7 +85,7 @@ describe("executePublicFeedbackCreation", () => {
     });
 
     await expect(
-      executePublicFeedbackCreation(validInput, deps),
+      executePublicFeedbackCreation(validInput, "user-1", deps),
     ).rejects.toMatchObject({ code: "PUBLIC_BOARD_UNAVAILABLE" });
   });
 
@@ -95,7 +96,7 @@ describe("executePublicFeedbackCreation", () => {
     });
 
     await expect(
-      executePublicFeedbackCreation(validInput, deps),
+      executePublicFeedbackCreation(validInput, "user-1", deps),
     ).rejects.toBe(databaseError);
   });
 });

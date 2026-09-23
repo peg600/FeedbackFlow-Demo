@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { executeFeedbackVote } from "@/server/services/feedback-voting";
+import { executeFeedbackVote } from "@/features/feedback/server/voting";
+
+vi.mock("@/server/db", () => ({ db: {} }));
 
 const validInput = {
   feedbackId: "c0a80121-7ac0-4f4e-a1d8-2fe804b6c401",
@@ -14,29 +16,29 @@ function dependencies(overrides: Record<string, unknown> = {}) {
     createVote: vi.fn().mockResolvedValue(true),
     deleteVote: vi.fn().mockResolvedValue(undefined),
     findPublicFeedback: vi.fn().mockResolvedValue({ id: validInput.feedbackId }),
-    getSessionUser: vi.fn().mockResolvedValue({ id: "user-1" }),
     hasVote: vi.fn().mockResolvedValue(false),
     ...overrides,
   };
 }
 
 describe("executeFeedbackVote", () => {
-  it("validates before reading authentication", async () => {
+  it("validates before accessing the database", async () => {
     const deps = dependencies();
 
     await expect(
       executeFeedbackVote(
         { feedbackId: "not-a-uuid", slug: "acme-studio" },
+        "user-1",
         deps,
       ),
     ).rejects.toMatchObject({ name: "ZodError" });
-    expect(deps.getSessionUser).not.toHaveBeenCalled();
+    expect(deps.findPublicFeedback).not.toHaveBeenCalled();
   });
 
   it("returns a typed authentication error without querying feedback", async () => {
-    const deps = dependencies({ getSessionUser: vi.fn().mockResolvedValue(null) });
+    const deps = dependencies();
 
-    await expect(executeFeedbackVote(validInput, deps)).rejects.toMatchObject({
+    await expect(executeFeedbackVote(validInput, null, deps)).rejects.toMatchObject({
       code: "UNAUTHENTICATED",
     });
     expect(deps.findPublicFeedback).not.toHaveBeenCalled();
@@ -47,7 +49,7 @@ describe("executeFeedbackVote", () => {
       findPublicFeedback: vi.fn().mockResolvedValue(null),
     });
 
-    await expect(executeFeedbackVote(validInput, deps)).rejects.toMatchObject({
+    await expect(executeFeedbackVote(validInput, "user-1", deps)).rejects.toMatchObject({
       code: "FEEDBACK_NOT_AVAILABLE",
     });
     expect(deps.hasVote).not.toHaveBeenCalled();
@@ -58,7 +60,7 @@ describe("executeFeedbackVote", () => {
   it("creates a vote for the authenticated user", async () => {
     const deps = dependencies();
 
-    await expect(executeFeedbackVote(validInput, deps)).resolves.toEqual({
+    await expect(executeFeedbackVote(validInput, "user-1", deps)).resolves.toEqual({
       voteCount: 83,
       voted: true,
     });
@@ -71,7 +73,7 @@ describe("executeFeedbackVote", () => {
   it("removes an existing vote instead of creating a duplicate", async () => {
     const deps = dependencies({ hasVote: vi.fn().mockResolvedValue(true) });
 
-    await expect(executeFeedbackVote(validInput, deps)).resolves.toMatchObject({
+    await expect(executeFeedbackVote(validInput, "user-1", deps)).resolves.toMatchObject({
       voted: false,
     });
     expect(deps.deleteVote).toHaveBeenCalledWith({
@@ -87,7 +89,7 @@ describe("executeFeedbackVote", () => {
       hasVote: vi.fn().mockResolvedValueOnce(false).mockResolvedValueOnce(true),
     });
 
-    await expect(executeFeedbackVote(validInput, deps)).resolves.toMatchObject({
+    await expect(executeFeedbackVote(validInput, "user-1", deps)).resolves.toMatchObject({
       voted: true,
     });
     expect(deps.hasVote).toHaveBeenCalledTimes(2);

@@ -10,12 +10,12 @@ import {
 import { PublicFeedbackFilters } from "@/features/feedback/components/public-feedback-filters";
 import { PublicFeedbackForm } from "@/features/feedback/components/public-feedback-form";
 import { PublicProjectHeader } from "@/features/feedback/components/public-project-header";
-import { getPublicFeedbackBoard } from "@/server/services/public-feedback";
+import { getPublicFeedbackBoard } from "@/features/feedback/server/queries";
 import {
   parsePublicFeedbackSearchParams,
   type PublicFeedbackSearchParams,
-} from "@/validators/public-feedback";
-import { projectSchema } from "@/validators/project";
+} from "@/features/feedback/schemas";
+import { projectSchema } from "@/features/projects/schemas";
 
 type PublicFeedbackPageProps = {
   params: Promise<{ slug: string }>;

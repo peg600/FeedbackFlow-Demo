@@ -1,7 +1,7 @@
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { betterAuth } from "better-auth";
 
-import { env } from "@/lib/env";
+import { env } from "@/server/env";
 import { createAuthBaseURL } from "@/server/auth/base-url";
 import { getAuthRateLimitKey } from "@/server/auth/rate-limit-key";
 import { db } from "@/server/db";

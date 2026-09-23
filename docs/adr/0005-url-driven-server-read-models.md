@@ -44,5 +44,5 @@ Roadmap 从公开反馈的 `planned`、`in_progress`、`completed` 状态直接�
 
 - 会话 `01a01942-86d9-7140-80ea-db692129007a`：2026-08-19—22 的 Dashboard、Onboarding、公开板与详情实现；会话 `01a0657d-e5e2-7b30-b24b-6ae4b735fc8e`：2026-09-03 引入 Roadmap，2026-09-18 确认页面与数据同步完善方案。
 - 提交 `08fedf7`、`630e6a2`、`997378f`、`8c22189`、`1b7eab3`。
-- [查询参数](../../src/validators/public-feedback.ts)、[公开反馈查询](../../src/server/services/public-feedback.ts)、[筛选控件](../../src/features/feedback/components/public-feedback-filters.tsx)、[路线图查询](../../src/server/services/public-roadmap.ts)、[路径失效](../../src/server/cache/project-pages.ts)。
+- [查询参数](../../src/features/feedback/schemas.ts)、[公开反馈查询](../../src/features/feedback/server/queries.ts)、[筛选控件](../../src/features/feedback/components/public-feedback-filters.tsx)、[路线图查询](../../src/features/feedback/server/roadmap.ts)、[路径失效](../../src/features/projects/server/cache.ts)。
 - [公开板测试](../../tests/unit/public-feedback-page.test.tsx)、[路线图测试](../../tests/unit/roadmap-page.test.tsx)、[缓存路径测试](../../tests/unit/project-page-cache.test.ts)。

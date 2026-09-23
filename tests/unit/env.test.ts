@@ -22,7 +22,7 @@ describe("server environment", () => {
     );
     vi.stubEnv("VERCEL_URL", "feedback-flow-demo-commit.example.com");
 
-    const { env } = await import("@/lib/env");
+    const { env } = await import("@/server/env");
 
     expect(env.BETTER_AUTH_URL).toBe(
       "https://feedback-flow-demo-git-develop.example.com",
@@ -33,7 +33,7 @@ describe("server environment", () => {
     vi.stubEnv("BETTER_AUTH_URL", "");
     vi.stubEnv("VERCEL_URL", "feedback-flow-demo-commit.example.com");
 
-    const { env } = await import("@/lib/env");
+    const { env } = await import("@/server/env");
 
     expect(env.BETTER_AUTH_URL).toBe(
       "https://feedback-flow-demo-commit.example.com",
@@ -45,7 +45,7 @@ describe("server environment", () => {
     vi.stubEnv("VERCEL_ENV", "production");
     vi.stubEnv("VERCEL_URL", "feedback-flow-demo-commit.example.com");
 
-    await expect(import("@/lib/env")).rejects.toThrow(
+    await expect(import("@/server/env")).rejects.toThrow(
       "Invalid server environment variables: BETTER_AUTH_URL",
     );
   });

@@ -16,8 +16,8 @@ import { auth } from "@/server/auth";
 import {
   getPublicFeedbackDetail,
   getPublicFeedbackVoteState,
-} from "@/server/services/public-feedback";
-import { publicFeedbackRouteSchema } from "@/validators/public-feedback";
+} from "@/features/feedback/server/queries";
+import { publicFeedbackRouteSchema } from "@/features/feedback/schemas";
 
 type FeedbackDetailPageProps = {
   params: Promise<{ id: string; slug: string }>;

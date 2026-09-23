@@ -2,8 +2,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ reconcile: vi.fn(), config: vi.fn() }));
-vi.mock("@/server/services/billing", () => ({ reconcileBillingBatch: mocks.reconcile }));
-vi.mock("@/lib/paddle-config", () => ({ readPaddleConfig: mocks.config }));
+vi.mock("@/features/billing/server/billing", () => ({ reconcileBillingBatch: mocks.reconcile }));
+vi.mock("@/features/billing/server/config", () => ({ readPaddleConfig: mocks.config }));
 import { GET } from "@/app/api/cron/billing-reconcile/route";
 
 describe("billing cron authorization", () => {

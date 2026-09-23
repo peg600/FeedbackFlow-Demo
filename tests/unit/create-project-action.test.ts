@@ -4,6 +4,8 @@ import { createProjectAction } from "@/features/projects/actions/create-project"
 import { businessError } from "@/lib/errors";
 
 const mocks = vi.hoisted(() => ({
+  session: vi.fn(),
+  limit: vi.fn(),
   executeProjectCreation: vi.fn(),
   redirect: vi.fn((path: string) => {
     const error = new Error("NEXT_REDIRECT");
@@ -15,10 +17,11 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
-vi.mock("@/server/auth", () => ({ auth: {} }));
+vi.mock("next/headers", () => ({ headers: async () => new Headers() }));
+vi.mock("@/server/auth", () => ({ auth: { api: { getSession: mocks.session } } }));
 vi.mock("@/server/db", () => ({ db: {} }));
 vi.mock("@/server/db/schema", () => ({ projects: {} }));
-vi.mock("@/server/services/project-creation", () => ({
+vi.mock("@/features/projects/server/creation", () => ({
   executeProjectCreation: mocks.executeProjectCreation,
 }));
 
@@ -31,6 +34,9 @@ const input = {
 describe("createProjectAction", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.limit.mockReset();
+    mocks.session.mockResolvedValue({ user: { id: "user-1" } });
+    mocks.limit.mockResolvedValue(undefined);
   });
 
   it("uses native flattened validation errors", async () => {
@@ -55,16 +61,12 @@ describe("createProjectAction", () => {
     expect(mocks.revalidatePath).toHaveBeenNthCalledWith(2, "/onboarding");
     expect(mocks.executeProjectCreation).toHaveBeenCalledWith(
       input,
-      expect.objectContaining({
-        findProjectBySlug: expect.any(Function),
-        findProjectByUser: expect.any(Function),
-        getSessionUser: expect.any(Function),
-        insertProject: expect.any(Function),
-      }),
+      "user-1",
     );
   });
 
   it("preserves the login redirect for an expired session", async () => {
+    mocks.session.mockResolvedValue(null);
     mocks.executeProjectCreation.mockRejectedValue(
       businessError("UNAUTHENTICATED"),
     );
@@ -72,6 +74,14 @@ describe("createProjectAction", () => {
     await expect(createProjectAction(input)).rejects.toMatchObject({
       digest: "NEXT_REDIRECT;replace;/login?returnTo=/onboarding;307;",
     });
+    expect(mocks.executeProjectCreation).toHaveBeenCalledWith(input, null);
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("uses the session identity even when input contains a forged user ID", async () => {
+    mocks.executeProjectCreation.mockResolvedValue({ project: { id: "project-1", slug: "acme-studio" } });
+    const forgedInput = { ...input, userId: "victim-user", ownerId: "victim-user" };
+    await expect(createProjectAction(forgedInput)).rejects.toMatchObject({ message: "NEXT_REDIRECT" });
+    expect(mocks.executeProjectCreation).toHaveBeenCalledWith(input, "user-1");
   });
 });

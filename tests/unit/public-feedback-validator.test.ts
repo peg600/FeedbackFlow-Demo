@@ -4,7 +4,7 @@ import {
   createPublicFeedbackSchema,
   parsePublicFeedbackSearchParams,
   publicFeedbackRouteSchema,
-} from "@/validators/public-feedback";
+} from "@/features/feedback/schemas";
 
 describe("publicFeedbackRouteSchema", () => {
   it("normalizes a public project slug", () => {

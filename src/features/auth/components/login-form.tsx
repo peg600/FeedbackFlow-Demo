@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getAuthError } from "@/features/auth/auth-error";
 import { authClient } from "@/lib/auth-client";
-import { loginSchema, type LoginValues } from "@/validators/auth";
+import { loginSchema, type LoginValues } from "@/features/auth/schemas";
 
 const defaultValues: LoginValues = {
   email: "",

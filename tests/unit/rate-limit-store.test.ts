@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import type { NeonDatabase } from "drizzle-orm/neon-serverless";
 import * as schema from "@/server/db/schema";
-import { createRateLimitStore } from "@/server/services/rate-limit-store";
+import { createRateLimitStore } from "@/server/rate-limit/store";
 
 describe("atomic rate limit store boundary", () => {
   it.each([{ window: 0, max: 1 }, { window: 60, max: 0 }, { window: 1.5, max: 2 }, { window: 60, max: 1_000_001 }])(

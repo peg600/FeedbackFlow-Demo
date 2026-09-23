@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { parseDashboardSearchParams } from "@/validators/dashboard";
+import { parseDashboardSearchParams } from "@/features/dashboard/schemas";
 
 describe("parseDashboardSearchParams", () => {
   it("trims and validates supported dashboard query values", () => {

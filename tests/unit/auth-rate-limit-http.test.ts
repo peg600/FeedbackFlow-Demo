@@ -2,7 +2,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ consume: vi.fn() }));
-vi.mock("@/lib/env", () => ({ env: {
+vi.mock("@/server/env", () => ({ env: {
   BETTER_AUTH_SECRET: "test-auth-secret-at-least-32-characters-long",
   BETTER_AUTH_URL: "http://localhost:3100",
 } }));

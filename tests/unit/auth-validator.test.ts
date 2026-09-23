@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { loginSchema, registerSchema } from "@/validators/auth";
+import { loginSchema, registerSchema } from "@/features/auth/schemas";
 
 describe("auth password validation", () => {
   it("accepts passwords at the 128 character limit", () => {

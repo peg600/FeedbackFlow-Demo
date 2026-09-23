@@ -44,5 +44,5 @@
 
 - 会话 `01a0657d-e5e2-7b30-b24b-6ae4b735fc8e`：2026-09-18 方案提出复用 PostgreSQL 的共享限流，用户确认后实施，并在审查中补充有限认证路径桶。
 - 提交 `9ba247f`。
-- [共享存储](../../src/server/services/rate-limit-store.ts)、[业务额度](../../src/server/rate-limit.ts)、[认证接入](../../src/server/auth/index.ts)、[桶键归类](../../src/server/auth/rate-limit-key.ts)、[迁移](../../drizzle/0001_unknown_winter_soldier.sql)。
+- [共享存储](../../src/server/rate-limit/store.ts)、[业务额度](../../src/server/rate-limit/index.ts)、[认证接入](../../src/server/auth/index.ts)、[桶键归类](../../src/server/auth/rate-limit-key.ts)、[迁移](../../drizzle/0001_unknown_winter_soldier.sql)。
 - [业务限流测试](../../tests/unit/write-rate-limit.test.ts)、[认证 HTTP 测试](../../tests/unit/auth-rate-limit-http.test.ts)、[并发测试](../../tests/integration/write-concurrency.test.ts)。

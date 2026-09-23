@@ -9,16 +9,16 @@ import { updateFeedbackStatusAction } from "@/features/feedback/actions/update-f
 import { iconPaths } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 import { ACTION_NETWORK_ERROR, getActionErrorMessage } from "@/lib/action-errors";
-import type { DashboardStatus } from "@/validators/dashboard";
+import type { FeedbackStatus } from "@/features/feedback/schemas";
 
-const labels: Record<DashboardStatus, string> = {
+const labels: Record<FeedbackStatus, string> = {
   completed: "Completed",
   in_progress: "In progress",
   planned: "Planned",
   under_review: "Under review",
 };
 
-const statusStyles: Record<DashboardStatus, string> = {
+const statusStyles: Record<FeedbackStatus, string> = {
   completed: "bg-surface-success text-success hover:bg-surface-success",
   in_progress: "bg-surface-info text-info hover:bg-surface-info",
   planned: "bg-surface-warning text-warning-foreground hover:bg-surface-warning",
@@ -50,7 +50,7 @@ const statusOptions: readonly SelectOption[] = [
 
 type StatusSelectProps = {
   feedbackId: string;
-  initialStatus: DashboardStatus;
+  initialStatus: FeedbackStatus;
 };
 
 // 乐观显示新的反馈状态；Action 失败时回滚到最后一次由服务端确认的状态并展示统一错误。
@@ -90,8 +90,8 @@ export function StatusSelect({ feedbackId, initialStatus }: StatusSelectProps) {
         id={`status-${feedbackId}`}
         name="status"
         onValueChange={(nextStatus) => {
-          setStatus(nextStatus as DashboardStatus);
-          execute({ feedbackId, status: nextStatus as DashboardStatus });
+          setStatus(nextStatus as FeedbackStatus);
+          execute({ feedbackId, status: nextStatus as FeedbackStatus });
         }}
         options={statusOptions}
         size="status"

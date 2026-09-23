@@ -18,7 +18,7 @@ vi.mock("next/navigation", () => ({
   usePathname: () => "/p/acme-studio",
   useRouter: () => ({ push: mocks.push }),
 }));
-vi.mock("@/server/services/public-feedback", () => ({
+vi.mock("@/features/feedback/server/queries", () => ({
   getPublicFeedbackBoard: mocks.getPublicFeedbackBoard,
 }));
 vi.mock("@/features/feedback/actions/create-public-feedback", () => ({

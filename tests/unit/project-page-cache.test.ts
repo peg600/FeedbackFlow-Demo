@@ -4,7 +4,7 @@ const mocks = vi.hoisted(() => ({ revalidatePath: vi.fn() }));
 
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 
-import { revalidatePublicProjectPages } from "@/server/cache/project-pages";
+import { revalidatePublicProjectPages } from "@/features/projects/server/cache";
 
 describe("revalidatePublicProjectPages", () => {
   beforeEach(() => vi.clearAllMocks());

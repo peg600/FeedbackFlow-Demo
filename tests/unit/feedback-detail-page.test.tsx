@@ -23,7 +23,7 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/server/auth", () => ({
   auth: { api: { getSession: mocks.getSession } },
 }));
-vi.mock("@/server/services/public-feedback", () => ({
+vi.mock("@/features/feedback/server/queries", () => ({
   getPublicFeedbackDetail: mocks.getPublicFeedbackDetail,
   getPublicFeedbackVoteState: mocks.getPublicFeedbackVoteState,
 }));

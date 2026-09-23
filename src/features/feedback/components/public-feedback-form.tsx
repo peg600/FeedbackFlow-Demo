@@ -14,7 +14,7 @@ import { ACTION_NETWORK_ERROR, getActionErrorMessage, getActionFieldError } from
 import {
   createPublicFeedbackSchema,
   type CreatePublicFeedbackValues,
-} from "@/validators/public-feedback";
+} from "@/features/feedback/schemas";
 
 const defaultValues: Omit<CreatePublicFeedbackValues, "slug"> = {
   description: "",

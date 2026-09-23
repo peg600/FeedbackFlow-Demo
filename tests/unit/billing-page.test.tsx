@@ -2,9 +2,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ access: vi.fn(), overview: vi.fn(), redirect: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
-vi.mock("@/server/services/project-access", () => ({ requireDashboardAccess: mocks.access }));
-vi.mock("@/server/services/billing", () => ({ getBillingOverview: mocks.overview }));
-vi.mock("@/lib/paddle-config", () => ({ readPaddleConfig: () => null }));
+vi.mock("@/features/projects/server/access", () => ({ requireDashboardAccess: mocks.access }));
+vi.mock("@/features/billing/server/billing", () => ({ getBillingOverview: mocks.overview }));
+vi.mock("@/features/billing/server/config", () => ({ readPaddleConfig: () => null }));
 vi.mock("@/features/billing/components/billing-panel", () => ({ BillingPanel: () => null }));
 import BillingPage from "@/app/dashboard/billing/page";
 

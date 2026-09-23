@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { updateOwnedProject } from "@/server/services/project-update";
+import { updateOwnedProject } from "@/features/projects/server/settings";
 
 vi.mock("@/server/db", () => ({ db: {} }));
 vi.mock("@/server/db/schema", () => ({ projects: {} }));

@@ -1,25 +1,22 @@
 "use server";
 
-import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { headers } from "next/headers";
 import { z } from "zod";
 
 import { businessError } from "@/lib/errors";
 import { auth } from "@/server/auth";
-import { db } from "@/server/db";
-import { projects } from "@/server/db/schema";
+import { requireOwnedProject } from "@/features/projects/server/access";
 import { enforceWriteRateLimit } from "@/server/rate-limit";
 import { actionClient } from "@/server/safe-action";
-import { createBillingCheckout, createBillingPortal, getBillingOverview, reconcileBilling } from "@/server/services/billing";
+import { createBillingCheckout, createBillingPortal, getBillingOverview, reconcileBilling } from "@/features/billing/server/billing";
 
 /** 每次调用重新验证 Session 与唯一项目，并在业务事务外消费共享限流额度。 */
 async function requireBillingUser(operation: "billing.checkout" | "billing.portal" | "billing.status" | "billing.reconcile") {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) throw businessError("UNAUTHENTICATED");
   await enforceWriteRateLimit(session.user.id, operation);
-  const [project] = await db.select({ id: projects.id }).from(projects).where(eq(projects.userId, session.user.id)).limit(1);
-  if (!project) throw businessError("PROJECT_NOT_FOUND");
+  const project = await requireOwnedProject(session.user.id);
   return { user: session.user, project };
 }
 

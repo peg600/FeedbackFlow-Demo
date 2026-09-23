@@ -3,11 +3,11 @@ import type { Transaction } from "@paddle/paddle-node-sdk";
 
 import { hasProEntitlement } from "@/features/billing/entitlement";
 import { businessError, isBusinessError } from "@/lib/errors";
-import { readPaddleConfig } from "@/lib/paddle-config";
+import { readPaddleConfig } from "@/features/billing/server/config";
 import { db } from "@/server/db";
 import { billingCheckouts, billingCustomers, feedback, subscriptions, user as authUser } from "@/server/db/schema";
-import { getPaddle } from "@/server/paddle";
-import { syncSubscriptionInTransaction } from "@/server/services/billing-sync";
+import { getPaddle } from "@/features/billing/server/paddle";
+import { syncSubscriptionInTransaction } from "@/features/billing/server/sync";
 
 type BillingUser = { id: string; email: string; name: string };
 

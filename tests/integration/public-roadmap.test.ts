@@ -10,7 +10,7 @@ vi.mock("@/server/db", async () => {
 
 import { db } from "@/server/db";
 import { feedback, projects, user, votes } from "@/server/db/schema";
-import { getPublicRoadmap } from "@/server/services/public-roadmap";
+import { getPublicRoadmap } from "@/features/feedback/server/roadmap";
 
 const ownerId = `roadmap-${randomUUID()}`;
 const projectId = randomUUID();

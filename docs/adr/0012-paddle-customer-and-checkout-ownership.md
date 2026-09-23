@@ -40,7 +40,7 @@ Better Auth 核心 Demo 不验证邮箱。Paddle 客户邮箱可能已存在，�
 
 ## 实施与验证
 
-实现见 [billing.ts](../../src/server/services/billing.ts)、[schema](../../src/server/db/schema/billing.ts)、[Actions](../../src/features/billing/actions.ts)。单元测试覆盖 Session 归属、拒绝客户端客户 ID 和配置边界；独立数据库集成用例覆盖并发 POST 与未知结果恢复，未配置 test 数据库前不描述为已通过。最终本次命令与外部未验收项见 README。
+实现见 [billing.ts](../../src/features/billing/server/billing.ts)、[schema](../../src/server/db/schema/billing.ts)、[Actions](../../src/features/billing/actions.ts)。单元测试覆盖 Session 归属、拒绝客户端客户 ID 和配置边界；独立数据库集成用例覆盖并发 POST 与未知结果恢复，未配置 test 数据库前不描述为已通过。最终本次命令与外部未验收项见 README。
 
 ## 重新评估条件
 

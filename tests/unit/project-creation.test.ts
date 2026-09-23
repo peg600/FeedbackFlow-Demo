@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { executeProjectCreation } from "@/server/services/project-creation";
+import { executeProjectCreation } from "@/features/projects/server/creation";
+
+vi.mock("@/server/db", () => ({ db: {} }));
 
 const validInput = {
   description: "Help us decide what to build next.",
@@ -17,9 +19,6 @@ function dependencies() {
     findProjectByUser: vi.fn(
       async (): Promise<{ id: string; slug: string } | null> => null,
     ),
-    getSessionUser: vi.fn(
-      async (): Promise<{ id: string } | null> => ({ id: "user-1" }),
-    ),
     insertProject: vi.fn(
       async (): Promise<{ id: string; slug: string } | null> => ({
         id: "project-1",
@@ -30,20 +29,20 @@ function dependencies() {
 }
 
 describe("executeProjectCreation", () => {
-  it("validates before reading identity or writing", async () => {
+  it("validates before accessing the database", async () => {
     const deps = dependencies();
 
     await expect(
-      executeProjectCreation({ ...validInput, slug: "not valid" }, deps),
+      executeProjectCreation({ ...validInput, slug: "not valid" }, "user-1", deps),
     ).rejects.toMatchObject({ name: "ZodError" });
-    expect(deps.getSessionUser).not.toHaveBeenCalled();
+    expect(deps.insertProject).not.toHaveBeenCalled();
     expect(deps.insertProject).not.toHaveBeenCalled();
   });
 
   it("creates one workspace for the authenticated user", async () => {
     const deps = dependencies();
 
-    await expect(executeProjectCreation(validInput, deps)).resolves.toEqual({
+    await expect(executeProjectCreation(validInput, "user-1", deps)).resolves.toEqual({
       project: { id: "project-1", slug: "acme-studio" },
     });
     expect(deps.insertProject).toHaveBeenCalledWith({
@@ -56,9 +55,8 @@ describe("executeProjectCreation", () => {
 
   it("returns a typed authentication failure without writing", async () => {
     const deps = dependencies();
-    deps.getSessionUser.mockResolvedValue(null);
 
-    await expect(executeProjectCreation(validInput, deps)).rejects.toMatchObject({
+    await expect(executeProjectCreation(validInput, null, deps)).rejects.toMatchObject({
       code: "UNAUTHENTICATED",
     });
     expect(deps.insertProject).not.toHaveBeenCalled();
@@ -72,7 +70,7 @@ describe("executeProjectCreation", () => {
       slug: "acme-studio",
     });
 
-    await expect(executeProjectCreation(validInput, deps)).resolves.toEqual({
+    await expect(executeProjectCreation(validInput, "user-1", deps)).resolves.toEqual({
       project: { id: "existing-project", slug: "acme-studio" },
     });
     expect(deps.findProjectBySlug).not.toHaveBeenCalled();
@@ -86,7 +84,7 @@ describe("executeProjectCreation", () => {
       userId: "user-2",
     });
 
-    await expect(executeProjectCreation(validInput, deps)).rejects.toMatchObject({
+    await expect(executeProjectCreation(validInput, "user-1", deps)).rejects.toMatchObject({
       code: "PROJECT_SLUG_TAKEN",
       field: "slug",
     });
@@ -97,7 +95,7 @@ describe("executeProjectCreation", () => {
     const databaseError = new Error("connection details");
     deps.insertProject.mockRejectedValue(databaseError);
 
-    await expect(executeProjectCreation(validInput, deps)).rejects.toBe(
+    await expect(executeProjectCreation(validInput, "user-1", deps)).rejects.toBe(
       databaseError,
     );
   });

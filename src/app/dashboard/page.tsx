@@ -4,9 +4,9 @@ import { buttonVariants } from "@/components/ui/button";
 import { DashboardFilters } from "@/features/dashboard/components/dashboard-filters";
 import { StatusSelect } from "@/features/feedback/components/status-select";
 import { cn } from "@/lib/utils";
-import { getDashboardData } from "@/server/services/dashboard";
-import { requireDashboardAccess } from "@/server/services/project-access";
-import { parseDashboardSearchParams } from "@/validators/dashboard";
+import { getDashboardData } from "@/features/dashboard/server/queries";
+import { requireDashboardAccess } from "@/features/projects/server/access";
+import { parseDashboardSearchParams } from "@/features/dashboard/schemas";
 
 type DashboardPageProps = { searchParams: Promise<Record<string, string | string[] | undefined>> };
 

@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
+import { businessError } from "@/lib/errors";
 import { auth } from "@/server/auth";
 import { db } from "@/server/db";
 import { projects } from "@/server/db/schema";
@@ -14,6 +15,14 @@ type CurrentProjectAccess = {
   project: Project | null;
   session: Session | null;
 };
+
+/** 按入口已验证的会话用户查找唯一项目；业务入口使用领域错误，不触发页面跳转。 */
+export async function requireOwnedProject(userId: string) {
+  const [project] = await db.select({ id: projects.id }).from(projects)
+    .where(eq(projects.userId, userId)).limit(1);
+  if (!project) throw businessError("PROJECT_NOT_FOUND");
+  return project;
+}
 
 /** 在当前服务端渲染范围内复用会话及所属项目查询，区分未登录和尚未创建项目。 */
 export const getCurrentProjectAccess = cache(async (): Promise<CurrentProjectAccess> => {

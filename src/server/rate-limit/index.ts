@@ -1,7 +1,7 @@
-import { env } from "@/lib/env";
+import { env } from "@/server/env";
 import { businessError } from "@/lib/errors";
 import { db } from "@/server/db";
-import { createRateLimitStore } from "@/server/services/rate-limit-store";
+import { createRateLimitStore } from "@/server/rate-limit/store";
 
 export const rateLimitStore = createRateLimitStore(db, env.BETTER_AUTH_SECRET);
 

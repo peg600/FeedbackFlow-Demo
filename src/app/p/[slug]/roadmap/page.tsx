@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { PublicProjectHeader } from "@/features/feedback/components/public-project-header";
-import { getPublicRoadmap } from "@/server/services/public-roadmap";
+import { getPublicRoadmap } from "@/features/feedback/server/roadmap";
 
 type Props = { params: Promise<{ slug: string }> };
 

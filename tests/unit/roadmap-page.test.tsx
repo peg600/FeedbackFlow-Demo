@@ -1,7 +1,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("@/server/services/public-roadmap", () => ({
+vi.mock("@/features/feedback/server/roadmap", () => ({
   getPublicRoadmap: vi.fn().mockResolvedValue({
     project: { description: "Ideas", id: "p1", name: "Acme", slug: "acme" },
     lanes: [

@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { createProjectAction } from "@/features/projects/actions/create-project";
 import { ACTION_NETWORK_ERROR, getActionErrorMessage, getActionFieldError } from "@/lib/action-errors";
-import { projectSchema, type ProjectValues } from "@/validators/project";
+import { projectSchema, type ProjectValues } from "@/features/projects/schemas";
 
 const defaultValues: ProjectValues = {
   description: "",

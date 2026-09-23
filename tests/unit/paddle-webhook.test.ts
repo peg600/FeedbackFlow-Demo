@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ process: vi.fn() }));
 vi.mock("@/server/db", () => ({ db: {} }));
-vi.mock("@/server/services/billing-sync", () => ({ processPaddleEvent: mocks.process }));
+vi.mock("@/features/billing/server/sync", () => ({ processPaddleEvent: mocks.process }));
 import { POST } from "@/app/api/paddle/webhook/route";
 
 const secret = "webhook-unit-fixture-secret";

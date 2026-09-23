@@ -7,7 +7,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { createCheckoutAction, createPortalAction, getBillingStatusAction, reconcileBillingAction } from "@/features/billing/actions";
 import { ACTION_NETWORK_ERROR, getActionErrorMessage } from "@/lib/action-errors";
-import type { getBillingOverview } from "@/server/services/billing";
+import type { getBillingOverview } from "@/features/billing/server/billing";
 
 type Overview = Awaited<ReturnType<typeof getBillingOverview>>;
 let paddlePromise: Promise<Paddle | undefined> | undefined;

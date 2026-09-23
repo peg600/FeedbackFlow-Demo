@@ -7,7 +7,7 @@ import { type FormEvent, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Select, type SelectOption } from "@/components/ui/select";
 import { iconPaths } from "@/lib/icons";
-import type { DashboardSearchParams } from "@/validators/dashboard";
+import type { DashboardSearchParams } from "@/features/dashboard/schemas";
 
 const statusOptions: readonly SelectOption[] = [
   { label: "All status", value: "all" },

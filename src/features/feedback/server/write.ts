@@ -3,8 +3,8 @@ import type { NeonDatabase } from "drizzle-orm/neon-serverless";
 
 import * as schema from "@/server/db/schema";
 import { hasProEntitlement } from "@/features/billing/entitlement";
-import { readPaddleConfig } from "@/lib/paddle-config";
-import type { CreatePublicFeedbackDependencies } from "@/server/services/feedback-creation";
+import { readPaddleConfig } from "@/features/billing/server/config";
+import type { CreatePublicFeedbackDependencies } from "@/features/feedback/server/creation";
 
 /** 在项目配额锁内复核公开范围并插入；生产 Action 与数据库集成测试共用同一并发保护实现。 */
 export async function insertPublicFeedback(

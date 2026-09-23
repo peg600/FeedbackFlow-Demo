@@ -20,6 +20,7 @@
 | 0010 | [Paddle Sandbox 替代 Stripe 与 Billing 占位](0010-paddle-sandbox-billing.md) | Accepted | 2026-09-21 |
 | 0011 | [本地订阅权益、Webhook 与 API 对账](0011-local-entitlements-and-reconciliation.md) | Accepted | 2026-09-21 |
 | 0012 | [客户归属与持久化结账恢复](0012-paddle-customer-and-checkout-ownership.md) | Accepted | 2026-09-21 |
+| 0013 | [按功能归属组织服务端业务模块](0013-feature-owned-server-modules.md) | Accepted | 2026-09-22 |
 
 ## 范围与维护
 

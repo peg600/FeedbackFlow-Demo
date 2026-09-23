@@ -1,6 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { executeOwnerStatusUpdate } from "@/server/services/dashboard-status";
+import { executeOwnerStatusUpdate } from "@/features/feedback/server/status";
+
+vi.mock("@/server/db", () => ({ db: {} }));
 
 const validInput = {
   feedbackId: "c0a80121-7ac0-4f4e-a1d8-2fe804b6c401",
@@ -9,31 +11,31 @@ const validInput = {
 
 function dependencies(overrides: Record<string, unknown> = {}) {
   return {
-    findOwnedProject: vi.fn().mockResolvedValue({ id: "project-1" }),
-    getSessionUser: vi.fn().mockResolvedValue({ id: "user-1" }),
+    findOwnedProject: vi.fn().mockResolvedValue({ id: "project-1", slug: "acme-studio" }),
     updateOwnedFeedback: vi.fn().mockResolvedValue(true),
     ...overrides,
   };
 }
 
 describe("executeOwnerStatusUpdate", () => {
-  it("validates before reading authentication", async () => {
+  it("validates before accessing the database", async () => {
     const deps = dependencies();
 
     await expect(
       executeOwnerStatusUpdate(
         { feedbackId: "not-a-uuid", status: "planned" },
+        "user-1",
         deps,
       ),
     ).rejects.toMatchObject({ name: "ZodError" });
-    expect(deps.getSessionUser).not.toHaveBeenCalled();
+    expect(deps.findOwnedProject).not.toHaveBeenCalled();
   });
 
   it("rejects unauthenticated updates", async () => {
-    const deps = dependencies({ getSessionUser: vi.fn().mockResolvedValue(null) });
+    const deps = dependencies();
 
     await expect(
-      executeOwnerStatusUpdate(validInput, deps),
+      executeOwnerStatusUpdate(validInput, null, deps),
     ).rejects.toMatchObject({ code: "UNAUTHENTICATED" });
     expect(deps.findOwnedProject).not.toHaveBeenCalled();
   });
@@ -44,7 +46,7 @@ describe("executeOwnerStatusUpdate", () => {
     });
 
     await expect(
-      executeOwnerStatusUpdate(validInput, deps),
+      executeOwnerStatusUpdate(validInput, "user-1", deps),
     ).rejects.toMatchObject({ code: "PROJECT_NOT_FOUND" });
     expect(deps.updateOwnedFeedback).not.toHaveBeenCalled();
   });
@@ -52,9 +54,10 @@ describe("executeOwnerStatusUpdate", () => {
   it("scopes the update to the authenticated owner's project", async () => {
     const deps = dependencies();
 
-    await expect(executeOwnerStatusUpdate(validInput, deps)).resolves.toEqual({
+    await expect(executeOwnerStatusUpdate(validInput, "user-1", deps)).resolves.toEqual({
       feedbackId: validInput.feedbackId,
       status: "planned",
+      slug: "acme-studio",
     });
     expect(deps.updateOwnedFeedback).toHaveBeenCalledWith({
       feedbackId: validInput.feedbackId,
@@ -69,7 +72,7 @@ describe("executeOwnerStatusUpdate", () => {
     });
 
     await expect(
-      executeOwnerStatusUpdate(validInput, deps),
+      executeOwnerStatusUpdate(validInput, "user-1", deps),
     ).rejects.toMatchObject({ code: "FEEDBACK_NOT_AVAILABLE" });
   });
 });

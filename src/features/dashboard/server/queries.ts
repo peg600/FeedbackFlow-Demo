@@ -1,3 +1,4 @@
+import type { FeedbackStatus } from "@/features/feedback/schemas";
 import {
   and,
   asc,
@@ -13,8 +14,7 @@ import { db } from "@/server/db";
 import { feedback, user, votes } from "@/server/db/schema";
 import type {
   DashboardSearchParams,
-  DashboardStatus,
-} from "@/validators/dashboard";
+} from "@/features/dashboard/schemas";
 
 export const DASHBOARD_PAGE_SIZE = 4;
 
@@ -102,7 +102,7 @@ export async function getDashboardData(
   return {
     items: items.map((item) => ({
       ...item,
-      status: item.status as DashboardStatus,
+      status: item.status as FeedbackStatus,
       voteCount: Number(item.voteCount),
     })),
     metrics: {

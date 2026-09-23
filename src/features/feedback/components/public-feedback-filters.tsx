@@ -5,7 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { Input } from "@/components/ui/input";
 import { Select, type SelectOption } from "@/components/ui/select";
-import type { PublicFeedbackSearchParams } from "@/validators/public-feedback";
+import type { PublicFeedbackSearchParams } from "@/features/feedback/schemas";
 
 const sortOptions: readonly SelectOption[] = [
   { label: "Most voted", value: "votes" },

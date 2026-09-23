@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { ProjectSettingsForm } from "@/features/projects/components/project-settings-form";
-import { requireDashboardAccess } from "@/server/services/project-access";
+import { requireDashboardAccess } from "@/features/projects/server/access";
 
 export const metadata: Metadata = { title: "Project settings | FeedbackFlow" };
 

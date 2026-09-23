@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { BillingPanel } from "@/features/billing/components/billing-panel";
-import { readPaddleConfig } from "@/lib/paddle-config";
-import { getBillingOverview } from "@/server/services/billing";
-import { requireDashboardAccess } from "@/server/services/project-access";
+import { readPaddleConfig } from "@/features/billing/server/config";
+import { getBillingOverview } from "@/features/billing/server/billing";
+import { requireDashboardAccess } from "@/features/projects/server/access";
 
 export const metadata: Metadata = { title: "Billing | FeedbackFlow" };
 

@@ -1,8 +1,8 @@
 import { businessError } from "@/lib/errors";
-import { readPaddleConfig } from "@/lib/paddle-config";
+import { readPaddleConfig } from "@/features/billing/server/config";
 import { db } from "@/server/db";
-import { getPaddle } from "@/server/paddle";
-import { processPaddleEvent } from "@/server/services/billing-sync";
+import { getPaddle } from "@/features/billing/server/paddle";
+import { processPaddleEvent } from "@/features/billing/server/sync";
 
 export const runtime = "nodejs";
 

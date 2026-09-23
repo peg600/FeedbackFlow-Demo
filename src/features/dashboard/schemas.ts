@@ -1,20 +1,13 @@
 import { z } from "zod";
 
-export const dashboardStatuses = [
-  "under_review",
-  "planned",
-  "in_progress",
-  "completed",
-] as const;
+import { feedbackStatuses } from "@/features/feedback/schemas";
 
 export const dashboardStatusFilterSchema = z.enum([
   "all",
-  ...dashboardStatuses,
+  ...feedbackStatuses,
 ]);
 export const dashboardSortSchema = z.enum(["newest", "oldest", "votes"]);
-export const feedbackStatusSchema = z.enum(dashboardStatuses);
 
-export type DashboardStatus = z.infer<typeof feedbackStatusSchema>;
 export type DashboardStatusFilter = z.infer<
   typeof dashboardStatusFilterSchema
 >;
@@ -59,8 +52,3 @@ export function parseDashboardSearchParams(
 
   return { page, search, sort, status };
 }
-
-export const updateFeedbackStatusSchema = z.object({
-  feedbackId: z.uuid(),
-  status: feedbackStatusSchema,
-});
