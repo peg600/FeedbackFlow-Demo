@@ -65,6 +65,8 @@ describe("PublicFeedbackPage", () => {
       screen.getByRole("heading", { name: "What should we build next?" }),
     ).toBeVisible();
     expect(screen.getByText("5 public feedback")).toBeVisible();
+    expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("link", { name: "My dashboard" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByText("Filters are saved in the URL")).toBeVisible();
     expect(
       screen.getByRole("link", { name: /Dark mode for the dashboard/i }),

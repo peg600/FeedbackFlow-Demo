@@ -37,6 +37,18 @@ export function PublicProjectHeader({
   return (
     <header className="border-b border-border bg-background">
       <div className="mx-auto w-full max-w-content px-5 md:px-8 xl:px-12">
+        <nav
+          aria-label="FeedbackFlow navigation"
+          className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 border-b border-border text-xs font-medium text-muted-foreground"
+        >
+          <Link className="inline-flex min-h-11 items-center gap-2 hover:text-foreground" href="/">
+            <span aria-hidden="true">←</span>
+            Home
+          </Link>
+          <Link className="inline-flex min-h-11 items-center gap-2 hover:text-foreground" href="/dashboard">
+            My dashboard
+          </Link>
+        </nav>
         <div className="flex min-h-[68px] items-center justify-between gap-4 py-3 md:min-h-[82px]">
           <Link className="flex min-w-0 items-center gap-3" href={boardHref}>
             <span

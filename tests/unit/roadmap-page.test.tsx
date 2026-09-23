@@ -17,6 +17,8 @@ import RoadmapPage from "@/app/p/[slug]/roadmap/page";
 describe("RoadmapPage", () => {
   it("renders all derived status lanes and empty states", async () => {
     render(await RoadmapPage({ params: Promise.resolve({ slug: "acme" }) }));
+    expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/");
+    expect(screen.getByRole("link", { name: "My dashboard" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("heading", { name: "Planned" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "In progress" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Completed" })).toBeInTheDocument();
