@@ -297,7 +297,8 @@ credentials, catalog, database, or notification destination.
    settings before checkout; changing the plan requires a coordinated code change.
 3. Create a sandbox API key with `customer.read`, `customer.write`, `price.read`,
    `transaction.read`, `transaction.write`, `subscription.read`, and
-   `customer_portal_session.write`. Use a separate key for catalog administration.
+   `customer_portal_session.write`. The current local/develop Sandbox demo reuses
+   its existing setup key by explicit user choice; see [ADR 0014](docs/adr/0014-shared-sandbox-api-key.md).
    Create a sandbox client-side token. Configure the default payment link under
    Checkout settings as `https://<your-app-origin>/dashboard/billing`; for local
    development use the permitted local URL or a secure tunnel. See
@@ -396,14 +397,33 @@ and backlog, then introduce pagination/more frequent scheduling if needed.
 
 | Symptom | Checks and recovery |
 | --- | --- |
-| Checkout disabled | Confirm all sandbox variables, price format, and migration 0002; redeploy after env changes. |
+| Sandbox billing is not configured | In the affected deployment's Vercel Runtime Logs, search `Paddle configuration invalid` or `BILLING_NOT_CONFIGURED`. Each `issues` entry names the variable, reason, and expected format. Check Preview/develop overrides and redeploy after corrections. |
 | Checkout cannot start | Check API-key permissions, active monthly USD 19 price, default payment link, and Paddle.js network access. |
 | Paid but still Free | Use Refresh status; inspect notification delivery and local subscription period/status. Check destination secret, server clock, correct environment, and database connectivity. Replay failed notifications from Paddle after fixing the cause. |
 | Webhook 503 | Check configuration, original request body/signature, clock skew, migration and DB availability; retries must reach the handler. Logs contain only safe correlation/event fields. |
 | Customer conflict | Check the server provisioning marker and account ownership manually; never bind an existing customer merely by matching email. |
 | Cron 401/503 or backlog | Check `CRON_SECRET`, Production deployment, Paddle access, provider rate limits and Vercel duration; rerun with secure authorization after resolving failure. |
 
+Configuration diagnostics contain only allowlisted variable names and fixed
+messages, never values, partial credentials, lengths, or raw Zod errors. Reasons
+include `missing`, `surrounding_whitespace`, `surrounding_quotes`,
+`live_credentials_not_allowed`, `token_id_instead_of_token`, and `invalid_format`.
+These describe failures of the existing format checks; they do not verify remote
+API permissions, expiration, or whether a webhook secret belongs to a destination.
+The same diagnostic is logged at most once per minute per server instance while
+configuration remains invalid. Reload after that interval if necessary; cold
+starts and separate instances may each log once. A changed diagnostic or recovery
+followed by failure is logged immediately. The browser continues to receive the
+generic unavailable message. See [ADR 0015](docs/adr/0015-safe-billing-config-diagnostics.md).
+
 ## Billing verification
+
+Configuration diagnostics verified on 2026-09-29: 18 focused regression tests and
+all 219 unit/component tests across 51 files passed, along with lint, TypeScript,
+and a production build with the existing `.env.develop.local` explicitly injected
+into the build subprocess. Independent security review found no required fixes.
+No environment files were changed, and no deployment, database integration tests,
+browser E2E, or real Paddle payment was performed for this diagnostics change.
 
 Unit/component tests cover signature verification, invalid/future/stale signatures,
 configuration, entitlements, Session ownership, polling/timeout behavior, and cron
@@ -438,16 +458,50 @@ Created and read back **FeedbackFlow Pro**, tax category `saas`, with an active
 Created an active sandbox client-side token. The price ID, client token, local
 sandbox API key, and a random Cron secret are stored in the ignored, untracked
 `.env.local`; no credentials are stored in this document or MCP configuration.
-The catalog administration key is used only for local sandbox setup/testing;
-use the separate least-privilege runtime key described above for deployments.
+The setup key was initially kept local. On 2026-09-29 the user explicitly chose
+to reuse this Sandbox key for the develop Preview deployment (see ADR 0014).
 Native MCP tool discovery may require restarting Codex; these setup calls were
 verified directly against the registered remote MCP endpoint.
 
-The callback environment still needs to be selected before configuring a
-Notification Destination and its signing secret. Runtime API permission checks,
-default payment link, test-card checkout, Portal,
-remote webhook delivery, Cron deployment, and browser E2E remain unverified.
-Local configuration alone does not mean that the payment flow is ready.
+Develop callback setup verified on 2026-09-23: created and read back the active
+Sandbox destination `ntfset_01m37a371nw5zhx141dhpqtnce` for
+`https://feedback-flow-demo-develop.vercel.app/api/paddle/webhook`, subscribed to
+the nine events listed above, with traffic source `all` (platform and simulation).
+The destination signing secret, existing Pro price/client token, develop auth URL,
+and a separate random Cron secret are saved in the ignored `.env.develop.local`.
+This file is a manual Vercel import artifact; Next.js does not automatically load
+an environment named `develop`. On 2026-09-29 this file was aligned with all keys
+and sections in `.env.example`, including the existing Sandbox `PADDLE_API_KEY`.
+Database connections and the auth secret come from `.env.preview.local`; existing
+develop billing values are preserved. Unconfigured optional/test values stay empty.
+
+To finish this deployment, import these values into Vercel **Preview**, scoped to
+the **develop** Git branch. The file now includes the Sandbox API key, Preview
+database connections and Preview auth secret. In Paddle Sandbox Checkout settings, set the default payment link to
+`https://feedback-flow-demo-develop.vercel.app/dashboard/billing`, then redeploy
+develop so the server settings and public client token take effect.
+
+The user reports saving Vercel variables and setting the default payment link;
+the corrected API key export still needs to reach a new deployment. The connected Vercel MCP returns no
+accessible projects and exposes no environment-variable write tool; Paddle MCP
+does not expose default-payment-link configuration. Direct reachability checks
+from the agent network timed out, so endpoint accessibility and deployment
+protection remain unverified. Runtime API permission checks, default payment link,
+test-card checkout, Portal, remote webhook delivery, Cron deployment, and browser
+E2E remain unverified. Local configuration alone does not mean that the payment
+flow is ready. Preview deployments do not receive automatic Vercel Cron runs.
+
+Preview migration verified on 2026-09-29: matched `.env.preview.local` to Neon
+branch `preview` (`br-odd-queen-ayis6hs8`) using project branch/endpoint metadata.
+The branch had only migration 0000; applied 0001 (rate limiting) and 0002 (Paddle
+Billing) with Drizzle Kit through its verified direct connection. Read-back
+confirmed all 12 application tables, five new primary keys, three new foreign
+keys, seven explicit new indexes, the customer-ID unique constraint, and both
+new migration hashes. Existing table columns were unchanged. The initial ledger
+hash matches the LF version of 0000; new hashes match the current CRLF SQL files.
+`drizzle-kit generate` found no schema changes. No data cleanup, seed, Production
+migration, or application E2E was performed; this verifies database setup, not the
+external payment flow.
 
 Development migration verified on 2026-09-23: applied `0002_paddle_billing`
 through Drizzle Kit using the direct Neon connection configured in `.env.local`,

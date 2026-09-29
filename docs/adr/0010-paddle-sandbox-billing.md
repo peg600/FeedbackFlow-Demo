@@ -46,6 +46,12 @@
 
 2026-09-23 补充验证：通过 Drizzle Kit 将已提交的 `0002_paddle_billing` 应用到 `.env.local` 对应的 Neon 开发数据库，已核对目标与 Production endpoint 不同。执行前核对 0000/0001 账本与四张新表不存在；执行后确认 0002 哈希、四表、四个主键、三个外键、六个显式索引及 Customer ID 唯一约束，原有表字段未变化。未迁移 Production 或专用 test 数据库。Lint、类型检查及 50 个文件中的 201 个单元/组件测试通过；未执行数据库集成与外部支付端到端验收。本次仅落实既有迁移并补充证据，未产生新的技术决策。
 
+2026-09-23 develop 回调配置补充：按用户提供的固定地址，通过 Paddle Sandbox MCP 创建并回读启用的 Notification Destination，目标为 `https://feedback-flow-demo-develop.vercel.app/api/paddle/webhook`，订阅既定九类事件，接收 platform 与 simulation 流量。专属签名 Secret 已安全写入 Git 忽略的 `.env.develop.local` 导入文件，同时准备既有价格、客户端 Token、develop 认证 URL 与独立 Cron Secret；未导出 catalog 管理 API Key。尚未写入 Vercel 环境变量、设置默认付款链接或重新部署：Vercel MCP 未返回可访问项目且无变量写入工具，Paddle MCP 无默认付款链接配置工具。当前网络的部署可达性检查超时，不能据此认定部署故障，也未完成真实 Sandbox 付款与 Webhook 验收。此次仅落实既有环境隔离方案并补充实施证据，无新的技术决策。
+
+2026-09-29 Preview 迁移验证：通过 Neon MCP 分支与 endpoint 元数据确认 `.env.preview.local` 对应 `preview`（`br-odd-queen-ayis6hs8`），与 Production 分离。迁移前账本仅含 0000，其哈希与 LF 版本 SQL 匹配；通过显式注入 Preview direct 连接运行 Drizzle Kit，应用 0001 限流表与 0002 Billing 四表。回读确认共 12 张应用表、新增五个主键、三个外键、七个显式索引及 Customer ID 唯一约束；新账本哈希与当前 CRLF SQL 文件一致，原有表字段保持不变。`drizzle-kit generate` 未发现未生成的 schema 变更。独立安全审查确认两条迁移仅追加结构，不含数据更新或删除。未执行 Seed、数据清理、Production 迁移或支付端到端测试；本次无新的技术决策。
+
+2026-09-29 用户明确选择本地与 develop Preview 共用已有 Sandbox API Key，导入文件不再排除此项；具体配置边界与代价见 [0014](0014-shared-sandbox-api-key.md)。
+
 ## 重新评估条件
 
 需要真实收款、年付、试用、多个套餐、退款自动撤权或自建账单管理时，重新评估价格模型、身份验证、权限政策及外部配置；不得仅切换一个环境变量上线 Live。
