@@ -2,9 +2,10 @@
 
 import { initializePaddle, type Paddle, type PaddleEventData } from "@paddle/paddle-js";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import { ErrorToast } from "@/components/ui/error-toast";
 import { createCheckoutAction, createPortalAction, getBillingStatusAction, reconcileBillingAction } from "@/features/billing/actions";
 import { ACTION_NETWORK_ERROR, getActionErrorMessage } from "@/lib/action-errors";
 import type { getBillingOverview } from "@/features/billing/server/billing";
@@ -30,11 +31,20 @@ export function BillingPanel({ initial, clientToken, returned }: { initial: Over
   const [billing, setBilling] = useState(initial);
   const [busy, setBusy] = useState<"checkout" | "portal" | "refresh" | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [waiting, setWaiting] = useState(returned || initial.checkoutPending);
   const [timedOut, setTimedOut] = useState(false);
   const actionInFlight = useRef(false);
   const latestPlan = useRef(initial.plan);
   const lastReconcile = useRef(0);
+  const lastBackgroundFailure = useRef<string | null>(null);
+
+  // 持续重试只通知一次；用户关闭后不会每三秒被同一故障再次打断。
+  const reportBackgroundFailure = useCallback((message: string) => {
+    if (lastBackgroundFailure.current === message) return;
+    lastBackgroundFailure.current = message;
+    setError(message);
+  }, []);
 
   // 回跳或刷新后的恢复：最多轮询一分钟，首尾各一次 API 核对，其余仅读本地数据库。
   useEffect(() => {
@@ -50,6 +60,7 @@ export function BillingPanel({ initial, clientToken, returned }: { initial: Over
         const result = await (reconcile ? reconcileBillingAction({}) : getBillingStatusAction({}));
         if (stopped) return;
         if (result?.data) {
+          lastBackgroundFailure.current = null;
           setBilling(result.data);
           if (result.data.plan === "Pro") {
             latestPlan.current = "Pro";
@@ -59,21 +70,23 @@ export function BillingPanel({ initial, clientToken, returned }: { initial: Over
             router.refresh();
             return;
           }
+        } else {
+          reportBackgroundFailure(getActionErrorMessage(result) ?? "Unable to read billing status. Please try again.");
         }
-      } catch { /* 短暂网络错误继续重试，达到上限后显示恢复操作。 */ }
+      } catch { if (!stopped) reportBackgroundFailure(ACTION_NETWORK_ERROR); }
       if (stopped) return;
       if (++attempts >= 20) { setTimedOut(true); setWaiting(false); }
       else timer = setTimeout(poll, 3000);
     };
     void poll();
     return () => { stopped = true; clearTimeout(timer); };
-  }, [waiting, billing.configured, router]);
+  }, [waiting, billing.configured, router, reportBackgroundFailure]);
 
   useEffect(() => {
     checkoutListener = (event) => {
-      if (event.name === "checkout.completed") { setWaiting(true); setTimedOut(false); setMessage(null); }
-      if (event.name === "checkout.error" || event.name === "checkout.payment.error") {
-        setMessage("Payment could not be completed. You can retry the same checkout safely.");
+      if (event.name === "checkout.completed") { setWaiting(true); setTimedOut(false); setMessage(null); setError(null); }
+      if (event.name === "checkout.error" || event.name === "checkout.payment.error" || event.name === "checkout.payment.failed") {
+        setError("Payment could not be completed. You can retry the same checkout safely.");
       }
     };
     return () => { checkoutListener = undefined; };
@@ -88,16 +101,20 @@ export function BillingPanel({ initial, clientToken, returned }: { initial: Over
       lastReconcile.current = Date.now();
       try {
         const result = await reconcileBillingAction({});
-        if (!stopped && result?.data) {
+        if (stopped) return;
+        if (result?.data) {
+          lastBackgroundFailure.current = null;
           setBilling(result.data);
           if (latestPlan.current !== result.data.plan) { latestPlan.current = result.data.plan; router.refresh(); }
+        } else {
+          reportBackgroundFailure(getActionErrorMessage(result) ?? "Unable to refresh billing status.");
         }
-      } catch { /* Refresh status 可手动恢复。 */ }
+      } catch { if (!stopped) reportBackgroundFailure(ACTION_NETWORK_ERROR); }
     };
     window.addEventListener("focus", onFocus);
     window.addEventListener("pageshow", onFocus);
     return () => { stopped = true; window.removeEventListener("focus", onFocus); window.removeEventListener("pageshow", onFocus); };
-  }, [billing.hasCustomer, billing.configured, router]);
+  }, [billing.hasCustomer, billing.configured, router, reportBackgroundFailure]);
 
   /** 浏览器防重点击与服务端锁配合；只提交空输入，客户、价格与权限全部在服务器确定。 */
   async function runAction(kind: "checkout" | "portal" | "refresh") {
@@ -105,13 +122,15 @@ export function BillingPanel({ initial, clientToken, returned }: { initial: Over
     actionInFlight.current = true;
     setBusy(kind);
     setMessage(null);
+    setError(null);
+    lastBackgroundFailure.current = null;
     try {
       if (kind === "checkout") {
         if (!clientToken) throw new Error("Billing unavailable");
         const paddle = await loadPaddle(clientToken);
         if (!paddle) throw new Error("Checkout unavailable");
         const result = await createCheckoutAction({});
-        if (!result?.data) { setMessage(getActionErrorMessage(result) ?? "Unable to start checkout."); return; }
+        if (!result?.data) { setError(getActionErrorMessage(result) ?? "Unable to start checkout."); return; }
         window.history.replaceState(window.history.state, "", "/dashboard/billing?checkout=pending");
         paddle.Checkout.open({ transactionId: result.data.transactionId,
           settings: { displayMode: "overlay", variant: "one-page", allowLogout: false,
@@ -122,7 +141,7 @@ export function BillingPanel({ initial, clientToken, returned }: { initial: Over
       } else if (kind === "portal") {
         const result = await createPortalAction({});
         if (result?.data) window.location.assign(result.data.url);
-        else setMessage(getActionErrorMessage(result) ?? "Unable to open billing management.");
+        else setError(getActionErrorMessage(result) ?? "Unable to open billing management.");
       } else {
         lastReconcile.current = Date.now();
         const result = await reconcileBillingAction({});
@@ -134,14 +153,15 @@ export function BillingPanel({ initial, clientToken, returned }: { initial: Over
             window.history.replaceState(window.history.state, "", "/dashboard/billing");
           }
           setMessage(`Billing status refreshed. Your current plan is ${result.data.plan}.`);
-        } else setMessage(getActionErrorMessage(result) ?? "Unable to refresh billing status.");
+        } else setError(getActionErrorMessage(result) ?? "Unable to refresh billing status.");
       }
-    } catch { setMessage(ACTION_NETWORK_ERROR); }
+    } catch { setError(ACTION_NETWORK_ERROR); }
     finally { actionInFlight.current = false; setBusy(null); }
   }
 
   const manageable = ["active", "trialing", "past_due", "paused"].includes(billing.status);
   return <main>
+    <ErrorToast message={error} onDismiss={() => setError(null)} />
     <header className="flex flex-wrap items-start justify-between gap-4 border-b border-border px-5 py-7 md:px-8 lg:px-12">
       <div><h1 className="text-heading-lg font-bold">Billing</h1><p className="mt-1 text-body-sm text-muted-foreground">Manage your plan and subscription.</p></div>
       <span className="rounded-pill bg-surface-warning px-4 py-2 text-xs font-bold text-warning-foreground">PADDLE SANDBOX</span>

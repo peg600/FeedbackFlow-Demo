@@ -75,7 +75,9 @@ export function PublicFeedbackForm({ slug }: PublicFeedbackFormProps) {
     execute({ ...values, slug });
   });
 
-  const errorMessage = isPending ? undefined : transportError ?? getActionErrorMessage(settledState);
+  // 通用失败属于本次请求，不能因等待期间编辑字段而被隐藏。
+  const generalFailure = transportError ?? (settledState?.serverError?.field ? undefined : settledState?.serverError?.message);
+  const errorMessage = isPending ? undefined : generalFailure ?? (unchangedSinceSubmit ? getActionErrorMessage(settledState) : undefined);
 
   return (
     <form
@@ -136,7 +138,7 @@ export function PublicFeedbackForm({ slug }: PublicFeedbackFormProps) {
         </div>
       </div>
 
-      {errorMessage && unchangedSinceSubmit ? (
+      {errorMessage ? (
         <p className="mt-4 text-sm text-error" role="alert">
           {errorMessage}
         </p>

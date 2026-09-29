@@ -1,15 +1,47 @@
+import { ApiError } from "@paddle/paddle-node-sdk";
 import { PostgresError } from "pg-error-enum";
 import { describe, expect, it, vi } from "vitest";
 import { z } from "zod";
 
 import { businessError } from "@/lib/errors";
-import { actionClient } from "@/server/safe-action";
+import { actionClient, normalizeActionError } from "@/server/safe-action";
 
 const inputSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters."),
 });
 
 describe("actionClient", () => {
+  it.each(["invalid_token", "forbidden", "transaction_default_checkout_url_not_set", "sensitive_unknown_code"])(
+    "logs only allowlisted Paddle diagnostics for %s with the same application request ID",
+    (code) => {
+      const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
+      try {
+        const error = new ApiError({ type: "request_error", code,
+          detail: "private payment detail", documentation_url: "https://private-url.example/secret",
+          errors: [{ field: "private_field", message: "private submitted value" }],
+        }, 123);
+        const result = normalizeActionError(error, "billing.checkout");
+        expect(result).toEqual({ code: "INTERNAL_ERROR", message: "Unable to start checkout. Refresh billing status before trying again.", requestId: expect.any(String) });
+        expect(log).toHaveBeenCalledExactlyOnceWith("Safe action failed", {
+          code: "INTERNAL_ERROR", operation: "billing.checkout", requestId: result.requestId,
+          paddle: { code: code === "sensitive_unknown_code" ? "unknown_provider_error" : code, type: "request_error" },
+        });
+      } finally { log.mockRestore(); }
+    },
+  );
+
+  it("does not trust provider-shaped plain errors or unknown provider types", () => {
+    const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    try {
+      normalizeActionError(Object.assign(new Error("private"), { code: "invalid_token", type: "request_error" }), "billing.checkout");
+      expect(log.mock.calls[0][1]).not.toHaveProperty("paddle");
+      normalizeActionError(new ApiError({ type: "sensitive_unknown_type", code: "invalid_token", detail: "private", documentation_url: "private" }, null), "billing.checkout");
+      expect(log.mock.calls[1][1]).toMatchObject({ paddle: { code: "invalid_token", type: "unknown" } });
+      expect(JSON.stringify(log.mock.calls)).not.toContain("private");
+      expect(JSON.stringify(log.mock.calls)).not.toContain("sensitive_unknown_type");
+    } finally { log.mockRestore(); }
+  });
+
   it("returns flattened validation errors without running server code", async () => {
     const serverCode = vi.fn();
     const action = actionClient

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -22,6 +22,22 @@ vi.mock("@/features/projects/actions/create-project", () => ({
 }));
 
 describe("OnboardingPage", () => {
+  it.each(["server", "network"])("shows a %s failure even after editing while the request is pending", async (kind) => {
+    const pending = Promise.withResolvers<unknown>();
+    mocks.createProject.mockReturnValueOnce(pending.promise);
+    const user = userEvent.setup();
+    render(await OnboardingPage());
+    await user.type(screen.getByLabelText("Project name"), "Acme Studio");
+    await user.click(screen.getByRole("button", { name: "Create workspace" }));
+    await user.type(screen.getByLabelText("Project name"), " Updated");
+    await act(async () => {
+      if (kind === "network") pending.reject(new Error("private transport detail"));
+      else pending.resolve({ serverError: { code: "INTERNAL_ERROR", message: "Unable to create your workspace. Try again.", requestId: "r" } });
+    });
+    expect(await screen.findByRole("alert")).toHaveTextContent(kind === "network" ? "Unable to reach the server" : "Unable to create your workspace");
+    expect(screen.queryByText("private transport detail")).not.toBeInTheDocument();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.createProject.mockResolvedValue({

@@ -190,6 +190,8 @@ tests/
 - 数据库异常在事务边界之外统一转换，保留事务回滚语义；已有唯一约束、配额锁、所有权校验和 `onConflictDoNothing` 处理不得因统一错误而被移除。
 - 前端通过 `src/lib/action-errors.ts` 的 `getActionFieldError`、`getActionErrorMessage` 提取提示；网络失败使用 `ACTION_NETWORK_ERROR`，业务分支判断稳定的 `code`。字段错误需关联输入控件，编辑其他字段不应清除仍然有效的字段错误。
 - 当前只统一错误结构与提取方式，具体展示仍由表单或操作组件负责，未实现全局自动 Toast 或自动接入所有表单的公共 Hook。新增表单仍需显式接入校验结果、业务错误和网络失败展示。
+- 所有客户端操作的失败必须有可见反馈：字段错误显示输入框附近红字，其余失败显示表单级红字或视口内 Toast，禁止只写 console 或吞掉错误。Billing 使用可关闭的 `ErrorToast`，包括手动操作、轮询、焦点对账及 Paddle 失败事件；持续相同后台故障去重，用户主动重试仍应反馈。通用或网络错误不能因请求期间编辑字段而被隐藏。详见 ADR 0016。
+- Billing 的未知 SDK 异常在同一 Action 日志中追加固定白名单的 Paddle code/type，与公开响应使用同一个应用 requestId；禁止输出 SDK detail、errors、URL 或原始异常。当前 SDK 不保留提供方 request ID，不能与应用 requestId 混淆。详见 ADR 0017。
 - Better Auth 保留原生 HTTP 协议，通过 `src/features/auth/auth-error.ts` 映射前端文案；读取页面沿用 Next.js Error/Not Found 边界。Paddle Webhook 失败返回 `{ error: AppServerError }` 和非 2xx，不泄露原始异常；代码通过不代表外部 Sandbox 联调完成。
 - 新增错误时同步维护目录、必要的数据库映射及相关回归测试。详细流程、示例和扩展步骤见本地 `docs/backend-handbook/14-error-handling.md`；除 `docs/adr/` 下的 Markdown 外，`docs/` 暂不纳入 Git，仓库约定以本节为准。
 

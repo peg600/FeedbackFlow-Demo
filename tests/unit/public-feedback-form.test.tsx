@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -13,6 +13,23 @@ vi.mock("@/features/feedback/actions/create-public-feedback", () => ({
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: mocks.push }) }));
 
 describe("PublicFeedbackForm", () => {
+  it.each(["server", "network"])("shows a %s failure even after editing while the request is pending", async (kind) => {
+    const pending = Promise.withResolvers<unknown>();
+    mocks.createPublicFeedbackAction.mockReturnValueOnce(pending.promise);
+    const user = userEvent.setup();
+    render(<PublicFeedbackForm slug="acme-studio" />);
+    await user.type(screen.getByLabelText("Title"), "Dark mode");
+    await user.type(screen.getByLabelText("Details"), "Please add a dark theme.");
+    await user.click(screen.getByRole("button", { name: "Submit feedback" }));
+    await user.type(screen.getByLabelText("Title"), " please");
+    await act(async () => {
+      if (kind === "network") pending.reject(new Error("private transport detail"));
+      else pending.resolve({ serverError: { code: "INTERNAL_ERROR", message: "Unable to submit feedback. Try again.", requestId: "r" } });
+    });
+    expect(await screen.findByRole("alert")).toHaveTextContent(kind === "network" ? "Unable to reach the server" : "Unable to submit feedback");
+    expect(screen.queryByText("private transport detail")).not.toBeInTheDocument();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.createPublicFeedbackAction.mockResolvedValue({

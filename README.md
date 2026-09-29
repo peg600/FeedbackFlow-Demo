@@ -243,6 +243,15 @@ public result and sanitized diagnostic logging. Client code branches on `code`,
 never on message text. Field-specific business errors such as
 `PROJECT_SLUG_TAKEN` are presented beside the matching input.
 
+Every client operation must visibly report failures: field errors beside inputs,
+and general failures in an inline error or a viewport-visible toast. Billing uses
+a dismissible error toast for Checkout, Portal, manual refresh, background status
+checks, and Paddle failure events. Repeated identical background failures do not
+reopen a dismissed toast until a successful check or a new manual action. General
+and network errors remain visible if form fields change while a request is pending.
+There is no global fetch interceptor; new callers must handle failures explicitly.
+See [ADR 0016](docs/adr/0016-visible-client-operation-errors.md).
+
 `src/server/errors/database.ts` uses `pg-error-enum` to identify PostgreSQL
 SQLSTATE codes, including errors wrapped by Drizzle. Rules match the operation
 and exact constraint as well as the SQLSTATE. An unknown database error is not
@@ -416,7 +425,28 @@ starts and separate instances may each log once. A changed diagnostic or recover
 followed by failure is logged immediately. The browser continues to receive the
 generic unavailable message. See [ADR 0015](docs/adr/0015-safe-billing-config-diagnostics.md).
 
+For `INTERNAL_ERROR` during a billing action, search Vercel Runtime Logs for the
+response's `requestId` and `Safe action failed`. Database diagnostics use the
+existing `postgresCode`/`constraint` fields. Recognized Paddle SDK errors add
+`paddle.code` and `paddle.type` from fixed allowlists: for example, `invalid_token`,
+`forbidden`, or `transaction_default_checkout_url_not_set`. Unknown provider codes
+become `unknown_provider_error`; raw messages and payment details are never logged.
+This is the application's request ID, not Paddle's: SDK 3.10.0 does not retain the
+provider request ID on its `ApiError`. See [ADR 0017](docs/adr/0017-safe-paddle-api-error-diagnostics.md).
+
 ## Billing verification
+
+Failure visibility and API diagnostics verified on 2026-09-29: all 242 tests
+across 51 files, lint, TypeScript, and the production build passed. Billing has
+19 component tests covering explicit/background failures, dismissible toasts,
+and repeated-error suppression. A Chromium smoke check of the actual shared
+toast with production CSS passed at 14 scrolled viewport sizes (390–1280px wide,
+300/844px tall), including dismissal and no horizontal overflow. This isolated
+component check is not a deployed Billing or real Paddle payment E2E. The build
+used the existing develop environment without changing env files and required
+network access for Google Fonts. The connected Vercel MCP returned no projects,
+so the reported online Checkout failure remains unconfirmed; these changes have
+not been deployed.
 
 Configuration diagnostics verified on 2026-09-29: 18 focused regression tests and
 all 219 unit/component tests across 51 files passed, along with lint, TypeScript,

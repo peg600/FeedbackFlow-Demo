@@ -92,7 +92,9 @@ export function OnboardingForm() {
     submittedValues?.slug === slug &&
     submittedValues?.description === description;
 
-  const errorMessage = isPending ? undefined : transportError ?? getActionErrorMessage(settledState);
+  // 通用失败属于本次请求，不能因等待期间编辑字段而被隐藏。
+  const generalFailure = transportError ?? (settledState?.serverError?.field ? undefined : settledState?.serverError?.message);
+  const errorMessage = isPending ? undefined : generalFailure ?? (unchangedSinceSubmit ? getActionErrorMessage(settledState) : undefined);
 
   return (
     <form
@@ -199,7 +201,7 @@ export function OnboardingForm() {
         </p>
       </div>
 
-      {errorMessage && !settledState?.serverError?.field && unchangedSinceSubmit ? (
+      {errorMessage && !settledState?.serverError?.field ? (
         <p className="text-body-sm text-error" role="alert">
           {errorMessage}
         </p>

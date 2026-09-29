@@ -1,6 +1,7 @@
 import { createSafeActionClient, isNavigationError } from "next-safe-action";
 import { z } from "zod";
 
+import { getPaddleErrorDiagnostic } from "@/features/billing/server/errors";
 import {
   BusinessError,
   ERROR_CATALOG,
@@ -47,6 +48,7 @@ export function normalizeActionError(
   const safeConstraint = mapped.databaseError?.constraint?.match(
     /^[a-z0-9_]{1,128}$/i,
   )?.[0];
+  const paddle = operation?.startsWith("billing.") ? getPaddleErrorDiagnostic(error) : undefined;
 
   console.error("Safe action failed", {
     code: internalError.code,
@@ -57,6 +59,7 @@ export function normalizeActionError(
         }
       : {}),
     operation: operation ?? "unknown",
+    ...(paddle ? { paddle } : {}),
     requestId: internalError.requestId,
   });
 

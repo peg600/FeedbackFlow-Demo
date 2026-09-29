@@ -23,6 +23,8 @@
 | 0013 | [按功能归属组织服务端业务模块](0013-feature-owned-server-modules.md) | Accepted | 2026-09-22 |
 | 0014 | [本地与 develop Preview 共用 Sandbox API Key](0014-shared-sandbox-api-key.md) | Accepted | 2026-09-29 |
 | 0015 | [Billing 配置的安全诊断日志](0015-safe-billing-config-diagnostics.md) | Accepted | 2026-09-29 |
+| 0016 | [客户端操作失败必须可见](0016-visible-client-operation-errors.md) | Accepted | 2026-09-29 |
+| 0017 | [Paddle API 异常的安全诊断](0017-safe-paddle-api-error-diagnostics.md) | Accepted | 2026-09-29 |
 
 ## 范围与维护
 
