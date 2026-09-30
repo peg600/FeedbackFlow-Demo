@@ -91,7 +91,7 @@ describe.sequential("billing database consistency", () => {
   it("uses the board owner's Pro entitlement and restores the Free quota when canceled", async () => {
     visitorId = `visitor-${randomUUID()}`;
     await db.insert(user).values({ id: visitorId, email: `${visitorId}@integration.invalid`, name: "Free visitor" });
-    await db.insert(feedback).values(Array.from({ length: 50 }, (_, i) => ({ projectId, userId, title: `Fixture ${i}` })));
+    await db.insert(feedback).values(Array.from({ length: 3 }, (_, i) => ({ projectId, userId, title: `Fixture ${i}` })));
     const input = { projectId, slug, userId: visitorId, title: "An additional request", description: "A valid new feedback item." };
     expect(await insertPublicFeedback(db, input)).toBe("feedback_limit");
     await processPaddleEvent(db, event(), priceId);

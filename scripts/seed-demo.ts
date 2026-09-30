@@ -6,15 +6,10 @@ import { drizzle, type NeonDatabase } from "drizzle-orm/neon-serverless";
 import { z } from "zod";
 
 import * as schema from "@/server/db/schema";
+import { FREE_FEEDBACK_LIMIT } from "@/features/billing/limits";
 
 const DEMO = {
   feedback: [
-    {
-      description: "Let visitors see the changes that affect their workflow before they ship.",
-      id: "10000000-0000-4000-8000-000000000001",
-      status: "under_review" as const,
-      title: "Email notifications for updates",
-    },
     {
       description: "Allow teams to discuss alternatives alongside an individual feedback request.",
       id: "10000000-0000-4000-8000-000000000002",
@@ -137,7 +132,7 @@ async function ensureDemoProjectAndFeedback(
   demo: DemoTemplate,
 ) {
   await database.transaction(async (transaction) => {
-    // 与公开反馈写入共享 project advisory lock，避免 Seed 绕过 50 条免费套餐上限。
+    // 与公开反馈写入共享 project advisory lock，避免 Seed 绕过 Free 套餐上限。
     await transaction.execute(sql`select pg_advisory_xact_lock(hashtext(${demo.projectId}))`);
     const [projectBySlug] = await transaction
       .select({ id: schema.projects.id, userId: schema.projects.userId })
@@ -174,7 +169,7 @@ async function ensureDemoProjectAndFeedback(
     }
     const [currentTotal] = await transaction.select({ value: count() })
       .from(schema.feedback).where(eq(schema.feedback.projectId, demo.projectId));
-    if (Number(currentTotal?.value ?? 0) + missingFeedback.length > 50) {
+    if (missingFeedback.length > 0 && Number(currentTotal?.value ?? 0) + missingFeedback.length > FREE_FEEDBACK_LIMIT) {
       throw new Error("Demo feedback would exceed the project feedback limit.");
     }
     if (missingFeedback.length) {

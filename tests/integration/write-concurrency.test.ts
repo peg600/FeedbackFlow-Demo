@@ -66,13 +66,13 @@ describe.sequential("database-backed write protections", () => {
     await cleanupFixture();
   });
 
-  it("allows only one concurrent feedback write once a public project reaches 49 items", async () => {
+  it("allows only one concurrent feedback write once a public project reaches 2 items", async () => {
     const ownerId = fixture.userIds[0]!;
     const projectId = fixture.projectId!;
     const project = (await db.select({ slug: projects.slug }).from(projects)
       .where(eq(projects.id, projectId)).limit(1))[0]!;
 
-    await db.insert(feedback).values(Array.from({ length: 49 }, (_, index) => ({
+    await db.insert(feedback).values(Array.from({ length: 2 }, (_, index) => ({
       description: `Seeded description ${index}`,
       projectId,
       title: `Seeded feedback ${index}`,
@@ -93,7 +93,7 @@ describe.sequential("database-backed write protections", () => {
 
     const [total] = await db.select({ value: count() }).from(feedback)
       .where(eq(feedback.projectId, projectId));
-    expect(Number(total?.value)).toBe(50);
+    expect(Number(total?.value)).toBe(3);
   });
 
   it("consumes an atomic fixed-window rate limit under concurrent requests", async () => {

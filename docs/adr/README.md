@@ -25,6 +25,7 @@
 | 0015 | [Billing 配置的安全诊断日志](0015-safe-billing-config-diagnostics.md) | Accepted | 2026-09-29 |
 | 0016 | [客户端操作失败必须可见](0016-visible-client-operation-errors.md) | Accepted | 2026-09-29 |
 | 0017 | [Paddle API 异常的安全诊断](0017-safe-paddle-api-error-diagnostics.md) | Accepted | 2026-09-29 |
+| 0018 | [Free 套餐三条反馈演示配额](0018-three-item-free-feedback-limit.md) | Accepted | 2026-09-30 |
 
 ## 范围与维护
 

@@ -1,6 +1,8 @@
 import Link from "next/link";
 
 import { buttonVariants } from "@/components/ui/button";
+import { FREE_FEEDBACK_LIMIT } from "@/features/billing/limits";
+import { getBillingPlan } from "@/features/billing/server/billing";
 import { DashboardFilters } from "@/features/dashboard/components/dashboard-filters";
 import { StatusSelect } from "@/features/feedback/components/status-select";
 import { cn } from "@/lib/utils";
@@ -35,9 +37,12 @@ function pageHref(params: ReturnType<typeof parseDashboardSearchParams>, page: n
 
 // 完成控制台访问授权、查询参数规范化和项目级数据读取，再渲染指标、筛选及分页结果。
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
-  const { project } = await requireDashboardAccess();
+  const { project, session } = await requireDashboardAccess();
   const params = parseDashboardSearchParams(await searchParams);
-  const data = await getDashboardData(project.id, params);
+  const [data, plan] = await Promise.all([
+    getDashboardData(project.id, params),
+    getBillingPlan(session.user.id),
+  ]);
   const { metrics, pagination } = data;
   const firstItem = pagination.filteredCount === 0 ? 0 : (pagination.page - 1) * pagination.pageSize + 1;
   const lastItem = Math.min(pagination.page * pagination.pageSize, pagination.filteredCount);
@@ -71,7 +76,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
       <section aria-labelledby="feedback-heading" className="ui-card mt-6 p-4 md:p-5">
         <h2 className="sr-only" id="feedback-heading">Feedback</h2>
-        <div className="mb-4 hidden items-center justify-between md:flex"><div className="flex items-center gap-3"><span aria-hidden="true" className="text-base font-bold">Feedback</span><span className="rounded-pill bg-surface-warning px-2.5 py-1 text-[10px] font-bold text-warning-foreground">{metrics.totalFeedback} / 50 free limit</span></div></div>
+        <div className="mb-4 hidden items-center justify-between md:flex"><div className="flex items-center gap-3"><span aria-hidden="true" className="text-base font-bold">Feedback</span><span className="rounded-pill bg-surface-warning px-2.5 py-1 text-[10px] font-bold text-warning-foreground">{plan === "Pro" ? `${metrics.totalFeedback} feedback · unlimited` : `${metrics.totalFeedback} / ${FREE_FEEDBACK_LIMIT} free limit`}</span></div></div>
         <DashboardFilters
           key={`${params.search}:${params.status}:${params.sort}`}
           params={{ ...params, page: pagination.page }}

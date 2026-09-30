@@ -1,7 +1,9 @@
 import { and, asc, count, eq, isNull, sql } from "drizzle-orm";
 import type { Transaction } from "@paddle/paddle-node-sdk";
+import { cache } from "react";
 
 import { hasProEntitlement } from "@/features/billing/entitlement";
+import { FREE_FEEDBACK_LIMIT } from "@/features/billing/limits";
 import { businessError, isBusinessError } from "@/lib/errors";
 import { readPaddleConfig } from "@/features/billing/server/config";
 import { db } from "@/server/db";
@@ -197,14 +199,14 @@ export async function createBillingPortal(userId: string) {
 }
 
 /** 所有普通授权读取本地镜像；缺少支付配置时关闭 Pro，避免错误配置扩大权限。 */
-export async function getBillingPlan(userId: string) {
+export const getBillingPlan = cache(async (userId: string) => {
   const config = readPaddleConfig();
   if (!config) return "Free" as const;
   const rows = await db.select({ subscription: subscriptions }).from(subscriptions)
     .innerJoin(billingCustomers, eq(subscriptions.paddleCustomerId, billingCustomers.paddleCustomerId))
     .where(eq(billingCustomers.userId, userId));
   return rows.some(({ subscription }) => hasProEntitlement(subscription, config.priceId)) ? "Pro" as const : "Free" as const;
-}
+});
 
 /** 汇总当前用户的账务状态和其项目用量，不向浏览器暴露客户 ID 或门户凭据。 */
 export async function getBillingOverview(userId: string, projectId: string) {
@@ -218,7 +220,7 @@ export async function getBillingOverview(userId: string, projectId: string) {
   const [checkout] = customer ? await db.select().from(billingCheckouts).where(eq(billingCheckouts.userId, userId)).limit(1) : [];
   return {
     plan: active ? "Pro" as const : "Free" as const,
-    feedbackUsed: Number(usage?.value ?? 0), feedbackLimit: active ? null : 50,
+    feedbackUsed: Number(usage?.value ?? 0), feedbackLimit: active ? null : FREE_FEEDBACK_LIMIT,
     configured: Boolean(config), hasCustomer: Boolean(customer?.paddleCustomerId),
     status: selected?.status ?? "none",
     currentPeriodEnd: selected?.currentPeriodEnd?.toISOString() ?? null,

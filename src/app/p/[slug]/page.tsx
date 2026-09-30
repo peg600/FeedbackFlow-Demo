@@ -95,7 +95,7 @@ export default async function PublicFeedbackPage({
             What should we build next?
           </h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            Search existing feedback, vote for priorities, or submit new feedback.
+            Search existing feedback and vote for priorities. New submissions depend on the project&apos;s available capacity.
           </p>
           <span className="mt-3 inline-flex rounded-[12px] bg-background px-3 py-1 text-[11px] font-bold text-primary">
             {board.totalPublicFeedback} public feedback

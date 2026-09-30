@@ -13,7 +13,7 @@ vi.mock("@/features/billing/actions", () => ({ createCheckoutAction: mocks.check
 import { BillingPanel } from "@/features/billing/components/billing-panel";
 import { ACTION_NETWORK_ERROR } from "@/lib/action-errors";
 
-const free = { plan: "Free" as const, feedbackUsed: 50, feedbackLimit: 50, configured: true, hasCustomer: true, status: "none", currentPeriodEnd: null, scheduledAction: null, scheduledChangeAt: null, checkoutPending: false, lastReconciledAt: null };
+const free = { plan: "Free" as const, feedbackUsed: 3, feedbackLimit: 3, configured: true, hasCustomer: true, status: "none", currentPeriodEnd: null, scheduledAction: null, scheduledChangeAt: null, checkoutPending: false, lastReconciledAt: null };
 
 describe("Billing payment confirmation UX", () => {
   beforeEach(() => {

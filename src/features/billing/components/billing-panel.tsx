@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState, type ReactNode } from "react"
 import { Button } from "@/components/ui/button";
 import { ErrorToast } from "@/components/ui/error-toast";
 import { createCheckoutAction, createPortalAction, getBillingStatusAction, reconcileBillingAction } from "@/features/billing/actions";
+import { FREE_FEEDBACK_LIMIT } from "@/features/billing/limits";
 import { ACTION_NETWORK_ERROR, getActionErrorMessage } from "@/lib/action-errors";
 import type { getBillingOverview } from "@/features/billing/server/billing";
 
@@ -172,7 +173,7 @@ export function BillingPanel({ initial, clientToken, returned }: { initial: Over
       {message && <p role="status" className="rounded-control border border-border bg-background p-4 text-body-sm">{message}</p>}
       <section aria-labelledby="current-plan" className="rounded-surface border border-border bg-background p-6">
         <p className="text-xs font-bold text-primary">CURRENT PLAN</p>
-        <div className="mt-4 grid min-w-0 gap-5 md:grid-cols-2"><div><h2 id="current-plan" className="text-heading-lg font-bold">{billing.plan}</h2><p className="mt-2 text-body-sm text-muted-foreground">{billing.feedbackUsed} {billing.plan === "Pro" ? "feedback items · unlimited" : "of 50 feedback items used"}</p></div>
+        <div className="mt-4 grid min-w-0 gap-5 md:grid-cols-2"><div><h2 id="current-plan" className="text-heading-lg font-bold">{billing.plan}</h2><p className="mt-2 text-body-sm text-muted-foreground">{billing.feedbackUsed} {billing.plan === "Pro" ? "feedback items · unlimited" : `of ${FREE_FEEDBACK_LIMIT} feedback items used`}</p></div>
           <div className="min-w-0 text-body-sm"><p className="font-semibold">{billing.status === "none" ? "No subscription" : `Subscription: ${billing.status.replaceAll("_", " ")}`}</p>
             {billing.currentPeriodEnd && <p className="mt-1">Current period ends {dateLabel(billing.currentPeriodEnd)} (UTC)</p>}
             {billing.scheduledAction && <p className="mt-1">Scheduled {billing.scheduledAction}: {dateLabel(billing.scheduledChangeAt)} (UTC)</p>}
@@ -180,14 +181,14 @@ export function BillingPanel({ initial, clientToken, returned }: { initial: Over
             {billing.plan === "Free" && billing.status === "active" && <p className="mt-2">Pro access is awaiting an up-to-date billing period. Refresh status to check.</p>}
           </div>
         </div>
-        {billing.plan === "Free" && <div aria-label="Free plan feedback usage" role="progressbar" aria-valuenow={Math.min(billing.feedbackUsed, 50)} aria-valuemin={0} aria-valuemax={50} className="mt-5 h-2 overflow-hidden rounded-pill bg-border"><div className="h-full rounded-pill bg-primary" style={{ width: `${Math.min(100, billing.feedbackUsed / 50 * 100)}%` }} /></div>}
+        {billing.plan === "Free" && <div aria-label="Free plan feedback usage" role="progressbar" aria-valuenow={Math.min(billing.feedbackUsed, FREE_FEEDBACK_LIMIT)} aria-valuemin={0} aria-valuemax={FREE_FEEDBACK_LIMIT} className="mt-5 h-2 overflow-hidden rounded-pill bg-border"><div className="h-full rounded-pill bg-primary" style={{ width: `${Math.min(100, billing.feedbackUsed / FREE_FEEDBACK_LIMIT * 100)}%` }} /></div>}
         <div className="mt-6 flex flex-wrap gap-3">
           {billing.hasCustomer && <Button disabled={Boolean(busy)} onClick={() => void runAction("portal")}>{busy === "portal" ? "Opening…" : "Manage billing"}</Button>}
           <Button variant="secondary" disabled={Boolean(busy) || !billing.configured} onClick={() => void runAction("refresh")}>{busy === "refresh" ? "Refreshing…" : "Refresh status"}</Button>
         </div>
       </section>
       <section aria-labelledby="choose-plan"><h2 id="choose-plan" className="mb-5 text-heading-md font-bold">Choose a plan</h2><div className="grid gap-5 lg:grid-cols-2">
-        <PlanCard title="Free" price="$0" description="For a focused public feedback board." features={["1 project", "50 feedback items", "Voting and public roadmap"]}><Button className="w-full" disabled>{billing.plan === "Free" ? "Current plan" : "Cancel renewal in Manage billing"}</Button></PlanCard>
+        <PlanCard title="Free" price="$0" description="For a focused public feedback board." features={["1 project", `${FREE_FEEDBACK_LIMIT} feedback items`, "Voting and public roadmap"]}><Button className="w-full" disabled>{billing.plan === "Free" ? "Current plan" : "Cancel renewal in Manage billing"}</Button></PlanCard>
         <PlanCard title="Pro" price="$19" description="USD per month · taxes calculated at checkout" features={["1 project", "Unlimited feedback", "Voting and public roadmap", "Self-service billing portal"]}><Button className="w-full" disabled={Boolean(busy) || !billing.configured || manageable} onClick={() => void runAction("checkout")}>{busy === "checkout" ? "Opening checkout…" : billing.plan === "Pro" ? "Current plan" : manageable ? "Manage existing subscription" : billing.checkoutPending ? "Resume checkout" : "Upgrade to Pro"}</Button></PlanCard>
       </div></section>
       <p className="text-body-sm text-muted-foreground">Test payments only. No real money is charged. Cancel renewal, update your payment method, and view invoices in Manage billing. Existing feedback remains available when Pro ends.</p>

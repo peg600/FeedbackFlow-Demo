@@ -41,7 +41,11 @@ See [ADR 0013](docs/adr/0013-feature-owned-server-modules.md).
 ## Current product scope
 
 Landing includes Features, Pricing, and links to the public demo `/p/demo`.
-`/profile` is a static maker profile, not an editable account page. Public
+`/profile` is a static maker profile, not an editable account page. The public
+`/p/demo` entry lets visitors inspect feedback and roadmap without signing in;
+the target deployment must be seeded before advertising that link. The three
+seeded items fill a Free board, so a fourth submission requires the demo owner
+to have Pro; use a fresh Free project to demonstrate the limit. Public
 roadmaps show up to four requests per status plus the total; View all opens the
 existing filtered, paginated feedback board. Settings saves refresh the project
 navigation and old/new public URLs, including feedback details.
@@ -147,9 +151,10 @@ node --env-file=.env.seed.local scripts/run-seed-demo.mjs
 Alternatively, export these values securely and run `pnpm seed:demo`. The seed
 does not implicitly load development or production env files. It creates a
 Better Auth credential account and a fixed `/p/demo` project, with feedback in
-all four statuses. Existing credentials must match; conflicting Slug/IDs fail
-safely. Repeat execution only fills missing records, preserves edits, and respects
-the 50-item quota under the same transaction lock as regular feedback submission.
+the three roadmap statuses. Existing credentials must match; conflicting Slug/IDs
+fail safely. Repeat execution only fills missing records, preserves edits, and
+respects the 3-item Free quota for new records under the same transaction lock as
+regular feedback submission; existing records above the new limit are preserved.
 If the seeded project was renamed or made private, resolve that deliberately;
 the script does not reset user changes. No secret is printed. Public browsing
 requires no demo password; do not publish the owner's credential.
@@ -369,7 +374,7 @@ ordinary feature authorization path reads the local database, never Paddle per
 request. Pro requires the configured price, active status, an unexpired billing
 period, and no effective cancellation/pause. This demo deliberately grants no
 trial or past-due grace period. A scheduled end-of-period cancellation preserves
-Pro until its effective time. Free permits 50 feedback items; Pro removes that
+Pro until its effective time. Free permits 3 feedback items; Pro removes that
 limit. Expiry preserves existing feedback but blocks new items above the Free cap.
 
 `Manage billing` creates a fresh authenticated Paddle Customer Portal session for
@@ -467,7 +472,7 @@ For manual sandbox acceptance, use the official
 `4242 4242 4242 4242`, future expiry, security code `100`; the decline card is
 `4000 0000 0000 0002`. Verify successful payment, decline/retry, refresh during
 payment, delayed/replayed notifications, two simultaneous Upgrade clicks,
-Portal cancellation, expired access, and the 51st feedback submission. Verify
+Portal cancellation, expired access, and the 4th feedback submission. Verify
 another account cannot manage the first account's customer or subscription.
 Use sandbox notification replay/simulation for lifecycle changes, never live cards.
 

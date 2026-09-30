@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { Brand } from "@/components/brand";
 import { buttonVariants } from "@/components/ui/button";
+import { FREE_FEEDBACK_LIMIT } from "@/features/billing/limits";
 import { iconPaths } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
@@ -34,7 +35,7 @@ const features = [
   },
 ] as const;
 
-const freeFeatures = ["1 public project", "50 feedback items", "Voting and roadmap"];
+const freeFeatures = ["1 public project", `${FREE_FEEDBACK_LIMIT} feedback items`, "Voting and roadmap"];
 const proFeatures = ["Unlimited feedback", "Everything in Free", "Self-service billing portal"];
 
 function Header() {

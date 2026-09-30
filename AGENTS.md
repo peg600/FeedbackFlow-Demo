@@ -161,7 +161,7 @@ tests/
 - `subscriptions`：Paddle subscription ID 主键、初始 transaction ID 唯一，customer ID 外键允许多条历史订阅。旧订阅取消只更新自身，不覆盖新订阅。
 - `paddle_events`：`event_id` 主键；事件账本和订阅写入在同一事务中提交，不存储完整支付 Payload。
 - 路线图完全由反馈状态派生，只展示 Planned、In Progress、Completed。
-- Free 套餐最多 50 条反馈；在原项目 advisory lock 事务内读取 Owner 本地权益。Pro 需要 active、配置的 Pro 价格、未来的计费周期结束时间，且取消/暂停尚未生效。无试用和欠费宽限；降级不删除已有数据。
+- Free 套餐最多 3 条反馈；在原项目 advisory lock 事务内读取 Owner 本地权益。Pro 需要 active、配置的 Pro 价格、未来的计费周期结束时间，且取消/暂停尚未生效。无试用和欠费宽限；降级不删除已有数据。
 - Schema 变更必须通过 Drizzle migration，禁止在普通请求中自动执行迁移。
 - Seed 必须可重复执行；生产 Seed 只能补齐演示账号、项目和示例数据，不清空已有数据。
 

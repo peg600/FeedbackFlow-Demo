@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { Brand } from "@/components/brand";
+import { FREE_FEEDBACK_LIMIT } from "@/features/billing/limits";
 import { cn } from "@/lib/utils";
 
 const loginMetrics = [
@@ -83,7 +84,7 @@ function RegisterProductProof() {
       </div>
 
       <p className="text-xs text-auth-proof-muted xl:mt-[110px]">
-        Free plan includes up to 50 feedback items.
+        Free plan includes up to {FREE_FEEDBACK_LIMIT} feedback items.
       </p>
     </aside>
   );

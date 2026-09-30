@@ -3,6 +3,7 @@ import type { NeonDatabase } from "drizzle-orm/neon-serverless";
 
 import * as schema from "@/server/db/schema";
 import { hasProEntitlement } from "@/features/billing/entitlement";
+import { FREE_FEEDBACK_LIMIT } from "@/features/billing/limits";
 import { readPaddleConfig } from "@/features/billing/server/config";
 import type { CreatePublicFeedbackDependencies } from "@/features/feedback/server/creation";
 
@@ -20,7 +21,7 @@ export async function insertPublicFeedback(
 
     const [total] = await tx.select({ value: count() }).from(schema.feedback)
       .where(eq(schema.feedback.projectId, project.id));
-    if (Number(total?.value ?? 0) >= 50) {
+    if (Number(total?.value ?? 0) >= FREE_FEEDBACK_LIMIT) {
       const priceId = readPaddleConfig()?.priceId;
       const rows = priceId ? await tx.select({ subscription: schema.subscriptions }).from(schema.subscriptions)
         .innerJoin(schema.billingCustomers, eq(schema.subscriptions.paddleCustomerId, schema.billingCustomers.paddleCustomerId))

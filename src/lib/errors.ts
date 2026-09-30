@@ -7,7 +7,7 @@ export const ERROR_CATALOG = {
   BILLING_INVALID_TRANSACTION: { message: "This checkout is unavailable for your account. Refresh billing status." },
   BILLING_UNAVAILABLE: { message: "Billing is temporarily unavailable. Please try again shortly." },
   FEEDBACK_LIMIT_REACHED: {
-    message: "This public board has reached its 50 feedback limit.",
+    message: "This board has reached the Free limit of 3 feedback items. Ask the project owner to upgrade to Pro for unlimited feedback.",
   },
   FEEDBACK_NOT_AVAILABLE: {
     message: "This feedback is unavailable.",

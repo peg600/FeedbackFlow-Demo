@@ -39,14 +39,14 @@ describe("PublicFeedbackForm", () => {
 
   it("shows quota errors and handles an expired session", async () => {
     mocks.createPublicFeedbackAction.mockResolvedValueOnce({ serverError: {
-      code: "FEEDBACK_LIMIT_REACHED", message: "This public board has reached its 50 feedback limit.", requestId: "r-1",
+      code: "FEEDBACK_LIMIT_REACHED", message: "This board has reached the Free limit of 3 feedback items. Ask the project owner to upgrade to Pro for unlimited feedback.", requestId: "r-1",
     } }).mockResolvedValueOnce({ serverError: { code: "UNAUTHENTICATED", message: "Sign in again.", requestId: "r-2" } });
     const user = userEvent.setup();
     render(<PublicFeedbackForm slug="acme-studio" />);
     await user.type(screen.getByLabelText("Title"), "Dark mode");
     await user.type(screen.getByLabelText("Details"), "Please add a dark theme.");
     await user.click(screen.getByRole("button", { name: "Submit feedback" }));
-    expect(await screen.findByText("This public board has reached its 50 feedback limit.")).toBeVisible();
+    expect(await screen.findByText("This board has reached the Free limit of 3 feedback items. Ask the project owner to upgrade to Pro for unlimited feedback.")).toBeVisible();
     await user.click(screen.getByRole("button", { name: "Submit feedback" }));
     await screen.findByText("Sign in again.");
     expect(mocks.push).toHaveBeenCalledWith("/login?returnTo=%2Fp%2Facme-studio");
