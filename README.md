@@ -16,6 +16,11 @@ Add both languages when adding interface copy; use named placeholders for
 dynamic sentences. See [ADR 0019](docs/adr/0019-bilingual-ui-and-locale-preference.md)
 for rendering, persistence, and fallback decisions.
 
+See [环境与变量速查](ENVIRONMENTS.md) for the local/Vercel/Neon/Paddle mapping,
+current configuration status, and variable reference.
+The complete local import file for Vercel Preview (Git branch `develop`) is
+`.env.preview.local`; it replaced `.env.develop.local` on 2026-10-01.
+
 ## Architecture decision records
 
 The [ADR index](docs/adr/README.md) records the context, alternatives, choices,

@@ -27,6 +27,8 @@
 
 已检查导入文件与模板键集合一致、既有值未改变、Sandbox Key 与本地一致、四项 Billing 配置格式通过。尚未通过工具写入 Vercel 或验证重新部署及支付闭环。
 
+2026-10-01 配置文件整理：按用户要求，将完整导入配置统一到 `.env.preview.local`，删除重复的 `.env.develop.local`。保留原有全部有效值，键集合与 `.env.example` 一致；目标仍为 Vercel Preview 的 develop 分支及 Neon preview。这是本地文件命名整理，不改变共用 Sandbox Key 的决策或云端配置。
+
 ## 重新评估条件
 
 接入 Live、增加协作者、环境需要独立轮换或限制管理权限时重新评估。

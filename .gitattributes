@@ -1,0 +1,7 @@
+# Normalize text files to LF in both the repository and working tree.
+# Git automatically detects binary files and leaves their contents unchanged.
+* text=auto eol=lf
+
+# Windows batch scripts use CRLF in the working tree.
+*.bat text eol=crlf
+*.cmd text eol=crlf
