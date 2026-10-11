@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 import ProfilePage from "@/app/profile/page";
 
 describe("ProfilePage", () => {
-  it("renders the portfolio sections and safe project links", () => {
-    render(<ProfilePage />);
+  it("renders the portfolio sections and safe project links", async () => {
+    render(await ProfilePage());
     expect(screen.getByRole("heading", { name: "Paul Li" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "About Me" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Tech Stack" })).toBeInTheDocument();

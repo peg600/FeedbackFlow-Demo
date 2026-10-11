@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 import HomePage from "@/app/(marketing)/page";
 
 describe("HomePage", () => {
-  it("renders the FeedbackFlow landing page at the root route", () => {
-    render(<HomePage />);
+  it("renders the FeedbackFlow landing page at the root route", async () => {
+    render(await HomePage());
 
     expect(
       screen.getByRole("heading", {

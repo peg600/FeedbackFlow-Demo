@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/client";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
@@ -27,6 +29,7 @@ type PublicFeedbackFormProps = {
 
 // 协调公开反馈提交的客户端校验、登录跳转以及统一 Action 字段/服务端错误展示。
 export function PublicFeedbackForm({ slug }: PublicFeedbackFormProps) {
+  const { t } = useI18n();
   const router = useRouter();
   const [transportError, setTransportError] = useState<string>();
   const { result: state, execute, isPending } = useAction(createPublicFeedbackAction, {
@@ -89,17 +92,17 @@ export function PublicFeedbackForm({ slug }: PublicFeedbackFormProps) {
     >
       <div>
         <h2 className="text-base font-bold text-foreground" id="submit-feedback-heading">
-          Submit feedback
+          {t("Submit feedback")}
         </h2>
         <p className="mt-1 text-[11px] text-muted-foreground">
-          Sign in is required to post and vote.
+          {t("Sign in is required to post and vote.")}
         </p>
       </div>
 
       <div className="mt-5 space-y-4">
         <div>
           <label className="text-xs font-semibold text-text" htmlFor="feedback-title">
-            Title
+            {t("Title")}
           </label>
           <Input
             {...titleRegistration}
@@ -107,18 +110,18 @@ export function PublicFeedbackForm({ slug }: PublicFeedbackFormProps) {
             aria-invalid={Boolean(titleError) || undefined}
             className="mt-1.5 text-xs"
             id="feedback-title"
-            placeholder="A short, specific request"
+            placeholder={t("A short, specific request")}
           />
           {titleError ? (
             <p className="mt-1.5 text-xs text-error" id="feedback-title-error" role="alert">
-              {titleError}
+              {t(titleError ?? "")}
             </p>
           ) : null}
         </div>
 
         <div>
           <label className="text-xs font-semibold text-text" htmlFor="feedback-description">
-            Details
+            {t("Details")}
           </label>
           <Textarea
             {...descriptionRegistration}
@@ -128,11 +131,11 @@ export function PublicFeedbackForm({ slug }: PublicFeedbackFormProps) {
             aria-invalid={Boolean(descriptionError) || undefined}
             className="mt-1.5 h-20 min-h-20 text-xs"
             id="feedback-description"
-            placeholder="Describe the problem and expected outcome..."
+            placeholder={t("Describe the problem and expected outcome...")}
           />
           {descriptionError ? (
             <p className="mt-1.5 text-xs text-error" id="feedback-description-error" role="alert">
-              {descriptionError}
+              {t(descriptionError ?? "")}
             </p>
           ) : null}
         </div>
@@ -140,12 +143,12 @@ export function PublicFeedbackForm({ slug }: PublicFeedbackFormProps) {
 
       {errorMessage ? (
         <p className="mt-4 text-sm text-error" role="alert">
-          {errorMessage}
+          {t(errorMessage ?? "")}
         </p>
       ) : null}
 
       <Button className="mt-5 w-full" disabled={isPending} type="submit">
-        {isPending ? "Submitting feedback..." : "Submit feedback"}
+        {isPending ? t("Submitting feedback...") : t("Submit feedback")}
       </Button>
     </form>
   );

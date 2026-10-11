@@ -1,3 +1,4 @@
+import { getI18n } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
@@ -6,7 +7,10 @@ import { readPaddleConfig } from "@/features/billing/server/config";
 import { getBillingOverview } from "@/features/billing/server/billing";
 import { requireDashboardAccess } from "@/features/projects/server/access";
 
-export const metadata: Metadata = { title: "Billing | FeedbackFlow" };
+export async function generateMetadata(): Promise<Metadata> {
+  const { t } = await getI18n();
+  return { title: t("Billing | FeedbackFlow") };
+}
 
 /** 读取当前 Owner 的本地权益；回跳参数只控制同步提示，不能作为付款或授权证明。 */
 export default async function BillingPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {

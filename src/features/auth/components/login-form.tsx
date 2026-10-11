@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/client";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -24,6 +26,7 @@ type LoginFormProps = {
 
 // 先用 Zod 校验登录表单，再调用 Better Auth，并只展示本地白名单中的认证错误文案。
 export function LoginForm({ returnTo = "/dashboard" }: LoginFormProps) {
+  const { t } = useI18n();
   const router = useRouter();
   const {
     register,
@@ -70,10 +73,10 @@ export function LoginForm({ returnTo = "/dashboard" }: LoginFormProps) {
             className="text-[28px] leading-9 font-bold text-foreground md:text-[30px] md:leading-[normal] lg:text-[31px] lg:leading-[45px]"
             id="login-title"
           >
-            Welcome back
+            {t("Welcome back")}
           </h1>
           <p className="mt-2 text-body-sm leading-5 text-muted-foreground">
-            Sign in to manage the Acme Studio workspace.
+            {t("Sign in to manage your workspace.")}
           </p>
         </header>
       </div>
@@ -91,7 +94,7 @@ export function LoginForm({ returnTo = "/dashboard" }: LoginFormProps) {
                 className="text-body-sm leading-[17px] font-semibold text-text"
                 htmlFor="email"
               >
-                Email
+                {t("Email")}
               </label>
               <Input
                 aria-describedby={errors.email ? "email-error" : undefined}
@@ -103,7 +106,7 @@ export function LoginForm({ returnTo = "/dashboard" }: LoginFormProps) {
               />
               {errors.email ? (
                 <p className="text-xs text-error" id="email-error" role="alert">
-                  {errors.email.message}
+                  {t(errors.email.message ?? "")}
                 </p>
               ) : null}
             </div>
@@ -113,7 +116,7 @@ export function LoginForm({ returnTo = "/dashboard" }: LoginFormProps) {
                 className="text-body-sm leading-[17px] font-semibold text-text"
                 htmlFor="password"
               >
-                Password
+                {t("Password")}
               </label>
               <Input
                 aria-describedby={
@@ -122,7 +125,7 @@ export function LoginForm({ returnTo = "/dashboard" }: LoginFormProps) {
                 aria-invalid={Boolean(errors.password) || undefined}
                 autoComplete="current-password"
                 id="password"
-                placeholder="8–128 characters"
+                placeholder={t("8–128 characters")}
                 type="password"
                 {...register("password")}
               />
@@ -132,7 +135,7 @@ export function LoginForm({ returnTo = "/dashboard" }: LoginFormProps) {
                   id="password-error"
                   role="alert"
                 >
-                  {errors.password.message}
+                  {t(errors.password.message ?? "")}
                 </p>
               ) : null}
             </div>
@@ -145,7 +148,7 @@ export function LoginForm({ returnTo = "/dashboard" }: LoginFormProps) {
                 type="checkbox"
                 {...register("remember")}
               />
-              Remember me
+              {t("Remember me")}
             </label>
 
           </div>
@@ -154,7 +157,7 @@ export function LoginForm({ returnTo = "/dashboard" }: LoginFormProps) {
         <div className="flex flex-col gap-6 md:gap-8 lg:gap-6">
           {errors.root?.message ? (
             <p className="text-body-sm text-error" role="alert">
-              {errors.root.message}
+              {t(errors.root.message ?? "")}
             </p>
           ) : null}
 
@@ -163,39 +166,39 @@ export function LoginForm({ returnTo = "/dashboard" }: LoginFormProps) {
             disabled={isSubmitting}
             type="submit"
           >
-            {isSubmitting ? "Signing in..." : "Sign in"}
+            {isSubmitting ? t("Signing in...") : t("Sign in")}
           </Button>
 
           <aside
-            aria-label="Demo account credentials"
+            aria-label={t("Demo account credentials")}
             className="flex flex-col gap-2 rounded-[12px] bg-surface-brand p-4 md:gap-2.5 md:p-[18px] lg:gap-2 lg:p-4"
           >
             <p className="text-body-sm leading-[17px] font-bold text-primary">
-              Demo account
+              {t("Demo account")}
             </p>
             <p className="break-words text-[13px] leading-4 font-semibold text-text lg:leading-[17px]">
               demo@feedbackflow.app · Demo1234!
             </p>
             <p className="text-[11px] leading-[13px] text-muted-foreground lg:leading-[15px]">
-              Credentials also appear in the live README.
+              {t("Credentials also appear in the live README.")}
             </p>
           </aside>
 
           <p className="text-left text-body-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
+            {t("Don't have an account?")}{" "}
             {isSubmitting ? (
               <span
                 aria-disabled="true"
                 className="font-semibold text-disabled-foreground"
               >
-                Sign up
+                {t("Sign up")}
               </span>
             ) : (
               <Link
                 className="rounded-sm font-semibold text-primary transition-colors duration-200 hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 href="/register"
               >
-                Sign up
+                {t("Sign up")}
               </Link>
             )}
           </p>

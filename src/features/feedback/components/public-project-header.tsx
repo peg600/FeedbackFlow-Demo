@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { createTranslator, type Locale } from "@/lib/i18n/shared";
 
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -25,29 +27,35 @@ type PublicProjectHeaderProps = {
   };
   showSubmitFeedback?: boolean;
   active?: "feedback" | "roadmap";
+  locale?: Locale;
 };
 
 export function PublicProjectHeader({
   project,
   showSubmitFeedback = true,
   active = "feedback",
+  locale = "en",
 }: PublicProjectHeaderProps) {
+  const t = createTranslator(locale);
   const boardHref = `/p/${project.slug}`;
 
   return (
     <header className="border-b border-border bg-background">
       <div className="mx-auto w-full max-w-content px-5 md:px-8 xl:px-12">
         <nav
-          aria-label="FeedbackFlow navigation"
+          aria-label={t("FeedbackFlow navigation")}
           className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 border-b border-border text-xs font-medium text-muted-foreground"
         >
           <Link className="inline-flex min-h-11 items-center gap-2 hover:text-foreground" href="/">
             <span aria-hidden="true">←</span>
-            Home
+            {t("Home")}
           </Link>
-          <Link className="inline-flex min-h-11 items-center gap-2 hover:text-foreground" href="/dashboard">
-            My dashboard
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link className="inline-flex min-h-11 items-center gap-2 hover:text-foreground" href="/dashboard">
+              {t("My dashboard")}
+            </Link>
+            <LanguageSwitcher />
+          </div>
         </nav>
         <div className="flex min-h-[68px] items-center justify-between gap-4 py-3 md:min-h-[82px]">
           <Link className="flex min-w-0 items-center gap-3" href={boardHref}>
@@ -62,21 +70,21 @@ export function PublicProjectHeader({
                 {project.name}
               </span>
               <span className="hidden truncate text-[11px] text-muted-foreground md:block">
-                {project.description || "Help us build a better product"}
+                {project.description || t("Help us build a better product")}
               </span>
             </span>
           </Link>
 
           <div className="flex shrink-0 items-center gap-3 md:gap-8">
             <nav
-              aria-label="Public project navigation"
+              aria-label={t("Public project navigation")}
               className="hidden items-center gap-6 text-[13px] font-semibold md:flex"
             >
               <Link aria-current={active === "feedback" ? "page" : undefined} className={active === "feedback" ? "text-primary" : "text-text hover:text-foreground"} href={boardHref}>
-                Feedback
+                {t("Feedback")}
               </Link>
               <Link aria-current={active === "roadmap" ? "page" : undefined} className={active === "roadmap" ? "text-primary" : "text-text hover:text-foreground"} href={`${boardHref}/roadmap`}>
-                Roadmap
+                {t("Roadmap")}
               </Link>
             </nav>
 
@@ -85,15 +93,15 @@ export function PublicProjectHeader({
                 className={cn(buttonVariants(), "px-4 text-[13px]")}
                 href={`${boardHref}#submit-feedback`}
               >
-                <span className="md:hidden">Submit</span>
-                <span className="hidden md:inline">Submit feedback</span>
+                <span className="md:hidden">{t("Submit")}</span>
+                <span className="hidden md:inline">{t("Submit feedback")}</span>
               </Link>
             ) : null}
           </div>
         </div>
 
         <nav
-          aria-label="Public project mobile navigation"
+          aria-label={t("Public project mobile navigation")}
           className="grid grid-cols-2 border-t border-border text-center text-[13px] font-semibold md:hidden"
         >
           <Link
@@ -106,7 +114,7 @@ export function PublicProjectHeader({
             )}
             href={boardHref}
           >
-            Feedback
+            {t("Feedback")}
           </Link>
           <Link
             aria-current={active === "roadmap" ? "page" : undefined}
@@ -118,7 +126,7 @@ export function PublicProjectHeader({
             )}
             href={`${boardHref}/roadmap`}
           >
-            Roadmap
+            {t("Roadmap")}
           </Link>
         </nav>
       </div>

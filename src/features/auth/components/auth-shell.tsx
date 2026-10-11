@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { createTranslator, type Locale } from "@/lib/i18n/shared";
 import { Brand } from "@/components/brand";
 import { FREE_FEEDBACK_LIMIT } from "@/features/billing/limits";
 import { cn } from "@/lib/utils";
@@ -17,7 +19,8 @@ const registerBenefits = [
   "Paddle sandbox upgrade flow",
 ] as const;
 
-function LoginProductProof() {
+function LoginProductProof({ locale }: { locale: Locale }) {
+  const t = createTranslator(locale);
   return (
     <aside className="hidden min-h-svh w-[350px] shrink-0 flex-col bg-text px-10 py-14 lg:flex xl:w-[480px] xl:px-16">
       <Brand inverse />
@@ -26,14 +29,13 @@ function LoginProductProof() {
         <div className="flex min-h-0 flex-1 items-center xl:flex-[2_1_0%]">
           <div className="flex w-full flex-col items-start gap-6">
             <span className="rounded-pill bg-surface-brand px-4 py-1.5 text-[11px] leading-[17px] font-bold tracking-[0.5px] text-primary">
-              LIVE PRODUCT DEMO
+              {t("LIVE PRODUCT DEMO")}
             </span>
             <h2 className="w-full text-[32px] leading-10 font-bold text-white xl:text-[43px] xl:leading-12">
-              See the full owner workflow in minutes.
+              {t("See the full owner workflow in minutes.")}
             </h2>
             <p className="w-full text-[15px] leading-[1.6] text-border-strong xl:text-body xl:leading-[26px]">
-              Use the demo workspace to manage feedback, publish roadmap
-              updates, and inspect test billing.
+              {t("Use the demo workspace to manage feedback, publish roadmap updates, and inspect test billing.")}
             </p>
           </div>
         </div>
@@ -42,7 +44,7 @@ function LoginProductProof() {
           {loginMetrics.map((metric) => (
             <div className="flex min-w-0 flex-col gap-1" key={metric.label}>
               <dt className="order-2 text-[11px] leading-4 text-border-strong">
-                {metric.label}
+                {t(metric.label)}
               </dt>
               <dd className="text-heading-md leading-[34px] font-bold text-white xl:text-[27px] xl:leading-[39px]">
                 {metric.value}
@@ -55,14 +57,15 @@ function LoginProductProof() {
   );
 }
 
-function RegisterProductProof() {
+function RegisterProductProof({ locale }: { locale: Locale }) {
+  const t = createTranslator(locale);
   return (
     <aside className="hidden min-h-svh w-[350px] shrink-0 flex-col justify-between bg-auth-proof px-10 py-14 lg:flex xl:w-[480px] xl:justify-start xl:px-16">
       <Brand inverse />
 
       <div className="flex w-full flex-col gap-12 xl:mt-[130px] xl:gap-[90px]">
         <p className="text-[32px] leading-[38px] font-bold text-white xl:text-[43px] xl:leading-12">
-          Start with one project. Ship the whole loop.
+          {t("Start with one project. Ship the whole loop.")}
         </p>
 
         <ul className="flex flex-col gap-5 xl:gap-[34px]">
@@ -77,14 +80,14 @@ function RegisterProductProof() {
               >
                 ✓
               </span>
-              <span className="min-w-0">{benefit}</span>
+              <span className="min-w-0">{t(benefit)}</span>
             </li>
           ))}
         </ul>
       </div>
 
       <p className="text-xs text-auth-proof-muted xl:mt-[110px]">
-        Free plan includes up to {FREE_FEEDBACK_LIMIT} feedback items.
+        {t("Free plan includes up to {count} feedback items.", { count: FREE_FEEDBACK_LIMIT })}
       </p>
     </aside>
   );
@@ -93,15 +96,16 @@ function RegisterProductProof() {
 type AuthShellProps = {
   children: ReactNode;
   proof: "login" | "register";
+  locale?: Locale;
 };
 
-export function AuthShell({ children, proof }: AuthShellProps) {
+export function AuthShell({ children, proof, locale = "en" }: AuthShellProps) {
   return (
     <main className="flex min-h-svh flex-col bg-background md:block md:bg-surface lg:flex lg:flex-row">
       {proof === "register" ? (
-        <RegisterProductProof />
+        <RegisterProductProof locale={locale} />
       ) : (
-        <LoginProductProof />
+        <LoginProductProof locale={locale} />
       )}
 
       <section
@@ -111,6 +115,7 @@ export function AuthShell({ children, proof }: AuthShellProps) {
         )}
       >
         <div className="w-full min-w-0 md:w-[520px] md:rounded-surface md:border md:border-border md:bg-background md:p-12 md:shadow-[0_8px_12px_rgb(16_24_40/3%)] lg:w-[430px] lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
+          <div className="mb-6 flex justify-end"><LanguageSwitcher /></div>
           {children}
         </div>
       </section>

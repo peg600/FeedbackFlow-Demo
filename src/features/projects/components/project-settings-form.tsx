@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/client";
+
 import { useState, useSyncExternalStore, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
@@ -38,6 +40,7 @@ const getServerOrigin = () => "";
 
 // 管理项目设置的受控表单，并按提交快照区分仍然有效的字段错误与已经过期的错误。
 export function ProjectSettingsForm({ project }: Props) {
+  const { t } = useI18n();
   const router = useRouter();
   const [transportError, setTransportError] = useState<string>();
   const [values, setValues] = useState<ProjectSettingsValues>(() =>
@@ -102,33 +105,33 @@ export function ProjectSettingsForm({ project }: Props) {
       }}
     >
       <div className="grid gap-2">
-        <label className="text-xs font-semibold" htmlFor="name">Project name</label>
+        <label className="text-xs font-semibold" htmlFor="name">{t("Project name")}</label>
         <Input disabled={pending} id="name" name="name" {...field("name")} />
         {fieldError("name") ? (
-          <p className="text-xs text-error" id="name-error" role="alert">{fieldError("name")}</p>
+          <p className="text-xs text-error" id="name-error" role="alert">{t(fieldError("name") ?? "")}</p>
         ) : null}
       </div>
       <div className="grid gap-2">
-        <label className="text-xs font-semibold" htmlFor="slug">Public URL slug</label>
+        <label className="text-xs font-semibold" htmlFor="slug">{t("Public URL slug")}</label>
         <Input disabled={pending} id="slug" name="slug" {...field("slug")} />
         <p className="break-all text-[11px] text-muted-foreground">
           {browserOrigin}/p/{previewSlug}
         </p>
         {fieldError("slug") ? (
-          <p className="text-xs text-error" id="slug-error" role="alert">{fieldError("slug")}</p>
+          <p className="text-xs text-error" id="slug-error" role="alert">{t(fieldError("slug") ?? "")}</p>
         ) : null}
       </div>
       <div className="grid gap-2">
-        <label className="text-xs font-semibold" htmlFor="description">Description</label>
+        <label className="text-xs font-semibold" htmlFor="description">{t("Description")}</label>
         <Textarea disabled={pending} id="description" name="description" {...field("description")} />
         {fieldError("description") ? (
-          <p className="text-xs text-error" id="description-error" role="alert">{fieldError("description")}</p>
+          <p className="text-xs text-error" id="description-error" role="alert">{t(fieldError("description") ?? "")}</p>
         ) : null}
       </div>
       <label className="flex items-center justify-between gap-5">
         <span>
-          <span className="block text-[13px] font-semibold">Make project public</span>
-          <span className="mt-1 block text-[11px] text-muted-foreground">Anyone with the link can view public feedback and roadmap.</span>
+          <span className="block text-[13px] font-semibold">{t("Make project public")}</span>
+          <span className="mt-1 block text-[11px] text-muted-foreground">{t("Anyone with the link can view public feedback and roadmap.")}</span>
         </span>
         <input
           className="size-5 accent-primary"
@@ -143,8 +146,8 @@ export function ProjectSettingsForm({ project }: Props) {
         />
       </label>
       <div className="flex flex-wrap items-center justify-end gap-4">
-        <p aria-live="polite" className={state?.data ? "text-xs text-success" : "text-xs text-error"}>{message}</p>
-        <Button disabled={pending || !isDirty} type="submit">{pending ? "Saving..." : "Save changes"}</Button>
+        <p aria-live="polite" className={state?.data ? "text-xs text-success" : "text-xs text-error"}>{t(message ?? "")}</p>
+        <Button disabled={pending || !isDirty} type="submit">{pending ? t("Saving...") : t("Save changes")}</Button>
       </div>
     </form>
   );

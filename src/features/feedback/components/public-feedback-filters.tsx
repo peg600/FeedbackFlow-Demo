@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/client";
+
 import { type FormEvent, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -27,6 +29,7 @@ export function PublicFeedbackFilters({
 }: {
   params: PublicFeedbackSearchParams;
 }) {
+  const { t } = useI18n();
   const formRef = useRef<HTMLFormElement>(null);
   const pathname = usePathname();
   const router = useRouter();
@@ -54,32 +57,32 @@ export function PublicFeedbackFilters({
       ref={formRef}
     >
       <Input
-        aria-label="Search feedback"
+        aria-label={t("Search feedback")}
         className="bg-surface text-[13px]"
         defaultValue={params.search}
         maxLength={120}
         name="search"
-        placeholder="Search feedback..."
+        placeholder={t("Search feedback...")}
         type="search"
       />
       <Select
-        aria-label="Sort feedback"
+        aria-label={t("Sort feedback")}
         className="min-w-0 sm:w-[122px]"
         defaultValue={params.sort}
         name="sort"
         onValueChange={() => formRef.current?.requestSubmit()}
-        options={sortOptions}
+        options={sortOptions.map((option) => ({ ...option, label: t(option.label) }))}
       />
       <Select
-        aria-label="Filter by status"
+        aria-label={t("Filter by status")}
         className="min-w-0 sm:w-[124px]"
         defaultValue={params.status}
         name="status"
         onValueChange={() => formRef.current?.requestSubmit()}
-        options={statusOptions}
+        options={statusOptions.map((option) => ({ ...option, label: t(option.label) }))}
       />
       <button className="sr-only" type="submit">
-        Apply filters
+        {t("Apply filters")}
       </button>
     </form>
   );

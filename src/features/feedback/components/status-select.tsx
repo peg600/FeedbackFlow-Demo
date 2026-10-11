@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/client";
+
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAction } from "next-safe-action/hooks";
@@ -55,6 +57,7 @@ type StatusSelectProps = {
 
 // 乐观显示新的反馈状态；Action 失败时回滚到最后一次由服务端确认的状态并展示统一错误。
 export function StatusSelect({ feedbackId, initialStatus }: StatusSelectProps) {
+  const { t } = useI18n();
   const [status, setStatus] = useState(initialStatus);
   const router = useRouter();
   const [transportError, setTransportError] = useState<string>();
@@ -80,7 +83,7 @@ export function StatusSelect({ feedbackId, initialStatus }: StatusSelectProps) {
   return (
     <div className="min-w-0">
       <label className="sr-only" htmlFor={`status-${feedbackId}`}>
-        Feedback status
+        {t("Feedback status")}
       </label>
       <Select
         aria-describedby={errorMessage ? `status-error-${feedbackId}` : undefined}
@@ -93,7 +96,7 @@ export function StatusSelect({ feedbackId, initialStatus }: StatusSelectProps) {
           setStatus(nextStatus as FeedbackStatus);
           execute({ feedbackId, status: nextStatus as FeedbackStatus });
         }}
-        options={statusOptions}
+        options={statusOptions.map((option) => ({ ...option, label: t(option.label) }))}
         size="status"
         triggerClassName={cn("max-w-full", statusStyles[status])}
         value={status}
@@ -104,7 +107,7 @@ export function StatusSelect({ feedbackId, initialStatus }: StatusSelectProps) {
           id={`status-error-${feedbackId}`}
           role="alert"
         >
-          {errorMessage}
+          {t(errorMessage ?? "")}
         </span>
       ) : null}
     </div>

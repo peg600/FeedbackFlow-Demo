@@ -1,3 +1,4 @@
+import { getI18n } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -36,14 +37,12 @@ function pageHref(
   return query.size ? `/p/${slug}?${query}` : `/p/${slug}`;
 }
 
-function descriptionPreview(description: string | null) {
-  return description || "No additional details were provided.";
-}
 
 // 只为合法且公开存在的项目生成动态 SEO 信息，避免泄露隐藏项目。
 export async function generateMetadata({
   params,
 }: Pick<PublicFeedbackPageProps, "params">): Promise<Metadata> {
+  const { t } = await getI18n();
   const slug = projectSchema.shape.slug.safeParse((await params).slug);
   if (!slug.success) return {};
 
@@ -55,8 +54,8 @@ export async function generateMetadata({
 
   return {
     description:
-      board.project.description ?? `Public feedback board for ${board.project.name}`,
-    title: `${board.project.name} feedback`,
+      board.project.description ?? t("Public feedback board for {project}", { project: board.project.name }),
+    title: t("{project} feedback", { project: board.project.name }),
   };
 }
 
@@ -65,6 +64,7 @@ export default async function PublicFeedbackPage({
   params,
   searchParams,
 }: PublicFeedbackPageProps) {
+  const { t, locale } = await getI18n();
   const parsedSlug = projectSchema.shape.slug.safeParse((await params).slug);
   if (!parsedSlug.success) notFound();
 
@@ -87,34 +87,25 @@ export default async function PublicFeedbackPage({
 
   return (
     <div className="min-h-svh bg-surface">
-      <PublicProjectHeader project={project} showSubmitFeedback={false} />
+      <PublicProjectHeader locale={locale} project={project} showSubmitFeedback={false} />
 
       <section className="bg-surface-brand">
         <div className="mx-auto w-full max-w-content px-5 py-7 md:px-8 md:py-8 xl:px-12">
-          <h1 className="text-[26px] leading-8 font-bold tracking-[-0.02em] text-foreground">
-            What should we build next?
-          </h1>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Search existing feedback and vote for priorities. New submissions depend on the project&apos;s available capacity.
-          </p>
+          <h1 className="text-[26px] leading-8 font-bold tracking-[-0.02em] text-foreground">{t("What should we build next?")}</h1>
+          <p className="mt-3 text-sm text-muted-foreground">{t("Search existing feedback and vote for priorities. New submissions depend on the project's available capacity.")}</p>
           <span className="mt-3 inline-flex rounded-[12px] bg-background px-3 py-1 text-[11px] font-bold text-primary">
-            {board.totalPublicFeedback} public feedback
-          </span>
+            {t("{count} public feedback", { count: board.totalPublicFeedback })}</span>
         </div>
       </section>
 
       <main className="mx-auto grid w-full max-w-content items-start gap-5 px-5 py-6 md:gap-6 md:px-8 md:py-8 lg:grid-cols-[minmax(0,1fr)_21.25rem] xl:px-12 xl:pb-16">
         <section aria-labelledby="feedback-list-heading" className="ui-card rounded-surface p-5 md:p-6">
-          <h2 className="sr-only" id="feedback-list-heading">
-            Public feedback
-          </h2>
+          <h2 className="sr-only" id="feedback-list-heading">{t("Public feedback")}</h2>
           <PublicFeedbackFilters
             key={`${filters.search}:${filters.sort}:${filters.status}`}
             params={filters}
           />
-          <p className="mt-3 text-[10px] text-muted-foreground">
-            Filters are saved in the URL
-          </p>
+          <p className="mt-3 text-[10px] text-muted-foreground">{t("Filters are saved in the URL")}</p>
 
           {board.items.length ? (
             <>
@@ -136,10 +127,10 @@ export default async function PublicFeedbackPage({
                         {item.title}
                       </span>
                       <span className="mt-1 block line-clamp-2 text-xs text-muted-foreground sm:truncate">
-                        {descriptionPreview(item.description)}
+                        {item.description || t("No additional details were provided.")}
                       </span>
                     </span>
-                    <FeedbackStatusBadge
+                    <FeedbackStatusBadge locale={locale}
                       className="justify-self-start sm:justify-self-end"
                       status={item.status as FeedbackStatus}
                       variant="list"
@@ -151,25 +142,21 @@ export default async function PublicFeedbackPage({
               <footer className="mt-5 flex items-center justify-between gap-3 border-t border-border pt-3 text-[11px] text-muted-foreground">
                 <p>
                   {pagination.totalPages > 1
-                    ? `Page ${pagination.page} of ${pagination.totalPages}`
-                    : `Showing ${firstItem}-${lastItem} of ${pagination.filteredCount}`}
+                    ? t("Page {page} of {total}", { page: pagination.page, total: pagination.totalPages })
+                    : t("Showing {first}-{last} of {total}", { first: firstItem, last: lastItem, total: pagination.filteredCount })}
                 </p>
                 <div className="flex gap-2">
                   {pagination.page > 1 ? (
                     <Link
                       className={buttonVariants({ size: "small", variant: "secondary" })}
                       href={pageHref(project.slug, filters, pagination.page - 1)}
-                    >
-                      Previous
-                    </Link>
+                    >{t("Previous")}</Link>
                   ) : null}
                   {pagination.page < pagination.totalPages ? (
                     <Link
                       className={buttonVariants({ size: "small", variant: "secondary" })}
                       href={pageHref(project.slug, filters, pagination.page + 1)}
-                    >
-                      Next
-                    </Link>
+                    >{t("Next")}</Link>
                   ) : null}
                 </div>
               </footer>
@@ -177,17 +164,13 @@ export default async function PublicFeedbackPage({
           ) : (
             <div className="mt-5 rounded-control border border-dashed border-border p-8 text-center">
               <h3 className="font-bold text-foreground">
-                {hasFilters ? "No public feedback matches these filters" : "No public feedback yet"}
+                {t(hasFilters ? "No public feedback matches these filters" : "No public feedback yet")}
               </h3>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                {hasFilters
-                  ? "Try another search or status."
-                  : "Share your first feedback to help shape this product."}
+                {t(hasFilters ? "Try another search or status." : "Share your first feedback to help shape this product.")}
               </p>
               {hasFilters ? (
-                <Link className="mt-4 inline-block text-sm font-semibold text-primary" href={`/p/${project.slug}`}>
-                  Clear filters
-                </Link>
+                <Link className="mt-4 inline-block text-sm font-semibold text-primary" href={`/p/${project.slug}`}>{t("Clear filters")}</Link>
               ) : null}
             </div>
           )}
@@ -196,13 +179,9 @@ export default async function PublicFeedbackPage({
         <aside className="flex flex-col gap-5">
           <PublicFeedbackForm slug={project.slug} />
           <section className="rounded-[12px] bg-surface p-5">
-            <h2 className="text-sm font-bold text-foreground">How it works</h2>
-            <p className="mt-3 text-xs leading-[18px] text-muted-foreground">
-              Search first → submit → collect votes → track status.
-            </p>
-            <p className="mt-3 text-xs font-semibold text-text">
-              Hidden feedback never appears publicly.
-            </p>
+            <h2 className="text-sm font-bold text-foreground">{t("How it works")}</h2>
+            <p className="mt-3 text-xs leading-[18px] text-muted-foreground">{t("Search first → submit → collect votes → track status.")}</p>
+            <p className="mt-3 text-xs font-semibold text-text">{t("Hidden feedback never appears publicly.")}</p>
           </section>
         </aside>
       </main>

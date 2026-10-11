@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/client";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -32,6 +34,7 @@ export function createSlug(value: string) {
 
 // 协调首次项目创建表单的客户端校验、自动 Slug、Action 错误展示和未登录跳转。
 export function OnboardingForm() {
+  const { t } = useI18n();
   const router = useRouter();
   const [transportError, setTransportError] = useState<string>();
   const { result: state, execute, isPending } = useAction(createProjectAction, {
@@ -105,7 +108,7 @@ export function OnboardingForm() {
     >
       <div className="flex w-full flex-col gap-2 md:max-w-[248px]">
         <label className="text-xs font-semibold text-text" htmlFor="name">
-          Project name
+          {t("Project name")}
         </label>
         <Input
           {...nameRegistration}
@@ -121,18 +124,18 @@ export function OnboardingForm() {
               });
             }
           }}
-          placeholder="Acme Studio"
+          placeholder={t("e.g. My Product")}
         />
         {nameError ? (
           <p className="text-xs text-error" id="name-error" role="alert">
-            {nameError}
+            {t(nameError ?? "")}
           </p>
         ) : null}
       </div>
 
       <div className="flex w-full flex-col gap-2 md:max-w-[248px]">
         <label className="text-xs font-semibold text-text" htmlFor="slug">
-          Public URL slug
+          {t("Public URL slug")}
         </label>
         <Input
           {...slugRegistration}
@@ -145,21 +148,21 @@ export function OnboardingForm() {
             slugWasEdited.current = true;
             void slugRegistration.onChange(event);
           }}
-          placeholder="acme-studio"
+          placeholder={t("e.g. my-product")}
           spellCheck={false}
         />
         {slugError ? (
           <p className="text-xs text-error" id="slug-error" role="alert">
-            {slugError}
+            {t(slugError ?? "")}
           </p>
         ) : null}
         <p className="text-[11px] leading-4 text-muted-foreground" id="slug-help">
-          Slugs must be unique.
+          {t("Slugs must be unique.")}
         </p>
       </div>
 
       <div
-        aria-label="Public feedback URL preview"
+        aria-label={t("Public feedback URL preview")}
         className="w-full overflow-x-auto rounded-placeholder bg-surface px-3.5 py-4 text-xs font-semibold text-primary md:max-w-[248px]"
       >
         feedbackflow.app/p/{slug || "your-project"}
@@ -170,7 +173,7 @@ export function OnboardingForm() {
           className="text-xs font-semibold text-text"
           htmlFor="description"
         >
-          Project description
+          {t("Project description")}
         </label>
         <Textarea
           {...descriptionRegistration}
@@ -182,7 +185,7 @@ export function OnboardingForm() {
           aria-invalid={Boolean(descriptionError) || undefined}
           className="min-h-[94px] placeholder:text-disabled-foreground"
           id="description"
-          placeholder="Help us decide what to build next."
+          placeholder={t("Help us decide what to build next.")}
         />
         {descriptionError ? (
           <p
@@ -190,20 +193,20 @@ export function OnboardingForm() {
             id="description-error"
             role="alert"
           >
-            {descriptionError}
+            {t(descriptionError ?? "")}
           </p>
         ) : null}
         <p
           className="text-[11px] leading-4 text-muted-foreground"
           id="description-help"
         >
-          This description appears on the public board.
+          {t("This description appears on the public board.")}
         </p>
       </div>
 
       {errorMessage && !settledState?.serverError?.field ? (
         <p className="text-body-sm text-error" role="alert">
-          {errorMessage}
+          {t(errorMessage ?? "")}
         </p>
       ) : null}
 
@@ -212,7 +215,7 @@ export function OnboardingForm() {
         disabled={isPending}
         type="submit"
       >
-        {isPending ? "Creating workspace..." : "Create workspace"}
+        {isPending ? t("Creating workspace...") : t("Create workspace")}
       </Button>
     </form>
   );

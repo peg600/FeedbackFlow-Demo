@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 import NotFound from "@/app/not-found";
 
 describe("Not found page", () => {
-  it("offers routes back to the homepage and dashboard", () => {
-    const { container } = render(<NotFound />);
+  it("offers routes back to the homepage and dashboard", async () => {
+    const { container } = render(await NotFound());
 
     expect(
       container.querySelector('img[src="/icons/logo-mark.svg"]'),

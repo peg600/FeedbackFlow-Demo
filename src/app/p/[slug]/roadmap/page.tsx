@@ -1,3 +1,4 @@
+import { getI18n } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -27,37 +28,36 @@ const laneMeta = {
 
 // 根据公开项目生成路线图 SEO 信息，不存在时返回明确的未找到标题。
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { t } = await getI18n();
   const { slug } = await params;
   const data = await getPublicRoadmap(slug);
 
   return data
     ? {
-        title: `${data.project.name} roadmap | FeedbackFlow`,
-        description: `Public roadmap for ${data.project.name}.`,
+        title: t("{project} roadmap | FeedbackFlow", { project: data.project.name }),
+        description: t("Public roadmap for {project}.", { project: data.project.name }),
       }
-    : { title: "Roadmap not found | FeedbackFlow" };
+    : { title: t("Roadmap not found | FeedbackFlow") };
 }
 
 // 读取由反馈状态派生的公开路线图，每列只展示有限预览并链接到完整筛选结果。
 export default async function RoadmapPage({ params }: Props) {
+  const { t, locale, formatDate } = await getI18n();
   const { slug } = await params;
   const data = await getPublicRoadmap(slug);
   if (!data) notFound();
 
   return (
     <div className="min-h-svh bg-surface">
-      <PublicProjectHeader active="roadmap" project={data.project} />
+      <PublicProjectHeader locale={locale} active="roadmap" project={data.project} />
       <main className="mx-auto w-full max-w-content px-5 py-8 md:px-8 md:py-10 xl:px-12">
-        <h1 className="text-2xl font-bold md:text-[28px]">Public roadmap</h1>
-        <p className="mt-2 text-[13px] text-muted-foreground">
-          See what is planned, in progress, and recently completed.
-        </p>
+        <h1 className="text-2xl font-bold md:text-[28px]">{t("Public roadmap")}</h1>
+        <p className="mt-2 text-[13px] text-muted-foreground">{t("See what is planned, in progress, and recently completed.")}</p>
 
         <div className="mt-8 grid items-start gap-5 lg:grid-cols-3">
           {data.lanes.map((lane) => {
             const meta = laneMeta[lane.status];
             const viewAllHref = `/p/${slug}?status=${lane.status}&sort=votes`;
-            const itemLabel = lane.total === 1 ? "item" : "items";
 
             return (
               <section
@@ -69,12 +69,12 @@ export default async function RoadmapPage({ params }: Props) {
                 <div className="p-5">
                   <div className="mb-5 flex items-center justify-between gap-3">
                     <h2 className="font-bold" id={`roadmap-${lane.status}`}>
-                      {meta.label}
+                      {t(meta.label)}
                     </h2>
                     <span
                       className={`shrink-0 rounded-pill px-3 py-1 text-[11px] font-bold ${meta.tone}`}
                     >
-                      {lane.total} {itemLabel}
+                      {t(lane.total === 1 ? "{count} item" : "{count} items", { count: lane.total })}
                     </span>
                   </div>
 
@@ -90,29 +90,22 @@ export default async function RoadmapPage({ params }: Props) {
                             {item.title}
                           </h3>
                           <div className="mt-5 flex flex-wrap justify-between gap-2 text-[11px] text-muted-foreground">
-                            <span>{item.voteCount} votes</span>
-                            <span>
-                              Updated{" "}
-                              {item.updatedAt.toLocaleDateString("en", {
-                                month: "short",
-                                day: "numeric",
-                              })}
+                            <span>{t("{count} votes", { count: item.voteCount })}</span>
+                            <span>{t("Updated")}{" "}
+                              {formatDate(item.updatedAt, { month: "short", day: "numeric" })}
                             </span>
                           </div>
                         </Link>
                       ))
                     ) : (
-                      <div className="rounded-placeholder bg-surface p-6 text-center text-sm text-muted-foreground">
-                        No {meta.label.toLowerCase()} items yet.
-                      </div>
+                      <div className="rounded-placeholder bg-surface p-6 text-center text-sm text-muted-foreground">{t("No {status} items yet.", { status: t(meta.label).toLowerCase() })}</div>
                     )}
                   </div>
 
                   <Link
                     className="mt-5 inline-flex text-sm font-semibold text-primary hover:text-primary-hover"
                     href={viewAllHref}
-                  >
-                    View all {meta.label.toLowerCase()}
+                  >{t("View all {status}", { status: t(meta.label).toLowerCase() })}
                   </Link>
                 </div>
               </section>
@@ -120,10 +113,7 @@ export default async function RoadmapPage({ params }: Props) {
           })}
         </div>
 
-        <p className="mt-8 text-[11px] text-muted-foreground">
-          Roadmap columns are derived from feedback status; cards are not
-          manually dragged.
-        </p>
+        <p className="mt-8 text-[11px] text-muted-foreground">{t("Roadmap columns are derived from feedback status; cards are not manually dragged.")}</p>
       </main>
     </div>
   );

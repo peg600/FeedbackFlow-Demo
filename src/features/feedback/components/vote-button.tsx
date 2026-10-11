@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/client";
+
 import { useOptimistic, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
@@ -28,6 +30,7 @@ export function VoteButton({
   returnTo,
   slug,
 }: VoteButtonProps) {
+  const { t } = useI18n();
   const router = useRouter();
   const [confirmedVote, setConfirmedVote] = useState<VoteState>({
     voteCount: initialVoteCount,
@@ -84,7 +87,7 @@ export function VoteButton({
         <strong className="text-[22px] leading-6 text-foreground">
           {optimisticVote.voteCount}
         </strong>
-        <span className="text-[10px] text-muted-foreground">votes</span>
+        <span className="text-[10px] text-muted-foreground">{t("votes")}</span>
       </div>
       <div className="flex min-w-0 flex-col items-start gap-2">
         <Button
@@ -94,17 +97,17 @@ export function VoteButton({
           onClick={handleVote}
         >
           {isPending
-            ? "Updating vote..."
+            ? t("Updating vote...")
             : optimisticVote.voted
-              ? "Voted"
-              : "Vote for this"}
+              ? t("Voted")
+              : t("Vote for this")}
         </Button>
         <p
           className={error ? "text-[10px] text-error" : "text-[10px] text-muted-foreground"}
           id={descriptionId}
           role={error ? "alert" : undefined}
         >
-          {error ?? "Optimistic update · rolls back on error"}
+          {t(error ?? "Optimistic update · rolls back on error")}
         </p>
       </div>
     </div>

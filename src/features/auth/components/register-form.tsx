@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/client";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -95,6 +97,7 @@ function RegisterField({
   register,
   type = "text",
 }: FieldProps) {
+  const { t } = useI18n();
   const errorId = `${id}-error`;
 
   return (
@@ -103,7 +106,7 @@ function RegisterField({
         className="text-body-sm leading-[17px] font-semibold text-text"
         htmlFor={id}
       >
-        {label}
+        {t(label)}
       </label>
       <Input
         aria-describedby={
@@ -113,13 +116,13 @@ function RegisterField({
         aria-invalid={Boolean(error) || undefined}
         autoComplete={autoComplete}
         id={id}
-        placeholder={placeholder}
+        placeholder={placeholder ? t(placeholder) : undefined}
         type={type}
         {...register(id)}
       />
       {error ? (
         <p className="text-xs text-error" id={errorId} role="alert">
-          {error}
+          {t(error ?? "")}
         </p>
       ) : null}
     </div>
@@ -128,6 +131,7 @@ function RegisterField({
 
 // 组合注册表单校验、密码强度反馈和 Better Auth 注册流程，成功后进入首次项目创建页。
 export function RegisterForm() {
+  const { t } = useI18n();
   const router = useRouter();
   const {
     control,
@@ -179,11 +183,11 @@ export function RegisterForm() {
             className="text-[28px] leading-9 font-bold text-foreground md:text-[30px]"
             id="register-title"
           >
-            <span className="md:hidden">Create account</span>
-            <span className="hidden md:inline">Create your account</span>
+            <span className="md:hidden">{t("Create account")}</span>
+            <span className="hidden md:inline">{t("Create your account")}</span>
           </h1>
           <p className="mt-2 text-body-sm leading-5 text-muted-foreground">
-            One account owns one focused product workspace.
+            {t("One account owns one focused product workspace.")}
           </p>
         </header>
       </div>
@@ -197,28 +201,28 @@ export function RegisterForm() {
         <div className="flex flex-col gap-4 lg:gap-5 xl:gap-6">
           <RegisterField
             autoComplete="name"
-            error={errors.name?.message}
+            error={t(errors.name?.message ?? "")}
             id="name"
-            label="Name"
-            placeholder="e.g. Paul Maker"
+            label={t("Name")}
+            placeholder={t("e.g. Paul Maker")}
             register={register}
           />
           <RegisterField
             autoComplete="username"
-            error={errors.email?.message}
+            error={t(errors.email?.message ?? "")}
             id="email"
-            label="Email"
-            placeholder="e.g. paul@example.com"
+            label={t("Email")}
+            placeholder={t("e.g. paul@example.com")}
             register={register}
             type="email"
           />
           <RegisterField
             autoComplete="new-password"
             describedBy="password-strength"
-            error={errors.password?.message}
+            error={t(errors.password?.message ?? "")}
             id="password"
-            label="Password"
-            placeholder="Must be at least 8 characters"
+            label={t("Password")}
+            placeholder={t("Must be at least 8 characters")}
             register={register}
             type="password"
           />
@@ -230,17 +234,17 @@ export function RegisterForm() {
             className="flex items-center justify-between text-xs text-text"
             id="password-strength"
           >
-            <span>Password strength</span>
+            <span>{t("Password strength")}</span>
             <span className={`font-semibold ${passwordStrength.textClassName}`}>
-              {passwordStrength.label}
+              {t(passwordStrength.label)}
             </span>
           </div>
           <div
-            aria-label="Password strength"
+            aria-label={t("Password strength")}
             aria-valuemax={100}
             aria-valuemin={0}
             aria-valuenow={passwordStrength.value}
-            aria-valuetext={passwordStrength.label}
+            aria-valuetext={t(passwordStrength.label)}
             className="h-1.5 overflow-hidden rounded-full bg-border"
             role="progressbar"
           >
@@ -253,7 +257,7 @@ export function RegisterForm() {
 
         {errors.root?.message ? (
           <p className="text-body-sm text-error" role="alert">
-            {errors.root.message}
+            {t(errors.root.message ?? "")}
           </p>
         ) : null}
 
@@ -262,28 +266,28 @@ export function RegisterForm() {
             disabled={isSubmitting}
             type="submit"
           >
-            {isSubmitting ? "Creating account..." : "Create account"}
+            {isSubmitting ? t("Creating account...") : t("Create account")}
           </Button>
 
           <p className="text-center text-[11px] leading-4 text-muted-foreground">
-            By creating an account, the Terms and Privacy Policy apply.
+            {t("By creating an account, the Terms and Privacy Policy apply.")}
           </p>
 
           <p className="text-left text-body-sm text-muted-foreground lg:text-center">
-            Already have an account?{" "}
+            {t("Already have an account?")}{" "}
             {isSubmitting ? (
               <span
                 aria-disabled="true"
                 className="font-semibold text-disabled-foreground"
               >
-                Log in
+                {t("Log in")}
               </span>
             ) : (
               <Link
                 className="rounded-sm font-semibold text-primary transition-colors duration-200 hover:text-primary-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 href="/login"
               >
-                Log in
+                {t("Log in")}
               </Link>
             )}
           </p>

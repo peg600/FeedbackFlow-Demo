@@ -1,3 +1,5 @@
+import { formatRelativeTime } from "@/lib/i18n/time";
+import { getI18n } from "@/lib/i18n/server";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { headers } from "next/headers";
@@ -23,30 +25,6 @@ type FeedbackDetailPageProps = {
   params: Promise<{ id: string; slug: string }>;
 };
 
-// 将近期时间格式化为相对时间，较早记录回退为稳定的本地化日期。
-function formatRelativeTime(date: Date) {
-  const elapsedSeconds = Math.max(
-    0,
-    Math.floor((Date.now() - date.getTime()) / 1000),
-  );
-  if (elapsedSeconds < 60) return "just now";
-
-  const minutes = Math.floor(elapsedSeconds / 60);
-  if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"} ago`;
-
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours === 1 ? "" : "s"} ago`;
-
-  const days = Math.floor(hours / 24);
-  if (days < 30) return `${days} day${days === 1 ? "" : "s"} ago`;
-
-  return new Intl.DateTimeFormat("en", {
-    day: "numeric",
-    month: "short",
-    year: date.getUTCFullYear() === new Date().getUTCFullYear() ? undefined : "numeric",
-  }).format(date);
-}
-
 /** 将反馈状态转换为面向访客的路线图说明，不额外推断排期或交付日期。 */
 function roadmapDescription(status: FeedbackStatus) {
   switch (status) {
@@ -65,6 +43,7 @@ function roadmapDescription(status: FeedbackStatus) {
 export async function generateMetadata({
   params,
 }: FeedbackDetailPageProps): Promise<Metadata> {
+  const { t } = await getI18n();
   const route = await params;
   const parsed = publicFeedbackRouteSchema.safeParse({
     feedbackId: route.id,
@@ -79,7 +58,7 @@ export async function generateMetadata({
   if (!item) return {};
 
   return {
-    description: item.description ?? `Feedback for ${item.projectName}`,
+    description: item.description ?? t("Feedback for {project}", { project: item.projectName }),
     title: `${item.title} | ${item.projectName}`,
   };
 }
@@ -88,6 +67,7 @@ export async function generateMetadata({
 export default async function FeedbackDetailPage({
   params,
 }: FeedbackDetailPageProps) {
+  const { t, locale } = await getI18n();
   const route = await params;
   const parsed = publicFeedbackRouteSchema.safeParse({
     feedbackId: route.id,
@@ -112,7 +92,7 @@ export default async function FeedbackDetailPage({
 
   return (
     <div className="min-h-svh bg-surface">
-      <PublicProjectHeader
+      <PublicProjectHeader locale={locale}
         project={{
           description: item.projectDescription,
           name: item.projectName,
@@ -121,10 +101,8 @@ export default async function FeedbackDetailPage({
       />
 
       <main className="mx-auto w-full max-w-content px-5 py-6 md:px-8 md:py-8 xl:px-12 xl:pb-16">
-        <nav aria-label="Breadcrumb" className="mb-6 text-[13px] text-muted-foreground">
-          <Link className="hover:text-text" href={feedbackHref}>
-            Feedback
-          </Link>
+        <nav aria-label={t("Breadcrumb")} className="mb-6 text-[13px] text-muted-foreground">
+          <Link className="hover:text-text" href={feedbackHref}>{t("Feedback")}</Link>
           <span aria-hidden="true"> / </span>
           <span aria-current="page">{item.title}</span>
         </nav>
@@ -132,7 +110,7 @@ export default async function FeedbackDetailPage({
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_23.5rem]">
           <article className="ui-card rounded-surface p-5 md:p-8">
             <header>
-              <FeedbackStatusBadge status={status} />
+              <FeedbackStatusBadge locale={locale} status={status} />
               <h1 className="mt-4 text-heading-md leading-8 font-bold tracking-[-0.02em] text-foreground md:text-[28px] md:leading-[38px]">
                 {item.title}
               </h1>
@@ -145,7 +123,7 @@ export default async function FeedbackDetailPage({
 
             <div className="my-7 border-t border-border" />
 
-            <section aria-label="Vote for this feedback">
+            <section aria-label={t("Vote for this feedback")}>
               <VoteButton
                 feedbackId={item.id}
                 initialVoteCount={item.voteCount}
@@ -159,38 +137,31 @@ export default async function FeedbackDetailPage({
             <div className="my-7 border-t border-border" />
 
             <section aria-labelledby="feedback-details-heading">
-              <h2 className="text-base font-bold text-foreground" id="feedback-details-heading">
-                Details
-              </h2>
+              <h2 className="text-base font-bold text-foreground" id="feedback-details-heading">{t("Details")}</h2>
               <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-text">
-                {item.description || "No additional details were provided."}
+                {item.description || t("No additional details were provided.")}
               </p>
-              <p className="mt-3 text-[11px] text-muted-foreground">
-                Submitted by {item.authorName} · {formatRelativeTime(item.createdAt)}
+              <p className="mt-3 text-[11px] text-muted-foreground">{t("Submitted by {author} · {time}", { author: item.authorName, time: formatRelativeTime(item.createdAt, locale) })}
               </p>
             </section>
 
             <section
-              aria-label="Feedback activity"
+              aria-label={t("Feedback activity")}
               className="mt-6 flex flex-col gap-2 rounded-control bg-surface px-4 py-3 text-[11px] sm:flex-row sm:items-center sm:justify-between"
             >
-              <p className="font-semibold text-text">
-                Current status: {getFeedbackStatusLabel(status)}
+              <p className="font-semibold text-text">{t("Current status: {status}", { status: getFeedbackStatusLabel(status, locale) })}
               </p>
-              <time className="text-muted-foreground" dateTime={item.updatedAt.toISOString()}>
-                Updated {formatRelativeTime(item.updatedAt)}
+              <time className="text-muted-foreground" dateTime={item.updatedAt.toISOString()}>{t("Updated {time}", { time: formatRelativeTime(item.updatedAt, locale) })}
               </time>
             </section>
           </article>
 
           <aside className="flex flex-col gap-6">
             <section aria-labelledby="roadmap-status-heading" className="ui-card rounded-surface p-6">
-              <h2 className="text-base font-bold text-foreground" id="roadmap-status-heading">
-                Roadmap status
-              </h2>
-              <FeedbackStatusBadge className="mt-5" status={status} />
+              <h2 className="text-base font-bold text-foreground" id="roadmap-status-heading">{t("Roadmap status")}</h2>
+              <FeedbackStatusBadge locale={locale} className="mt-5" status={status} />
               <p className="mt-5 text-[13px] leading-5 text-muted-foreground">
-                {roadmapDescription(status)}
+                {t(roadmapDescription(status))}
               </p>
               <Link
                 className={cn(
@@ -198,21 +169,13 @@ export default async function FeedbackDetailPage({
                   "mt-5 w-full",
                 )}
                 href={`${feedbackHref}/roadmap`}
-              >
-                View roadmap
-              </Link>
+              >{t("View roadmap")}</Link>
             </section>
 
             <section aria-labelledby="more-feedback-heading" className="rounded-surface bg-surface-brand p-6">
-              <h2 className="text-base font-bold text-foreground" id="more-feedback-heading">
-                Have more feedback?
-              </h2>
-              <p className="mt-4 text-[13px] leading-5 text-muted-foreground">
-                Search before submitting to avoid duplicates.
-              </p>
-              <Link className={cn(buttonVariants(), "mt-5 w-full")} href={`${feedbackHref}#submit-feedback`}>
-                Submit feedback
-              </Link>
+              <h2 className="text-base font-bold text-foreground" id="more-feedback-heading">{t("Have more feedback?")}</h2>
+              <p className="mt-4 text-[13px] leading-5 text-muted-foreground">{t("Search before submitting to avoid duplicates.")}</p>
+              <Link className={cn(buttonVariants(), "mt-5 w-full")} href={`${feedbackHref}#submit-feedback`}>{t("Submit feedback")}</Link>
             </section>
           </aside>
         </div>

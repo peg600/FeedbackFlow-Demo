@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/client";
+
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { type FormEvent, useRef } from "react";
@@ -41,6 +43,7 @@ const sortOptions: readonly SelectOption[] = [
 
 // 将搜索、状态和排序写入 URL，使控制台筛选结果可刷新、可分享并由服务端重新查询。
 export function DashboardFilters({ params }: { params: DashboardSearchParams }) {
+  const { t } = useI18n();
   const pathname = usePathname();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
@@ -61,25 +64,25 @@ export function DashboardFilters({ params }: { params: DashboardSearchParams }) 
     <form className="grid items-stretch gap-3 md:grid-cols-2 lg:grid-cols-[1fr_auto_auto]" onSubmit={submit} ref={formRef}>
       <div className="relative min-w-0 md:col-span-2 lg:col-span-1">
         <Image alt="" className="absolute top-1/2 left-3 -translate-y-1/2 opacity-60 md:hidden" height={18} src={iconPaths.search} width={18} />
-        <Input aria-label="Search feedback" className="bg-surface pr-3 pl-10 text-[13px] md:px-3 lg:bg-background" defaultValue={params.search} maxLength={120} name="search" placeholder="Search feedback..." size="filterMobile" type="search" />
+        <Input aria-label={t("Search feedback")} className="bg-surface pr-3 pl-10 text-[13px] md:px-3 lg:bg-background" defaultValue={params.search} maxLength={120} name="search" placeholder={t("Search feedback...")} size="filterMobile" type="search" />
       </div>
       <Select
-        aria-label="Filter by status"
+        aria-label={t("Filter by status")}
         className="hidden md:block md:w-full lg:w-max lg:min-w-[106px]"
         defaultValue={params.status}
         name="status"
         onValueChange={() => formRef.current?.requestSubmit()}
-        options={statusOptions}
+        options={statusOptions.map((option) => ({ ...option, label: t(option.label) }))}
       />
       <Select
-        aria-label="Sort feedback"
+        aria-label={t("Sort feedback")}
         className="hidden md:block md:w-full lg:w-max lg:min-w-[100px]"
         defaultValue={params.sort}
         name="sort"
         onValueChange={() => formRef.current?.requestSubmit()}
-        options={sortOptions}
+        options={sortOptions.map((option) => ({ ...option, label: t(option.label) }))}
       />
-      <button className="sr-only" type="submit">Apply filters</button>
+      <button className="sr-only" type="submit">{t("Apply filters")}</button>
     </form>
   );
 }

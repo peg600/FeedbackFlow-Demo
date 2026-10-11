@@ -26,6 +26,7 @@
 | 0016 | [客户端操作失败必须可见](0016-visible-client-operation-errors.md) | Accepted | 2026-09-29 |
 | 0017 | [Paddle API 异常的安全诊断](0017-safe-paddle-api-error-diagnostics.md) | Accepted | 2026-09-29 |
 | 0018 | [Free 套餐三条反馈演示配额](0018-three-item-free-feedback-limit.md) | Accepted | 2026-09-30 |
+| 0019 | [Cookie 语言偏好与显式中英界面词典](0019-bilingual-ui-and-locale-preference.md) | Accepted | 2026-10-11 |
 
 ## 范围与维护
 

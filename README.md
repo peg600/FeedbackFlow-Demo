@@ -2,6 +2,20 @@
 
 A full-stack SaaS application built with Next.js.
 
+## Interface languages
+
+Use **English / 中文** at the top of the page to switch between English and
+Simplified Chinese. The choice is remembered for one year in a non-sensitive
+cookie and applies across pages without changing existing URLs or filters.
+English is the default. Project names and user-submitted feedback keep their
+original text. Application labels, validation, error messages, and dates are
+localized; Paddle-hosted checkout and portal language is controlled by Paddle.
+
+Translations live in `src/lib/i18n/page-messages.ts` and `feature-messages.ts`.
+Add both languages when adding interface copy; use named placeholders for
+dynamic sentences. See [ADR 0019](docs/adr/0019-bilingual-ui-and-locale-preference.md)
+for rendering, persistence, and fallback decisions.
+
 ## Architecture decision records
 
 The [ADR index](docs/adr/README.md) records the context, alternatives, choices,

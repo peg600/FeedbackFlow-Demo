@@ -26,8 +26,8 @@ describe("RegisterPage", () => {
     mocks.signUpEmail.mockResolvedValue({ data: {}, error: null });
   });
 
-  it("renders the Figma registration content", () => {
-    render(<RegisterPage />);
+  it("renders the Figma registration content", async () => {
+    render(await RegisterPage());
 
     expect(
       screen.getByText("Start with one project. Ship the whole loop."),
@@ -53,7 +53,7 @@ describe("RegisterPage", () => {
 
   it("updates the password strength indicator", async () => {
     const user = userEvent.setup();
-    render(<RegisterPage />);
+    render(await RegisterPage());
 
     const strength = screen.getByRole("progressbar", {
       name: "Password strength",
@@ -74,7 +74,7 @@ describe("RegisterPage", () => {
 
   it("creates an account and navigates to onboarding", async () => {
     const user = userEvent.setup();
-    render(<RegisterPage />);
+    render(await RegisterPage());
 
     await user.type(screen.getByLabelText("Name"), "Paul");
     await user.type(screen.getByLabelText("Email"), "paul@example.com");
@@ -99,7 +99,7 @@ describe("RegisterPage", () => {
         message: "User already exists. Use another email.",
       },
     });
-    render(<RegisterPage />);
+    render(await RegisterPage());
 
     await user.type(screen.getByLabelText("Name"), "Paul");
     await user.type(screen.getByLabelText("Email"), "paul@example.com");
@@ -121,7 +121,7 @@ describe("RegisterPage", () => {
           resolveSignUp = resolve;
         }),
     );
-    render(<RegisterPage />);
+    render(await RegisterPage());
 
     await user.type(screen.getByLabelText("Name"), "Paul");
     await user.type(screen.getByLabelText("Email"), "paul@example.com");

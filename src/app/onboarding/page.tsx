@@ -1,3 +1,5 @@
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { getI18n } from "@/lib/i18n/server";
 import { redirect } from "next/navigation";
 
 import { Brand } from "@/components/brand";
@@ -6,6 +8,7 @@ import { getCurrentProjectAccess } from "@/features/projects/server/access";
 
 // 根据会话和现有项目决定进入登录、控制台或首次项目创建流程。
 export default async function OnboardingPage() {
+  const { t } = await getI18n();
   const { project, session } = await getCurrentProjectAccess();
 
   if (!session) {
@@ -21,18 +24,18 @@ export default async function OnboardingPage() {
       <header className="border-b border-border bg-background">
         <div className="mx-auto flex h-20 max-w-content items-center justify-between px-5 md:px-8 xl:px-[72px]">
           <Brand />
-          <p className="text-xs font-semibold text-success">Account created</p>
+          <div className="flex flex-wrap items-center justify-end gap-3"><LanguageSwitcher /><p className="text-xs font-semibold text-success">{t("Account created")}</p></div>
         </div>
       </header>
 
       <main className="mx-auto flex max-w-content flex-col px-5 pb-16 pt-9 md:px-8 xl:px-[72px]">
-        <section aria-label="Onboarding progress">
+        <section aria-label={t("Onboarding progress")}>
           <div className="h-1.5 overflow-hidden rounded-full bg-border">
             <div className="h-full w-[57%] rounded-full bg-primary" />
           </div>
           <div className="mt-3 flex items-center justify-between text-[11px] font-semibold">
-            <span className="text-primary">Workspace</span>
-            <span className="text-muted-foreground">Dashboard</span>
+            <span className="text-primary">{t("Workspace")}</span>
+            <span className="text-muted-foreground">{t("Dashboard")}</span>
           </div>
         </section>
 
@@ -41,12 +44,8 @@ export default async function OnboardingPage() {
             <h1
               className="text-[28px] leading-9 font-bold text-foreground md:text-heading-lg md:leading-[44px]"
               id="onboarding-title"
-            >
-              Create your product workspace
-            </h1>
-            <p className="mt-2 text-body-sm text-muted-foreground">
-              This becomes the owner dashboard and the public feedback URL.
-            </p>
+            >{t("Create your product workspace")}</h1>
+            <p className="mt-2 text-body-sm text-muted-foreground">{t("This becomes the owner dashboard and the public feedback URL.")}</p>
           </header>
 
           <div className="mt-9 flex w-full justify-center md:mt-10">

@@ -1,3 +1,4 @@
+import { createTranslator, type Locale } from "@/lib/i18n/shared";
 import { cn } from "@/lib/utils";
 
 export type FeedbackStatus =
@@ -24,12 +25,14 @@ type FeedbackStatusBadgeProps = {
   className?: string;
   status: FeedbackStatus;
   variant?: "detail" | "list";
+  locale?: Locale;
 };
 
 export function FeedbackStatusBadge({
   className,
   status,
   variant = "detail",
+  locale = "en",
 }: FeedbackStatusBadgeProps) {
   return (
     <span
@@ -42,11 +45,11 @@ export function FeedbackStatusBadge({
         className,
       )}
     >
-      {statusLabels[status]}
+      {getFeedbackStatusLabel(status, locale)}
     </span>
   );
 }
 
-export function getFeedbackStatusLabel(status: FeedbackStatus) {
-  return statusLabels[status];
+export function getFeedbackStatusLabel(status: FeedbackStatus, locale: Locale = "en") {
+  return createTranslator(locale)(statusLabels[status]);
 }

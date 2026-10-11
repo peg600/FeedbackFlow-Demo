@@ -1,5 +1,7 @@
 "use client";
 
+import { useI18n } from "@/lib/i18n/client";
+
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -18,6 +20,7 @@ export function SignOutButton({
   className,
   compact = false,
 }: SignOutButtonProps = {}) {
+  const { t } = useI18n();
   const router = useRouter();
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,11 +57,11 @@ export function SignOutButton({
         size={compact ? "small" : "default"}
         variant="secondary"
       >
-        {isPending ? "Signing out..." : "Sign out"}
+        {isPending ? t("Signing out...") : t("Sign out")}
       </Button>
       {error ? (
         <p className="text-body-sm text-error" role="alert">
-          {error}
+          {t(error ?? "")}
         </p>
       ) : null}
     </div>
