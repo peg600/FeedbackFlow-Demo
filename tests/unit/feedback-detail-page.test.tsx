@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import FeedbackDetailPage, {
@@ -78,6 +78,17 @@ describe("FeedbackDetailPage", () => {
       "href",
       "/p/acme-studio#submit-feedback",
     );
+    const projectHeader = screen.getByRole("region", {
+      name: "Public project navigation",
+    });
+    expect(
+      within(projectHeader).queryByRole("link", { name: /Submit/ }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getAllByRole("link").filter(
+        (link) => link.getAttribute("href") === "/p/acme-studio#submit-feedback",
+      ),
+    ).toHaveLength(1);
     expect(mocks.getPublicFeedbackDetail).toHaveBeenCalledWith(
       "acme-studio",
       "c0a80121-7ac0-4f4e-a1d8-2fe804b6c401",

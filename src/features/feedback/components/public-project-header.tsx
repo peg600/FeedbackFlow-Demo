@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LanguageSwitcher } from "@/components/language-switcher";
+import { SiteHeader } from "@/components/site-header";
 import { createTranslator, type Locale } from "@/lib/i18n/shared";
 
 import { buttonVariants } from "@/components/ui/button";
@@ -40,23 +40,10 @@ export function PublicProjectHeader({
   const boardHref = `/p/${project.slug}`;
 
   return (
-    <header className="border-b border-border bg-background">
+    <>
+      <SiteHeader locale={locale} navigation={[{ href: "/dashboard", label: "Dashboard" }]} />
+      <section aria-label={t("Public project navigation")} className="border-b border-border bg-background">
       <div className="mx-auto w-full max-w-content px-5 md:px-8 xl:px-12">
-        <nav
-          aria-label={t("FeedbackFlow navigation")}
-          className="flex min-h-11 flex-wrap items-center justify-between gap-x-4 border-b border-border text-xs font-medium text-muted-foreground"
-        >
-          <Link className="inline-flex min-h-11 items-center gap-2 hover:text-foreground" href="/">
-            <span aria-hidden="true">←</span>
-            {t("Home")}
-          </Link>
-          <div className="flex flex-wrap items-center gap-3">
-            <Link className="inline-flex min-h-11 items-center gap-2 hover:text-foreground" href="/dashboard">
-              {t("My dashboard")}
-            </Link>
-            <LanguageSwitcher />
-          </div>
-        </nav>
         <div className="flex min-h-[68px] items-center justify-between gap-4 py-3 md:min-h-[82px]">
           <Link className="flex min-w-0 items-center gap-3" href={boardHref}>
             <span
@@ -88,14 +75,15 @@ export function PublicProjectHeader({
               </Link>
             </nav>
 
+            {/* 原生锚点导航避免客户端路由缓存重复拼接 fragment。 */}
             {showSubmitFeedback ? (
-              <Link
+              <a
                 className={cn(buttonVariants(), "px-4 text-[13px]")}
                 href={`${boardHref}#submit-feedback`}
               >
                 <span className="md:hidden">{t("Submit")}</span>
                 <span className="hidden md:inline">{t("Submit feedback")}</span>
-              </Link>
+              </a>
             ) : null}
           </div>
         </div>
@@ -130,6 +118,7 @@ export function PublicProjectHeader({
           </Link>
         </nav>
       </div>
-    </header>
+      </section>
+    </>
   );
 }

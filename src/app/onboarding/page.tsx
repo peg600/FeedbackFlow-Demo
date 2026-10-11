@@ -1,14 +1,13 @@
-import { LanguageSwitcher } from "@/components/language-switcher";
+import { SiteHeader } from "@/components/site-header";
 import { getI18n } from "@/lib/i18n/server";
 import { redirect } from "next/navigation";
 
-import { Brand } from "@/components/brand";
 import { OnboardingForm } from "@/features/projects/components/onboarding-form";
 import { getCurrentProjectAccess } from "@/features/projects/server/access";
 
 // 根据会话和现有项目决定进入登录、控制台或首次项目创建流程。
 export default async function OnboardingPage() {
-  const { t } = await getI18n();
+  const { t, locale } = await getI18n();
   const { project, session } = await getCurrentProjectAccess();
 
   if (!session) {
@@ -21,12 +20,7 @@ export default async function OnboardingPage() {
 
   return (
     <div className="min-h-svh bg-surface">
-      <header className="border-b border-border bg-background">
-        <div className="mx-auto flex h-20 max-w-content items-center justify-between px-5 md:px-8 xl:px-[72px]">
-          <Brand />
-          <div className="flex flex-wrap items-center justify-end gap-3"><LanguageSwitcher /><p className="text-xs font-semibold text-success">{t("Account created")}</p></div>
-        </div>
-      </header>
+      <SiteHeader locale={locale} action={<p className="text-xs font-semibold text-success">{t("Account created")}</p>} />
 
       <main className="mx-auto flex max-w-content flex-col px-5 pb-16 pt-9 md:px-8 xl:px-[72px]">
         <section aria-label={t("Onboarding progress")}>

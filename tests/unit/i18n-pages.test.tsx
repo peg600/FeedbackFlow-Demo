@@ -16,6 +16,11 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/features/feedback/server/roadmap", () => ({ getPublicRoadmap: mocks.roadmap }));
 vi.mock("@/features/feedback/server/queries", () => ({ getPublicFeedbackBoard: mocks.board }));
 vi.mock("@/features/feedback/actions/create-public-feedback", () => ({ createPublicFeedbackAction: vi.fn() }));
+vi.mock("@/lib/auth-client", () => ({
+  authClient: {
+    useSession: () => ({ data: null, isPending: false, isRefetching: false, error: null, refetch: vi.fn() }),
+  },
+}));
 
 import HomePage from "@/app/(marketing)/page";
 import ProfilePage from "@/app/profile/page";
@@ -25,6 +30,8 @@ import PublicProjectNotFound from "@/app/p/[slug]/not-found";
 import FeedbackDetailNotFound from "@/app/p/[slug]/feedback/[id]/not-found";
 import PublicFeedbackError from "@/app/p/[slug]/error";
 import FeedbackDetailError from "@/app/p/[slug]/feedback/[id]/error";
+import PublicFeedbackLoading from "@/app/p/[slug]/loading";
+import FeedbackDetailLoading from "@/app/p/[slug]/feedback/[id]/loading";
 
 const project = { id: "p1", slug: "acme", name: "Welcome back", description: "Sign in" };
 const params = Promise.resolve({ slug: "acme" });
@@ -43,16 +50,34 @@ describe("Chinese server-rendered pages", () => {
     });
   });
 
+  it.each([PublicFeedbackLoading, FeedbackDetailLoading])("keeps one shared Chinese header available while public resources load", async (Page) => {
+    render(<I18nProvider locale="zh">{await Page()}</I18nProvider>);
+    expect(screen.getAllByRole("banner")).toHaveLength(1);
+    expect(screen.getByRole("link", { name: "FeedbackFlow 首页" })).toHaveAttribute("href", "/");
+    for (const link of screen.getAllByRole("link", { name: "关于作者" })) {
+      expect(link).toHaveAttribute("href", "/profile");
+    }
+    expect(screen.getByRole("group", { name: "Language / 语言" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "中文" })).toHaveAttribute("aria-pressed", "true");
+  });
+
   it.each([PublicProjectNotFound, FeedbackDetailNotFound])("keeps language selection available on missing public resources", async (Page) => {
     render(<I18nProvider locale="zh">{await Page()}</I18nProvider>);
     expect(screen.getByRole("group", { name: "Language / 语言" })).toBeVisible();
     expect(screen.getByRole("link", { name: "FeedbackFlow 首页" })).toHaveAttribute("href", "/");
+    for (const link of screen.getAllByRole("link", { name: "关于作者" })) {
+      expect(link).toHaveAttribute("href", "/profile");
+    }
     expect(screen.getByRole("button", { name: "中文" })).toHaveAttribute("aria-pressed", "true");
   });
 
   it.each([PublicFeedbackError, FeedbackDetailError])("keeps language selection and retry available when public reads fail", (Page) => {
     render(<I18nProvider locale="zh"><Page reset={vi.fn()} /></I18nProvider>);
     expect(screen.getByRole("group", { name: "Language / 语言" })).toBeVisible();
+    expect(screen.getByRole("link", { name: "FeedbackFlow 首页" })).toHaveAttribute("href", "/");
+    for (const link of screen.getAllByRole("link", { name: "关于作者" })) {
+      expect(link).toHaveAttribute("href", "/profile");
+    }
     expect(screen.getByRole("button", { name: "重试" })).toBeVisible();
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("暂时不可用");
   });
@@ -68,7 +93,12 @@ describe("Chinese server-rendered pages", () => {
     render(<I18nProvider locale="zh">{await ProfilePage()}</I18nProvider>);
     expect(screen.getByRole("heading", { level: 1, name: "Paul Li" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "关于我" })).toBeVisible();
-    expect(screen.getByRole("navigation", { name: "作者页面导航" })).toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "主导航" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "FeedbackFlow 首页" })).toHaveAttribute("href", "/");
+    for (const link of screen.getAllByRole("link", { name: "关于作者" })) {
+      expect(link).toHaveAttribute("href", "/profile");
+      expect(link).toHaveAttribute("aria-current", "page");
+    }
     expect(screen.getByRole("link", { name: "GitHub" })).toHaveAttribute("href", "https://github.com/peg600");
   });
 

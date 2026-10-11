@@ -1,18 +1,12 @@
 "use client";
 
-import { useI18n } from "@/lib/i18n/client";
-
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 
-import { LanguageSwitcher } from "@/components/language-switcher";
-import { Brand } from "@/components/brand";
-import { Button } from "@/components/ui/button";
+import { SiteHeader } from "@/components/site-header";
 import { SignOutButton } from "@/features/auth/components/sign-out-button";
-import { iconPaths } from "@/lib/icons";
-import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n/client";
 
 const navItems = [
   { href: "/dashboard", label: "Overview" },
@@ -36,65 +30,64 @@ type DashboardShellProps = {
   plan?: "Free" | "Pro";
 };
 
-// 为受保护的控制台页面提供响应式导航、当前项目/用户上下文和移动端菜单状态管理。
+// 以共享站点 Header 提供全局入口；桌面保留工作空间侧栏，移动端业务入口交给同一个导航菜单。
 export function DashboardShell({ children, project, user, plan = "Free" }: DashboardShellProps) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const pathname = usePathname();
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
-    };
-    window.addEventListener("keydown", closeOnEscape);
-    return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [menuOpen]);
-
-  const navigation = (
-    <nav aria-label={t("Dashboard navigation")} className="flex flex-col gap-1">
-      {navItems.map((item) => {
-        const active = pathname === item.href;
-        return (
-          <Link
-            aria-current={active ? "page" : undefined}
-            className="ui-sidebar-item px-3 py-2 text-[13px] font-semibold"
-            href={item.href}
-            key={item.href}
-            onClick={() => setMenuOpen(false)}
-          >
-            {t(item.label)}
-          </Link>
-        );
-      })}
-    </nav>
-  );
+  const publicLinks = [
+    { href: `/p/${project.slug}`, label: "Feedback" },
+    { href: `/p/${project.slug}/roadmap`, label: "Roadmap" },
+  ];
 
   return (
-    <div className="flex min-h-svh bg-surface">
-      <aside className="fixed inset-y-0 left-0 z-20 hidden w-sidebar flex-col justify-between border-r border-border bg-background p-5 lg:flex">
-        <div className="flex flex-col gap-6">
-          <Brand className="gap-2 [&_span]:text-base" />
-          <section aria-label={t("Current workspace")} className="flex flex-col gap-1.5">
-            <p className="text-[10px] font-bold tracking-wide text-muted-foreground">{t("WORKSPACE")}</p>
-            <div className="flex min-w-0 items-center gap-2 rounded-placeholder bg-surface p-2">
-              <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-surface-brand text-[10px] font-bold text-primary">
-                {initials(project.name)}
-              </span>
-              <span className="min-w-0">
-                <span className="block truncate text-xs font-semibold">{project.name}</span>
-                <span className="block text-[10px] text-muted-foreground">{t("{plan} plan", { plan: t(plan) })}</span>
-              </span>
-            </div>
-          </section>
-          {navigation}
-          <section className="flex flex-col gap-3 pt-3 text-xs font-semibold text-text">
-            <p className="text-[10px] font-bold tracking-wide text-muted-foreground">{t("PUBLIC PROJECT")}</p>
-            <Link href={`/p/${project.slug}`} target="_blank">{t("View feedback board ↗")}</Link>
-            <Link href={`/p/${project.slug}/roadmap`} target="_blank">{t("View roadmap ↗")}</Link>
-          </section>
-        </div>
-        <div className="flex flex-col gap-2">
+    <div className="flex min-h-svh flex-col bg-surface">
+      <SiteHeader
+        layout="workspace"
+        locale={locale}
+        navigation={publicLinks}
+        mobileNavigation={[
+          ...navItems.map((item) => ({ ...item, active: pathname === item.href })),
+          ...publicLinks,
+        ]}
+        action={<SignOutButton compact />}
+      />
+
+      <div className="flex min-w-0 flex-1">
+        <aside className="hidden w-sidebar shrink-0 flex-col justify-between gap-8 border-r border-border bg-background p-5 lg:flex">
+          <div className="flex flex-col gap-6">
+            <section aria-label={t("Current workspace")} className="flex flex-col gap-1.5">
+              <p className="text-caption font-bold tracking-wide text-muted-foreground">{t("WORKSPACE")}</p>
+              <div className="flex min-w-0 items-center gap-2 rounded-placeholder bg-surface p-2">
+                <span className="flex size-7 shrink-0 items-center justify-center rounded-md bg-surface-brand text-[10px] font-bold text-primary">
+                  {initials(project.name)}
+                </span>
+                <span className="min-w-0">
+                  <span className="block truncate text-xs font-semibold">{project.name}</span>
+                  <span className="block text-[10px] text-muted-foreground">{t("{plan} plan", { plan: t(plan) })}</span>
+                </span>
+              </div>
+            </section>
+
+            <nav aria-label={t("Dashboard navigation")} className="flex flex-col gap-1">
+              {navItems.map((item) => (
+                <Link
+                  aria-current={pathname === item.href ? "page" : undefined}
+                  className="ui-sidebar-item px-3 py-2 text-[13px] font-semibold"
+                  href={item.href}
+                  key={item.href}
+                >
+                  {t(item.label)}
+                </Link>
+              ))}
+            </nav>
+
+            <section className="flex flex-col gap-3 pt-3 text-[11px] font-semibold text-text">
+              <p className="text-caption font-bold tracking-wide text-muted-foreground">{t("PUBLIC PROJECT")}</p>
+              <Link href={`/p/${project.slug}`} target="_blank">{t("View feedback board ↗")}</Link>
+              <Link href={`/p/${project.slug}/roadmap`} target="_blank">{t("View roadmap ↗")}</Link>
+            </section>
+          </div>
+
           <div className="flex min-w-0 items-center gap-2 rounded-placeholder bg-surface p-2">
             <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-success text-[10px] font-bold text-success">
               {initials(user.name)}
@@ -104,87 +97,10 @@ export function DashboardShell({ children, project, user, plan = "Free" }: Dashb
               <span className="block truncate text-[10px] text-muted-foreground">{user.email}</span>
             </span>
           </div>
-          <SignOutButton className="w-full [&_button]:w-full" compact />
-        </div>
-      </aside>
+        </aside>
 
-      <div className="min-w-0 flex-1 lg:pl-sidebar">
-        <header className="flex min-h-[72px] flex-wrap items-center justify-between gap-3 border-b border-border bg-background px-5 py-3 md:px-6 lg:hidden">
-          <Brand className="gap-2" />
-          <LanguageSwitcher />
-          <div className="hidden items-center gap-2 md:flex">
-            <span className="flex size-8 items-center justify-center rounded-full bg-surface-success text-[10px] font-bold text-success">{initials(user.name)}</span>
-            <span className="max-w-40 truncate text-sm font-semibold">{user.name}</span>
-            <SignOutButton compact />
-          </div>
-          <button
-            aria-controls="mobile-dashboard-menu"
-            aria-expanded={menuOpen}
-            aria-label={t("Open dashboard menu")}
-            className="flex size-10 items-center justify-center rounded-control bg-surface-hover md:hidden"
-            onClick={() => setMenuOpen(true)}
-            type="button"
-          >
-            <Image alt="" height={22} src={iconPaths.menu} width={22} />
-          </button>
-        </header>
-        <div className="hidden border-b border-border bg-background px-6 md:block lg:hidden">
-          <nav aria-label={t("Dashboard navigation")} className="flex gap-1">
-            {navItems.map((item) => (
-              <Link
-                aria-current={pathname === item.href ? "page" : undefined}
-                className={cn(
-                  "border-b-2 border-transparent px-3 py-3 text-sm font-semibold text-muted-foreground transition-colors duration-200 hover:bg-surface-hover hover:text-foreground",
-                  pathname === item.href && "border-primary text-primary",
-                )}
-                href={item.href}
-                key={item.href}
-              >
-                {t(item.label)}
-              </Link>
-            ))}
-          </nav>
-        </div>
-
-        <div className="hidden justify-end border-b border-border bg-background px-12 py-3 lg:flex"><LanguageSwitcher /></div>
-        {children}
+        <div className="min-w-0 flex-1">{children}</div>
       </div>
-
-      {menuOpen ? (
-        <div className="fixed inset-0 z-40 md:hidden">
-          <button
-            aria-label={t("Close dashboard menu")}
-            className="absolute inset-0 bg-backdrop"
-            onClick={() => setMenuOpen(false)}
-            type="button"
-          />
-          <div
-            aria-label={t("Dashboard menu")}
-            aria-modal="true"
-            className="animate-drawer-in relative flex h-full w-[min(82vw,320px)] flex-col gap-7 bg-background p-5 shadow-xl"
-            id="mobile-dashboard-menu"
-            role="dialog"
-          >
-            <div className="flex items-center justify-between">
-              <Brand className="gap-2" />
-              <Button
-                onClick={() => setMenuOpen(false)}
-                size="small"
-                variant="secondary"
-              >
-                {t("Close")}
-              </Button>
-            </div>
-            <div className="rounded-placeholder bg-surface p-3 text-sm font-semibold">{project.name}</div>
-            {navigation}
-            <div className="mt-auto flex flex-col gap-4">
-              <Link href={`/p/${project.slug}`}>{t("View feedback board ↗")}</Link>
-              <Link href={`/p/${project.slug}/roadmap`}>{t("View roadmap ↗")}</Link>
-              <SignOutButton />
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   );
 }

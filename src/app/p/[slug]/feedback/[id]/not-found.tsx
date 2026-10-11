@@ -1,5 +1,5 @@
 import { getI18n } from "@/lib/i18n/server";
-import { BasicHeader } from "@/components/basic-header";
+import { SiteHeader } from "@/components/site-header";
 import Link from "next/link";
 
 import { buttonVariants } from "@/components/ui/button";
@@ -7,7 +7,7 @@ import { buttonVariants } from "@/components/ui/button";
 export default async function FeedbackDetailNotFound() {
   const { t, locale } = await getI18n();
   return (
-    <div className="min-h-svh bg-surface"><BasicHeader locale={locale} />
+    <div className="min-h-svh bg-surface"><SiteHeader locale={locale} />
     <main className="flex min-h-[60svh] items-center justify-center p-5">
       <section className="ui-card w-full max-w-md rounded-surface p-8 text-center">
         <p className="text-[11px] font-bold tracking-wide text-primary uppercase">{t("Feedback unavailable")}</p>

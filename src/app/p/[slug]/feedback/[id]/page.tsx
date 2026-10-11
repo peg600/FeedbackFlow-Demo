@@ -98,6 +98,7 @@ export default async function FeedbackDetailPage({
           name: item.projectName,
           slug: item.projectSlug,
         }}
+        showSubmitFeedback={false}
       />
 
       <main className="mx-auto w-full max-w-content px-5 py-6 md:px-8 md:py-8 xl:px-12 xl:pb-16">
@@ -175,7 +176,8 @@ export default async function FeedbackDetailPage({
             <section aria-labelledby="more-feedback-heading" className="rounded-surface bg-surface-brand p-6">
               <h2 className="text-base font-bold text-foreground" id="more-feedback-heading">{t("Have more feedback?")}</h2>
               <p className="mt-4 text-[13px] leading-5 text-muted-foreground">{t("Search before submitting to avoid duplicates.")}</p>
-              <Link className={cn(buttonVariants(), "mt-5 w-full")} href={`${feedbackHref}#submit-feedback`}>{t("Submit feedback")}</Link>
+              {/* 原生锚点导航避免客户端路由缓存重复拼接 fragment。 */}
+              <a className={cn(buttonVariants(), "mt-5 w-full")} href={`${feedbackHref}#submit-feedback`}>{t("Submit feedback")}</a>
             </section>
           </aside>
         </div>

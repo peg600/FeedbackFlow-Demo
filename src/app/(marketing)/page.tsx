@@ -1,14 +1,12 @@
-import { LanguageSwitcher } from "@/components/language-switcher";
+import { HomeHeader } from "@/features/auth/components/home-header";
 import type { Translator } from "@/lib/i18n/shared";
 import { getI18n } from "@/lib/i18n/server";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 
 import { Brand } from "@/components/brand";
 import { buttonVariants } from "@/components/ui/button";
 import { FREE_FEEDBACK_LIMIT } from "@/features/billing/limits";
-import { iconPaths } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -43,54 +41,6 @@ const features = [
 
 const freeFeatures = ["1 public project", "{count} feedback items", "Voting and roadmap"];
 const proFeatures = ["Unlimited feedback", "Everything in Free", "Self-service billing portal"];
-
-function Header({ t }: { t: Translator }) {
-  return (
-    <header className="border-b border-border bg-background">
-      <div className="mx-auto flex min-h-[74px] max-w-content flex-wrap items-center justify-between gap-3 px-5 py-3 md:px-8">
-        <Link aria-label={t("FeedbackFlow home")} className="rounded-control" href="/">
-          <Brand />
-        </Link>
-
-        <div className="ml-auto flex items-center gap-3">
-        <LanguageSwitcher />
-        <nav aria-label={t("Primary navigation")} className="hidden items-center gap-4 lg:flex">
-          <Link className="text-sm font-medium text-subtle-foreground hover:text-foreground" href="#features">{t("Features")}</Link>
-          <Link className="text-sm font-medium text-subtle-foreground hover:text-foreground" href="#pricing">{t("Pricing")}</Link>
-          <Link className="text-sm font-medium text-subtle-foreground hover:text-foreground" href="/profile">{t("About the maker")}</Link>
-          <Link className="text-sm font-medium text-subtle-foreground hover:text-foreground" href="/login">{t("Sign in")}</Link>
-          <Link className={buttonVariants({ size: "compact" })} href="/register">{t("Create your board")}</Link>
-        </nav>
-
-        <details className="relative lg:hidden">
-          <summary
-            aria-label={t("Open navigation")}
-            className="flex size-10 cursor-pointer list-none items-center justify-center rounded-control text-text hover:bg-surface-hover [&::-webkit-details-marker]:hidden"
-          >
-            <Image alt="" aria-hidden="true" height={24} src={iconPaths.menu} width={24} />
-          </summary>
-          <nav
-            aria-label={t("Mobile navigation")}
-            className="absolute top-full right-0 z-10 mt-3 flex w-56 flex-col gap-1 rounded-surface border border-border bg-background p-3 shadow-lg"
-          >
-            {[
-              ["Features", "#features"],
-              ["Pricing", "#pricing"],
-              ["About the maker", "/profile"],
-              ["Sign in", "/login"],
-            ].map(([label, href]) => (
-              <Link className="rounded-control px-4 py-3 text-sm font-medium text-text hover:bg-surface-hover" href={href} key={href}>
-                {t(label)}
-              </Link>
-            ))}
-            <Link className={cn(buttonVariants({ size: "compact" }), "mt-1 w-full")} href="/register">{t("Create your board")}</Link>
-          </nav>
-        </details>
-        </div>
-      </div>
-    </header>
-  );
-}
 
 function ProductPreview({ t }: { t: Translator }) {
   return (
@@ -127,7 +77,7 @@ export default async function HomePage() {
   const { t } = await getI18n();
   return (
     <div className="min-h-screen bg-background">
-      <Header t={t} />
+      <HomeHeader />
       <main>
         <section className="mx-auto grid max-w-content items-center gap-14 px-6 py-14 md:px-10 md:py-20 lg:grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)] lg:gap-20 lg:py-24">
           <div className="max-w-2xl">

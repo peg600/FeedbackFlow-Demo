@@ -27,17 +27,22 @@ export function LanguageSwitcher() {
   }
 
   return (
-    <div aria-label="Language / 语言" aria-busy={pending} role="group" className="inline-flex shrink-0 items-center rounded-control border border-border bg-background p-1 text-xs font-semibold">
+    <div aria-label="Language / 语言" aria-busy={pending} role="group" className="inline-flex shrink-0 items-center gap-0.5">
       {([ ["en", "English"], ["zh", "中文"] ] as const).map(([value, label]) => (
-        <button
-          aria-pressed={locale === value}
-          className={cn("min-h-8 rounded-placeholder px-2.5 text-muted-foreground hover:bg-surface-hover hover:text-foreground", locale === value && "bg-surface-brand text-primary")}
-          disabled={pending}
-          key={value}
-          lang={value === "zh" ? "zh-CN" : "en"}
-          onClick={() => selectLocale(value)}
-          type="button"
-        >{label}</button>
+        <span className="inline-flex items-center gap-0.5" key={value}>
+          {value === "zh" ? <span aria-hidden="true" className="text-xs text-disabled-foreground">/</span> : null}
+          <button
+            aria-pressed={locale === value}
+            className={cn(
+              "inline-flex h-7 items-center justify-center rounded-placeholder bg-transparent px-1.5 text-xs font-medium transition-colors duration-150 ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-outline disabled:cursor-not-allowed disabled:opacity-50",
+              locale === value ? "font-semibold text-primary-hover hover:text-primary-active" : "text-muted-foreground hover:text-foreground",
+            )}
+            disabled={pending}
+            lang={value === "zh" ? "zh-CN" : "en"}
+            onClick={() => selectLocale(value)}
+            type="button"
+          >{label}</button>
+        </span>
       ))}
     </div>
   );

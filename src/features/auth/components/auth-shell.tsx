@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { LanguageSwitcher } from "@/components/language-switcher";
+import { SiteHeader } from "@/components/site-header";
 import { createTranslator, type Locale } from "@/lib/i18n/shared";
 import { Brand } from "@/components/brand";
 import { FREE_FEEDBACK_LIMIT } from "@/features/billing/limits";
@@ -22,7 +22,7 @@ const registerBenefits = [
 function LoginProductProof({ locale }: { locale: Locale }) {
   const t = createTranslator(locale);
   return (
-    <aside className="hidden min-h-svh w-[350px] shrink-0 flex-col bg-text px-10 py-14 lg:flex xl:w-[480px] xl:px-16">
+    <aside className="hidden w-[350px] shrink-0 flex-col bg-text px-10 py-14 lg:flex xl:w-[480px] xl:px-16">
       <Brand inverse />
 
       <div className="flex min-h-0 flex-1 flex-col">
@@ -60,7 +60,7 @@ function LoginProductProof({ locale }: { locale: Locale }) {
 function RegisterProductProof({ locale }: { locale: Locale }) {
   const t = createTranslator(locale);
   return (
-    <aside className="hidden min-h-svh w-[350px] shrink-0 flex-col justify-between bg-auth-proof px-10 py-14 lg:flex xl:w-[480px] xl:justify-start xl:px-16">
+    <aside className="hidden w-[350px] shrink-0 flex-col justify-between bg-auth-proof px-10 py-14 lg:flex xl:w-[480px] xl:justify-start xl:px-16">
       <Brand inverse />
 
       <div className="flex w-full flex-col gap-12 xl:mt-[130px] xl:gap-[90px]">
@@ -101,7 +101,9 @@ type AuthShellProps = {
 
 export function AuthShell({ children, proof, locale = "en" }: AuthShellProps) {
   return (
-    <main className="flex min-h-svh flex-col bg-background md:block md:bg-surface lg:flex lg:flex-row">
+    <div className="flex min-h-svh flex-col bg-background">
+      <SiteHeader locale={locale} navigation={[{ href: proof === "login" ? "/register" : "/login", label: proof === "login" ? "Create account" : "Sign in" }]} />
+      <main className="flex flex-1 flex-col bg-background md:bg-surface lg:flex-row">
       {proof === "register" ? (
         <RegisterProductProof locale={locale} />
       ) : (
@@ -110,15 +112,15 @@ export function AuthShell({ children, proof, locale = "en" }: AuthShellProps) {
 
       <section
         className={cn(
-          "flex w-full min-w-0 flex-1 justify-center px-5 pt-6 pb-10 md:min-h-svh md:items-start md:px-0 md:py-20 lg:w-auto lg:items-center lg:p-10 xl:items-start",
+          "flex w-full min-w-0 flex-1 justify-center px-5 pt-6 pb-10 md:items-start md:px-0 md:py-20 lg:w-auto lg:items-center lg:p-10 xl:items-start",
           proof === "register" ? "xl:pt-[62px] xl:pb-14" : "xl:py-14",
         )}
       >
         <div className="w-full min-w-0 md:w-[520px] md:rounded-surface md:border md:border-border md:bg-background md:p-12 md:shadow-[0_8px_12px_rgb(16_24_40/3%)] lg:w-[430px] lg:border-0 lg:bg-transparent lg:p-0 lg:shadow-none">
-          <div className="mb-6 flex justify-end"><LanguageSwitcher /></div>
           {children}
         </div>
       </section>
-    </main>
+      </main>
+    </div>
   );
 }

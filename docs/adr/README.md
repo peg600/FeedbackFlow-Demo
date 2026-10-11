@@ -27,6 +27,9 @@
 | 0017 | [Paddle API 异常的安全诊断](0017-safe-paddle-api-error-diagnostics.md) | Accepted | 2026-09-29 |
 | 0018 | [Free 套餐三条反馈演示配额](0018-three-item-free-feedback-limit.md) | Accepted | 2026-09-30 |
 | 0019 | [Cookie 语言偏好与显式中英界面词典](0019-bilingual-ui-and-locale-preference.md) | Accepted | 2026-10-11 |
+| 0020 | [共享站点 Header 与页面业务导航](0020-shared-site-header-and-page-navigation.md) | Accepted | 2026-10-11 |
+| 0021 | [首页按会话展示账户入口](0021-session-aware-home-header.md) | Accepted | 2026-10-11 |
+| 0022 | [提交反馈入口使用原生锚点导航](0022-native-feedback-form-anchor-navigation.md) | Accepted | 2026-10-11 |
 
 ## 范围与维护
 

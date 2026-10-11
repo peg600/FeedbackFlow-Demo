@@ -1,40 +1,15 @@
-import { LanguageSwitcher } from "@/components/language-switcher";
-import type { Translator } from "@/lib/i18n/shared";
+import { SiteHeader } from "@/components/site-header";
 import { getI18n } from "@/lib/i18n/server";
-import Image from "next/image";
 import Link from "next/link";
 
 import { buttonVariants } from "@/components/ui/button";
-import { iconPaths } from "@/lib/icons";
 import { cn } from "@/lib/utils";
 
-function Brand({ t }: { t: Translator }) {
-  return (
-    <Link
-      href="/"
-      aria-label={t("FeedbackFlow home")}
-      className="inline-flex items-center gap-2.5 rounded-control"
-    >
-      <Image
-        src={iconPaths.logoMark}
-        alt=""
-        width={32}
-        height={32}
-        aria-hidden="true"
-        priority
-      />
-      <span className="text-base font-bold text-foreground">FeedbackFlow</span>
-    </Link>
-  );
-}
-
 export default async function NotFound() {
-  const { t } = await getI18n();
+  const { t, locale } = await getI18n();
   return (
     <div className="flex min-h-dvh flex-col bg-surface">
-      <header className="flex h-[72px] shrink-0 items-center border-b border-border bg-background px-5 md:px-[50px]">
-        <Brand t={t} /><div className="ml-auto"><LanguageSwitcher /></div>
-      </header>
+      <SiteHeader locale={locale} />
 
       <main className="flex flex-1 justify-center px-5 py-10 md:py-[92px]">
         <section

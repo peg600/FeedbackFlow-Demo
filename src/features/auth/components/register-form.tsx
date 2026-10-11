@@ -12,7 +12,6 @@ import {
   type UseFormRegister,
 } from "react-hook-form";
 
-import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { getAuthError } from "@/features/auth/auth-error";
@@ -175,9 +174,6 @@ export function RegisterForm() {
   return (
     <div className="flex w-full min-w-0 flex-col gap-6 md:gap-7 lg:gap-8 xl:gap-[54px]">
       <div className="flex flex-col gap-6 lg:gap-9 xl:gap-[66px]">
-        <div className="flex h-16 items-center justify-center md:h-auto md:justify-start">
-          <Brand />
-        </div>
         <header className="text-center md:text-left">
           <h1
             className="text-[28px] leading-9 font-bold text-foreground md:text-[30px]"

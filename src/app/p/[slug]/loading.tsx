@@ -1,6 +1,12 @@
-export default function PublicFeedbackLoading() {
+import { SiteHeader } from "@/components/site-header";
+import { getI18n } from "@/lib/i18n/server";
+
+export default async function PublicFeedbackLoading() {
+  const { locale } = await getI18n();
   return (
-    <main className="min-h-svh bg-surface px-5 py-6 md:px-8 md:py-8 xl:px-12">
+    <div className="min-h-svh bg-surface">
+      <SiteHeader locale={locale} />
+      <main className="px-5 py-6 md:px-8 md:py-8 xl:px-12">
       <div className="mx-auto max-w-content animate-pulse">
         <div className="h-32 rounded-surface bg-surface-brand" />
         <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_21.25rem]">
@@ -15,6 +21,7 @@ export default function PublicFeedbackLoading() {
           <div className="ui-card h-[318px] rounded-surface bg-background" />
         </div>
       </div>
-    </main>
+      </main>
+    </div>
   );
 }

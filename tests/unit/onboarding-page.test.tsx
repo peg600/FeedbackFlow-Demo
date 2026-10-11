@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react";
+import { act, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -59,7 +59,7 @@ describe("OnboardingPage", () => {
         name: "Create your product workspace",
       }),
     ).toBeVisible();
-    expect(screen.getByText("Account created")).toBeVisible();
+    expect(within(screen.getByRole("navigation", { name: "Primary navigation" })).getByText("Account created")).toBeVisible();
 
     await user.type(screen.getByLabelText("Project name"), "Acme Studio");
     expect(screen.getByLabelText("Public URL slug")).toHaveValue(

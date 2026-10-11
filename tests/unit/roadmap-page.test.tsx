@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/features/feedback/server/roadmap", () => ({
@@ -17,8 +17,18 @@ import RoadmapPage from "@/app/p/[slug]/roadmap/page";
 describe("RoadmapPage", () => {
   it("renders all derived status lanes and empty states", async () => {
     render(await RoadmapPage({ params: Promise.resolve({ slug: "acme" }) }));
-    expect(screen.getByRole("link", { name: "Home" })).toHaveAttribute("href", "/");
-    expect(screen.getByRole("link", { name: "My dashboard" })).toHaveAttribute("href", "/dashboard");
+    expect(screen.getByRole("link", { name: "FeedbackFlow home" })).toHaveAttribute("href", "/");
+    for (const link of screen.getAllByRole("link", { name: "Dashboard" })) {
+      expect(link).toHaveAttribute("href", "/dashboard");
+    }
+    expect(screen.getAllByRole("banner")).toHaveLength(1);
+    expect(screen.getByRole("link", { name: /Submit feedback/ })).toHaveAttribute("href", "/p/acme#submit-feedback");
+    for (const name of ["Public project navigation", "Public project mobile navigation"]) {
+      const menu = screen.getByRole("navigation", { name });
+      expect(within(menu).getByRole("link", { name: "Feedback" })).toHaveAttribute("href", "/p/acme");
+      expect(within(menu).getByRole("link", { name: "Roadmap" })).toHaveAttribute("href", "/p/acme/roadmap");
+      expect(within(menu).getByRole("link", { name: "Roadmap" })).toHaveAttribute("aria-current", "page");
+    }
     expect(screen.getByRole("heading", { name: "Planned" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "In progress" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Completed" })).toBeInTheDocument();
