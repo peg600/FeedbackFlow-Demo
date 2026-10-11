@@ -1,4 +1,5 @@
 import { HomeHeader } from "@/features/auth/components/home-header";
+import { HomeActionLink } from "@/features/auth/components/home-action-link";
 import type { Translator } from "@/lib/i18n/shared";
 import { getI18n } from "@/lib/i18n/server";
 import type { Metadata } from "next";
@@ -85,7 +86,7 @@ export default async function HomePage() {
             <h1 className="max-w-xl text-heading-lg leading-[1.125] font-bold tracking-tight text-foreground md:text-display md:leading-tight">{t("Turn feedback into a roadmap customers trust.")}</h1>
             <p className="mt-7 max-w-xl text-base leading-7 text-muted-foreground md:text-lg">{t("Collect ideas, prioritize what matters, and share progress from one focused workspace.")}</p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <Link className={cn(buttonVariants({ size: "compact" }), "w-full sm:w-auto sm:min-w-48")} href="/register">{t("Create your board")}</Link>
+              <HomeActionLink className={cn(buttonVariants({ size: "compact" }), "w-full sm:w-auto sm:min-w-48")} intent="board" />
               <Link className={cn(buttonVariants({ size: "compact", variant: "secondary" }), "w-full sm:w-auto sm:min-w-48")} href="/p/demo">{t("View live demo")}</Link>
             </div>
           </div>
@@ -130,7 +131,7 @@ export default async function HomePage() {
         <section className="bg-foreground px-6 py-14 text-center text-background md:px-10 md:py-16">
           <h2 className="text-2xl font-bold md:text-heading-lg">{t("Make product progress visible")}</h2>
           <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-border">{t("Open a board, collect the signal, and let your roadmap tell the story.")}</p>
-          <Link className={cn(buttonVariants(), "mt-7 border-background bg-background text-foreground hover:border-surface-hover hover:bg-surface-hover")} href="/register">{t("Create your board")}</Link>
+          <HomeActionLink className={cn(buttonVariants(), "mt-7 border-background bg-background text-foreground hover:border-surface-hover hover:bg-surface-hover")} intent="board" />
         </section>
       </main>
 
@@ -174,9 +175,7 @@ function PricingCard({
       <ul className="mt-7 space-y-3 text-sm text-text">
         {features.map((feature) => <li key={feature}>✓ {t(feature, { count: FREE_FEEDBACK_LIMIT })}</li>)}
       </ul>
-      <Link className={cn(buttonVariants({ variant: title === "Free" ? "primary" : "secondary" }), "mt-8 w-full")} href={title === "Free" ? "/register" : "/login?returnTo=/dashboard/billing"}>
-        {t(title === "Free" ? "Start free" : "Try Pro in sandbox")}
-      </Link>
+      <HomeActionLink className={cn(buttonVariants({ variant: title === "Free" ? "primary" : "secondary" }), "mt-8 w-full")} intent={title === "Free" ? "free" : "pro"} />
     </article>
   );
 }

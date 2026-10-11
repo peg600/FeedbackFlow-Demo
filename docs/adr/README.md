@@ -30,6 +30,7 @@
 | 0020 | [共享站点 Header 与页面业务导航](0020-shared-site-header-and-page-navigation.md) | Accepted | 2026-10-11 |
 | 0021 | [首页按会话展示账户入口](0021-session-aware-home-header.md) | Accepted | 2026-10-11 |
 | 0022 | [提交反馈入口使用原生锚点导航](0022-native-feedback-form-anchor-navigation.md) | Accepted | 2026-10-11 |
+| 0023 | [首页业务入口按会话状态导航](0023-session-aware-landing-actions.md) | Accepted | 2026-10-11 |
 
 ## 范围与维护
 

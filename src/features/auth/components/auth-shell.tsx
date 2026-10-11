@@ -102,7 +102,7 @@ type AuthShellProps = {
 export function AuthShell({ children, proof, locale = "en" }: AuthShellProps) {
   return (
     <div className="flex min-h-svh flex-col bg-background">
-      <SiteHeader locale={locale} navigation={[{ href: proof === "login" ? "/register" : "/login", label: proof === "login" ? "Create account" : "Sign in" }]} />
+      <SiteHeader layout="full-width" locale={locale} navigation={[{ href: proof === "login" ? "/register" : "/login", label: proof === "login" ? "Create account" : "Sign in" }]} />
       <main className="flex flex-1 flex-col bg-background md:bg-surface lg:flex-row">
       {proof === "register" ? (
         <RegisterProductProof locale={locale} />

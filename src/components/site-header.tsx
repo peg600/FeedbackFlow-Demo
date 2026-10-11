@@ -16,10 +16,10 @@ type SiteHeaderProps = {
   action?: ReactNode;
   trailingAction?: ReactNode;
   profileActive?: boolean;
-  layout?: "centered" | "workspace";
+  layout?: "centered" | "full-width" | "workspace";
 };
 
-/** 共用站点入口和交互；公开页内容居中，工作空间按侧栏宽度分栏对齐，不读取会话或领域数据。 */
+/** 共用站点入口和交互；支持居中、全宽及工作空间侧栏对齐，不读取会话或领域数据。 */
 export function SiteHeader({
   locale = "en",
   navigation = [],
@@ -36,18 +36,20 @@ export function SiteHeader({
     <header className="shrink-0 border-b border-border bg-background">
       <div className={cn(
         "mx-auto flex min-h-18 max-w-content flex-wrap items-center justify-between gap-3 px-5 py-3 md:px-8",
-        layout === "workspace" && "mx-0 w-full max-w-none md:px-6 lg:grid lg:grid-cols-[var(--layout-sidebar-width)_minmax(0,1fr)] lg:gap-0 lg:p-0",
+        layout !== "centered" && "mx-0 w-full max-w-none md:px-6 lg:p-0",
+        layout === "workspace" && "lg:grid lg:grid-cols-[var(--layout-sidebar-width)_minmax(0,1fr)] lg:gap-0",
       )}>
         <Link aria-label={t("FeedbackFlow home")} className={cn(
           "shrink-0 rounded-placeholder focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus-outline",
-          layout === "workspace" && "lg:flex lg:h-full lg:items-center lg:rounded-none lg:px-5 lg:py-3",
+          layout !== "centered" && "lg:flex lg:h-full lg:items-center lg:rounded-none lg:px-5 lg:py-3",
         )} href="/">
           <Brand />
         </Link>
 
         <div className={cn(
           "ml-auto flex min-w-0 items-center gap-8",
-          layout === "workspace" && "lg:ml-0 lg:justify-end lg:px-8 lg:py-3",
+          layout !== "centered" && "lg:justify-end lg:px-8 lg:py-3",
+          layout === "workspace" && "lg:ml-0",
         )}>
           <LanguageSwitcher />
           <nav aria-label={t("Primary navigation")} className="hidden flex-wrap items-center justify-end gap-x-9 gap-y-4 xl:flex">
