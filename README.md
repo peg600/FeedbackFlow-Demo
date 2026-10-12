@@ -176,11 +176,41 @@ respects the 3-item Free quota for new records under the same transaction lock a
 regular feedback submission; existing records above the new limit are preserved.
 If the seeded project was renamed or made private, resolve that deliberately;
 the script does not reset user changes. No secret is printed. Public browsing
-requires no demo password; do not publish the owner's credential.
+requires no demo password.
+
+The login page intentionally publishes the designated shared demo Owner's email
+and password so interviewers can copy and paste them. In the application
+environment, set `DEMO_LOGIN_ENABLED=true` and provide `DEMO_USER_EMAIL` and
+`DEMO_USER_PASSWORD` matching the account seeded in that same database. The
+values are managed outside Git and rendered on `/login`; visitors do not need
+access to a configuration file. Missing, invalid, or disabled configuration shows
+an unavailable message rather than invented credentials. Enabling display does
+not create an account or reset its password.
+
+Use only the designated demo account: its credentials become public and visitors
+can manage the shared demo project. Ordinary account credentials, database URLs,
+auth secrets, and Paddle secrets remain private. Payments remain Sandbox only.
+See [ADR 0024](docs/adr/0024-public-demo-login-credentials.md).
 
 Creating accounts, seeding Production, or deploying to Production requires
 separate confirmation. The migration and seed are not automatically run by
 application requests or build commands.
+
+Development demo verified on 2026-10-12: after confirming the Neon `develop`
+endpoint used by `.env.local`, ran the idempotent seed with the separately
+approved, ignored `.env.seed.development.local` configuration. It created one
+demo credential account, the public `/p/demo` project, and three feedback items.
+The same credentials are supplied to the local login page through `.env.local`
+with public demo display enabled. Actual localhost
+sign-in, session lookup, dashboard, public board, roadmap, and sign-out returned
+200; the verification session was removed. This operation did not change
+Production data. The ignored `.env.production.local` also contains matching
+Production demo display settings for future deployment; preparing that file does
+not update Vercel environment variables or deploy the application.
+
+The updated login page was additionally verified in a 390px browser: credentials
+read from the rendered page successfully signed in and reached the dashboard,
+without horizontal overflow. Sign-out removed that verification session.
 
 ## Shared abuse limits
 

@@ -51,7 +51,7 @@ function ProductPreview({ t }: { t: Translator }) {
           <p className="text-sm font-bold text-foreground">{t("Product momentum")}</p>
           <p className="mt-1 text-[11px] text-muted-foreground">{t("128 feedback · 1.8k votes")}</p>
         </div>
-        <span className="rounded-pill bg-surface-success px-3 py-1 text-[11px] font-bold text-success">{t("LIVE")}</span>
+        <span className="rounded-pill bg-surface-success px-3 py-1 text-[11px] font-bold text-success">{t("MOCK DATA")}</span>
       </div>
       <div className="space-y-3 p-5">
         <p className="text-xs font-bold tracking-wide text-muted-foreground">{t("TRENDING FEEDBACK")}</p>

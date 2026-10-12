@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { getAuthError } from "@/features/auth/auth-error";
 import { authClient } from "@/lib/auth-client";
 import { loginSchema, type LoginValues } from "@/features/auth/schemas";
+import type { DemoLoginCredentials } from "@/features/auth/server/demo-login";
 
 const defaultValues: LoginValues = {
   email: "",
@@ -20,11 +21,15 @@ const defaultValues: LoginValues = {
 };
 
 type LoginFormProps = {
+  demoCredentials?: DemoLoginCredentials;
   returnTo?: string;
 };
 
 // 先用 Zod 校验登录表单，再调用 Better Auth，并只展示本地白名单中的认证错误文案。
-export function LoginForm({ returnTo = "/dashboard" }: LoginFormProps) {
+export function LoginForm({
+  demoCredentials,
+  returnTo = "/dashboard",
+}: LoginFormProps) {
   const { t } = useI18n();
   const router = useRouter();
   const {
@@ -165,18 +170,41 @@ export function LoginForm({ returnTo = "/dashboard" }: LoginFormProps) {
           </Button>
 
           <aside
-            aria-label={t("Demo account credentials")}
+            aria-label={t("Demo access")}
             className="flex flex-col gap-2 rounded-[12px] bg-surface-brand p-4 md:gap-2.5 md:p-[18px] lg:gap-2 lg:p-4"
           >
             <p className="text-body-sm leading-[17px] font-bold text-primary">
-              {t("Demo account")}
+              {t("Demo access")}
             </p>
-            <p className="break-words text-[13px] leading-4 font-semibold text-text lg:leading-[17px]">
-              demo@feedbackflow.app · Demo1234!
-            </p>
-            <p className="text-[11px] leading-[13px] text-muted-foreground lg:leading-[15px]">
-              {t("Credentials also appear in the live README.")}
-            </p>
+            {demoCredentials ? (
+              <>
+                <dl className="flex min-w-0 flex-col gap-2 text-[13px] leading-5 text-text">
+                  <div>
+                    <dt className="font-semibold">{t("Email")}</dt>
+                    <dd>
+                      <code className="select-all [overflow-wrap:anywhere]" id="demo-email">
+                        {demoCredentials.email}
+                      </code>
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold">{t("Password")}</dt>
+                    <dd>
+                      <code className="select-all [overflow-wrap:anywhere]" id="demo-password">
+                        {demoCredentials.password}
+                      </code>
+                    </dd>
+                  </div>
+                </dl>
+                <p className="text-xs text-muted-foreground">
+                  {t("Copy these credentials to try the shared demo workspace.")}
+                </p>
+              </>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                {t("Demo sign-in is currently unavailable.")}
+              </p>
+            )}
           </aside>
 
           <p className="text-left text-body-sm text-muted-foreground">

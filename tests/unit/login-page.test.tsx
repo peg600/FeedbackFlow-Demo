@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import LoginPage from "@/app/(auth)/login/page";
 
@@ -23,10 +23,13 @@ vi.mock("@/lib/auth-client", () => ({
 describe("LoginPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.stubEnv("DEMO_LOGIN_ENABLED", "false");
     mocks.signInEmail.mockResolvedValue({ data: {}, error: null });
   });
 
-  it("renders the Figma login content and demo credentials", async () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it("renders the login form without invented demo credentials", async () => {
     render(await LoginPage());
 
     expect(
@@ -41,10 +44,33 @@ describe("LoginPage", () => {
       "placeholder",
       "8–128 characters",
     );
-    expect(screen.getByText("demo@feedbackflow.app · Demo1234!")).toBeVisible();
+    expect(screen.getByText("Demo sign-in is currently unavailable.")).toBeVisible();
+    expect(screen.queryByText(/demo@feedbackflow\.app|Demo1234!|Credentials also appear in the live README\./)).not.toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Sign up" }),
     ).toHaveAttribute("href", "/register");
+  });
+
+  it("displays the enabled demo credentials as selectable text usable for login", async () => {
+    vi.stubEnv("DEMO_LOGIN_ENABLED", "true");
+    vi.stubEnv("DEMO_USER_EMAIL", "interviewer@example.com");
+    vi.stubEnv("DEMO_USER_PASSWORD", "DemoFixture123!");
+    const user = userEvent.setup();
+    render(await LoginPage());
+
+    const email = screen.getByText("interviewer@example.com");
+    const password = screen.getByText("DemoFixture123!");
+    expect(email).toBeVisible();
+    expect(password).toBeVisible();
+    expect(email).toHaveClass("select-all");
+    expect(password).toHaveClass("select-all");
+    await user.type(screen.getByLabelText("Email"), email.textContent!);
+    await user.type(screen.getByLabelText("Password"), password.textContent!);
+    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    expect(mocks.signInEmail).toHaveBeenCalledWith({
+      email: "interviewer@example.com", password: "DemoFixture123!", rememberMe: false,
+    });
+    expect(mocks.push).toHaveBeenCalledWith("/dashboard");
   });
 
   it("links validation errors to invalid fields", async () => {

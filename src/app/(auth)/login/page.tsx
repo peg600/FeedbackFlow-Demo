@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { AuthShell } from "@/features/auth/components/auth-shell";
 import { LoginForm } from "@/features/auth/components/login-form";
 import { getSafeReturnTo } from "@/features/auth/safe-return-to";
+import { getDemoLoginCredentials } from "@/features/auth/server/demo-login";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -24,7 +25,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps = {}) {
 
   return (
     <AuthShell locale={locale} proof="login">
-      <LoginForm returnTo={getSafeReturnTo(params?.returnTo)} />
+      <LoginForm
+        demoCredentials={getDemoLoginCredentials()}
+        returnTo={getSafeReturnTo(params?.returnTo)}
+      />
     </AuthShell>
   );
 }

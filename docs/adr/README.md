@@ -31,6 +31,7 @@
 | 0021 | [首页按会话展示账户入口](0021-session-aware-home-header.md) | Accepted | 2026-10-11 |
 | 0022 | [提交反馈入口使用原生锚点导航](0022-native-feedback-form-anchor-navigation.md) | Accepted | 2026-10-11 |
 | 0023 | [首页业务入口按会话状态导航](0023-session-aware-landing-actions.md) | Accepted | 2026-10-11 |
+| 0024 | [登录页公开指定演示账号凭据](0024-public-demo-login-credentials.md) | Accepted | 2026-10-12 |
 
 ## 范围与维护
 

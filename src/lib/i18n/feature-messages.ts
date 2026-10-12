@@ -1,5 +1,6 @@
 // 界面英文原文作为稳定键；用户输入和第三方原始响应不在此处翻译。
 export const featureMessages: Record<string, string> = {
+  "A live demo board for collecting product feedback and sharing a public roadmap.": "用于收集产品反馈、分享公开路线图的在线演示看板。",
   "LIVE PRODUCT DEMO": "产品在线演示",
   "See the full owner workflow in minutes.": "几分钟，体验完整的项目管理流程。",
   "Use the demo workspace to manage feedback, publish roadmap updates, and inspect test billing.": "进入演示工作空间，管理反馈、更新路线图并体验测试订阅。",
@@ -22,9 +23,9 @@ export const featureMessages: Record<string, string> = {
   "Remember me": "记住我",
   "Signing in...": "正在登录…",
   "Sign in": "登录",
-  "Demo account credentials": "演示账号登录信息",
-  "Demo account": "演示账号",
-  "Credentials also appear in the live README.": "登录信息也可在项目 README 中查看。",
+  "Demo access": "演示访问",
+  "Copy these credentials to try the shared demo workspace.": "复制以上账号密码，即可体验共享演示工作空间。",
+  "Demo sign-in is currently unavailable.": "演示登录暂不可用。",
   "Don't have an account?": "还没有账号？",
   "Sign up": "注册",
   "Create account": "创建账号",

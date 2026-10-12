@@ -11,7 +11,7 @@ export const pageMessages: Record<string, string> = {
   "FeedbackFlow product preview": "FeedbackFlow 产品预览",
   "Product momentum": "产品动态",
   "128 feedback · 1.8k votes": "128 条反馈 · 1,800 次投票",
-  "LIVE": "实时展示",
+  "MOCK DATA": "虚构数据 · 仅供展示",
   "TRENDING FEEDBACK": "热门反馈",
   "FEEDBACK SAAS": "产品反馈管理平台",
   "Turn feedback into a roadmap customers trust.": "让用户反馈成为值得信赖的产品路线图。",

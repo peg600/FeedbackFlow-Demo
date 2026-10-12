@@ -5,6 +5,8 @@ import { createTranslator, type Locale } from "@/lib/i18n/shared";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+const demoDescription = "A live demo board for collecting product feedback and sharing a public roadmap.";
+
 /** 提取项目名称前两个词的首字符作为头像缩写，空名称使用 FF 兜底。 */
 function getInitials(name: string) {
   return (
@@ -38,6 +40,10 @@ export function PublicProjectHeader({
 }: PublicProjectHeaderProps) {
   const t = createTranslator(locale);
   const boardHref = `/p/${project.slug}`;
+  // 仅翻译演示项目的预置说明；用户修改后的描述仍按原文展示。
+  const description = project.slug === "demo" && project.description === demoDescription
+    ? t(demoDescription)
+    : project.description;
 
   return (
     <>
@@ -57,7 +63,7 @@ export function PublicProjectHeader({
                 {project.name}
               </span>
               <span className="hidden truncate text-[11px] text-muted-foreground md:block">
-                {project.description || t("Help us build a better product")}
+                {description || t("Help us build a better product")}
               </span>
             </span>
           </Link>
