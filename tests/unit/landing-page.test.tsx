@@ -15,6 +15,7 @@ import HomePage from "@/app/(marketing)/page";
 
 describe("HomePage", () => {
   beforeEach(() => {
+    sessionStorage.setItem("feedbackflow-demo-guide-dismissed-v1", "1");
     mocks.useSession.mockReturnValue({
       data: null, isPending: false, isRefetching: false, error: null, refetch: vi.fn(),
     });

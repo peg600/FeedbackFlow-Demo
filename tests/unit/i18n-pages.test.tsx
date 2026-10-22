@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { I18nProvider } from "@/lib/i18n/client";
@@ -38,6 +39,7 @@ const params = Promise.resolve({ slug: "acme" });
 
 describe("Chinese server-rendered pages", () => {
   beforeEach(() => {
+    sessionStorage.setItem("feedbackflow-demo-guide-dismissed-v1", "1");
     vi.clearAllMocks();
     mocks.roadmap.mockResolvedValue({ project, lanes: [
       { status: "planned", total: 6, items: [{ id: "f1", title: "Welcome back", status: "planned", voteCount: 3, updatedAt: new Date("2026-10-11T00:00:00Z") }] },
@@ -90,8 +92,9 @@ describe("Chinese server-rendered pages", () => {
   });
 
   it("localizes profile sections while preserving names and links", async () => {
+    const user = userEvent.setup();
     render(<I18nProvider locale="zh">{await ProfilePage()}</I18nProvider>);
-    expect(screen.getByRole("heading", { level: 1, name: "Paul Li" })).toBeVisible();
+    expect(screen.getByRole("heading", { level: 1, name: "李楠煊" })).toBeVisible();
     expect(screen.getByRole("heading", { name: "关于我" })).toBeVisible();
     expect(screen.getByRole("navigation", { name: "主导航" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "FeedbackFlow 首页" })).toHaveAttribute("href", "/");
@@ -99,7 +102,15 @@ describe("Chinese server-rendered pages", () => {
       expect(link).toHaveAttribute("href", "/profile");
       expect(link).toHaveAttribute("aria-current", "page");
     }
-    expect(screen.getByRole("link", { name: "GitHub" })).toHaveAttribute("href", "https://github.com/peg600");
+    expect(screen.getByRole("heading", { name: "中国嘉德国际拍卖有限公司" })).toBeVisible();
+    expect(screen.getByText("8年前端和全栈经验")).toBeVisible();
+    expect(screen.queryByText(/我是李楠煊/)).not.toBeInTheDocument();
+    await user.click(screen.getByRole("tab", { name: "项目经历" }));
+    expect(screen.getByRole("heading", { name: "嘉德后台系统通用组件库" })).toBeVisible();
+    expect(screen.getByRole("img", { name: "李楠煊的头像" })).toBeVisible();
+    expect(screen.getByRole("link", { name: "peg600@sina.com" })).toHaveAttribute("href", "mailto:peg600@sina.com");
+    expect(screen.queryByRole("link", { name: "pegpaul7@gmail.com" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "13641285537" })).toHaveAttribute("href", "tel:13641285537");
   });
 
   it("localizes roadmap state, counts and empty lanes while preserving user titles and filter URLs", async () => {

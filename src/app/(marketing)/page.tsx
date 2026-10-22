@@ -9,6 +9,7 @@ import { Brand } from "@/components/brand";
 import { buttonVariants } from "@/components/ui/button";
 import { FREE_FEEDBACK_LIMIT } from "@/features/billing/limits";
 import { cn } from "@/lib/utils";
+import { DemoGuide } from "./demo-guide";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
@@ -89,6 +90,7 @@ export default async function HomePage() {
               <HomeActionLink className={cn(buttonVariants({ size: "compact" }), "w-full sm:w-auto sm:min-w-48")} intent="board" />
               <Link className={cn(buttonVariants({ size: "compact", variant: "secondary" }), "w-full sm:w-auto sm:min-w-48")} href="/p/demo">{t("View live demo")}</Link>
             </div>
+            <DemoGuide />
           </div>
           <ProductPreview t={t} />
         </section>
