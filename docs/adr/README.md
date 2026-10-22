@@ -33,6 +33,8 @@
 | 0023 | [首页业务入口按会话状态导航](0023-session-aware-landing-actions.md) | Accepted | 2026-10-11 |
 | 0024 | [登录页公开指定演示账号凭据](0024-public-demo-login-credentials.md) | Accepted | 2026-10-12 |
 | 0025 | [首页 Demo 导览与标签页内关闭记忆](0025-home-demo-guide.md) | Accepted | 2026-10-22 |
+| 0026 | [Preview 与 Production 共用公开演示身份](0026-shared-preview-production-demo-identity.md) | Accepted | 2026-10-22 |
+| 0027 | [Production Demo 复用 Sandbox 配置](0027-production-shared-sandbox-config.md) | Accepted | 2026-10-22 |
 
 ## 范围与维护
 
