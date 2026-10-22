@@ -58,7 +58,7 @@ describe("PublicFeedbackPage", () => {
     mocks.getPublicFeedbackBoard.mockResolvedValue(board);
   });
 
-  it("renders the Figma public board and provides feedback-detail links", async () => {
+  it("renders the public board and provides feedback-detail links", async () => {
     render(await PublicFeedbackPage({ params, searchParams }));
 
     expect(
@@ -70,12 +70,10 @@ describe("PublicFeedbackPage", () => {
       expect(link).toHaveAttribute("href", "/dashboard");
     }
     expect(screen.getAllByRole("banner")).toHaveLength(1);
-    for (const name of ["Public project navigation", "Public project mobile navigation"]) {
-      const menu = screen.getByRole("navigation", { name });
-      expect(within(menu).getByRole("link", { name: "Feedback" })).toHaveAttribute("href", "/p/acme-studio");
-      expect(within(menu).getByRole("link", { name: "Feedback" })).toHaveAttribute("aria-current", "page");
-      expect(within(menu).getByRole("link", { name: "Roadmap" })).toHaveAttribute("href", "/p/acme-studio/roadmap");
-    }
+    const menu = screen.getByRole("navigation", { name: "Public project navigation" });
+    expect(within(menu).getByRole("link", { name: "Feedback" })).toHaveAttribute("href", "/p/acme-studio");
+    expect(within(menu).getByRole("link", { name: "Feedback" })).toHaveAttribute("aria-current", "page");
+    expect(within(menu).getByRole("link", { name: "Roadmap" })).toHaveAttribute("href", "/p/acme-studio/roadmap");
     expect(screen.getByText("Filters are saved in the URL")).toBeVisible();
     expect(
       screen.getByRole("link", { name: /Dark mode for the dashboard/i }),

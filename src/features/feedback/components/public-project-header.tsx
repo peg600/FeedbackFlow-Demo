@@ -32,6 +32,7 @@ type PublicProjectHeaderProps = {
   locale?: Locale;
 };
 
+/** 在站点 Header 下展示内容区内的项目概览与局部导航，窄屏允许名称和操作自然换行。 */
 export function PublicProjectHeader({
   project,
   showSubmitFeedback = true,
@@ -48,82 +49,66 @@ export function PublicProjectHeader({
   return (
     <>
       <SiteHeader locale={locale} navigation={[{ href: "/dashboard", label: "Dashboard" }]} />
-      <section aria-label={t("Public project navigation")} className="border-b border-border bg-background">
-      <div className="mx-auto w-full max-w-content px-5 md:px-8 xl:px-12">
-        <div className="flex min-h-[68px] items-center justify-between gap-4 py-3 md:min-h-[82px]">
-          <Link className="flex min-w-0 items-center gap-3" href={boardHref}>
-            <span
-              aria-hidden="true"
-              className="flex size-10 shrink-0 items-center justify-center rounded-control bg-surface-brand text-sm font-bold text-primary"
-            >
-              {getInitials(project.name)}
+      <section aria-label={t("Public project navigation")} className="mx-auto w-full max-w-content px-5 pt-7 md:px-8 md:pt-10 xl:px-12">
+        <Link className="flex w-fit min-w-0 max-w-full items-start gap-3 md:gap-4" href={boardHref}>
+          <span
+            aria-hidden="true"
+            className="flex size-12 shrink-0 items-center justify-center rounded-token bg-primary text-base font-bold text-primary-foreground md:size-14"
+          >
+            {getInitials(project.name)}
+          </span>
+          <span className="min-w-0 max-w-2xl">
+            <span className="block break-words text-heading-sm leading-snug font-bold text-foreground">
+              {project.name}
             </span>
-            <span className="min-w-0">
-              <span className="block truncate text-[15px] font-bold text-foreground">
-                {project.name}
-              </span>
-              <span className="hidden truncate text-[11px] text-muted-foreground md:block">
-                {description || t("Help us build a better product")}
-              </span>
+            <span className="mt-1 block break-words text-sm leading-6 text-muted-foreground">
+              {description || t("Help us build a better product")}
             </span>
-          </Link>
+          </span>
+        </Link>
 
-          <div className="flex shrink-0 items-center gap-3 md:gap-8">
-            <nav
-              aria-label={t("Public project navigation")}
-              className="hidden items-center gap-6 text-[13px] font-semibold md:flex"
+        <div className="mt-5 flex flex-wrap items-center gap-x-8 gap-y-3">
+          <nav
+            aria-label={t("Public project navigation")}
+            className="inline-flex max-w-full flex-wrap gap-8 text-sm font-medium md:gap-10"
+          >
+            <Link
+              aria-current={active === "feedback" ? "page" : undefined}
+              className={cn(
+                "border-b-2 py-3",
+                active === "feedback"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground",
+              )}
+              href={boardHref}
             >
-              <Link aria-current={active === "feedback" ? "page" : undefined} className={active === "feedback" ? "text-primary" : "text-text hover:text-foreground"} href={boardHref}>
-                {t("Feedback")}
-              </Link>
-              <Link aria-current={active === "roadmap" ? "page" : undefined} className={active === "roadmap" ? "text-primary" : "text-text hover:text-foreground"} href={`${boardHref}/roadmap`}>
-                {t("Roadmap")}
-              </Link>
-            </nav>
+              {t("Feedback")}
+            </Link>
+            <Link
+              aria-current={active === "roadmap" ? "page" : undefined}
+              className={cn(
+                "border-b-2 py-3",
+                active === "roadmap"
+                  ? "border-primary text-primary"
+                  : "border-transparent text-muted-foreground hover:text-foreground",
+              )}
+              href={`${boardHref}/roadmap`}
+            >
+              {t("Roadmap")}
+            </Link>
+          </nav>
 
-            {/* 原生锚点导航避免客户端路由缓存重复拼接 fragment。 */}
-            {showSubmitFeedback ? (
-              <a
-                className={cn(buttonVariants(), "px-4 text-[13px]")}
-                href={`${boardHref}#submit-feedback`}
-              >
-                <span className="md:hidden">{t("Submit")}</span>
-                <span className="hidden md:inline">{t("Submit feedback")}</span>
-              </a>
-            ) : null}
-          </div>
+          {/* 原生锚点导航避免客户端路由缓存重复拼接 fragment。 */}
+          {showSubmitFeedback ? (
+            <a
+              className={cn(buttonVariants({ variant: "secondary" }), "px-4 text-sm sm:ml-auto")}
+              href={`${boardHref}#submit-feedback`}
+            >
+              <span className="md:hidden">{t("Submit")}</span>
+              <span className="hidden md:inline">{t("Submit feedback")}</span>
+            </a>
+          ) : null}
         </div>
-
-        <nav
-          aria-label={t("Public project mobile navigation")}
-          className="grid grid-cols-2 border-t border-border text-center text-[13px] font-semibold md:hidden"
-        >
-          <Link
-            aria-current={active === "feedback" ? "page" : undefined}
-            className={cn(
-              "border-b-2 px-3 py-3",
-              active === "feedback"
-                ? "border-primary text-primary"
-                : "border-transparent text-text",
-            )}
-            href={boardHref}
-          >
-            {t("Feedback")}
-          </Link>
-          <Link
-            aria-current={active === "roadmap" ? "page" : undefined}
-            className={cn(
-              "border-b-2 px-3 py-3",
-              active === "roadmap"
-                ? "border-primary text-primary"
-                : "border-transparent text-text",
-            )}
-            href={`${boardHref}/roadmap`}
-          >
-            {t("Roadmap")}
-          </Link>
-        </nav>
-      </div>
       </section>
     </>
   );

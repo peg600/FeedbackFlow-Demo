@@ -39,7 +39,7 @@ test("mobile public navigation exposes both feedback and roadmap routes", async 
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto(`/p/${fixtureSlug}`);
 
-  const navigation = page.getByLabel("Public project mobile navigation");
+  const navigation = page.getByRole("navigation", { name: "Public project navigation" });
   await expect(navigation.getByRole("link", { name: "Feedback", exact: true })).toBeVisible();
   await navigation.getByRole("link", { name: "Roadmap", exact: true }).click();
   await expect(page).toHaveURL(new RegExp(`/p/${fixtureSlug}/roadmap$`));

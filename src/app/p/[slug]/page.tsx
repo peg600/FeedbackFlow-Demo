@@ -89,17 +89,15 @@ export default async function PublicFeedbackPage({
     <div className="min-h-svh bg-surface">
       <PublicProjectHeader locale={locale} project={project} showSubmitFeedback={false} />
 
-      <section className="bg-surface-brand">
-        <div className="mx-auto w-full max-w-content px-5 py-7 md:px-8 md:py-8 xl:px-12">
-          <h1 className="text-[26px] leading-8 font-bold tracking-[-0.02em] text-foreground">{t("What should we build next?")}</h1>
-          <p className="mt-3 text-sm text-muted-foreground">{t("Search existing feedback and vote for priorities. New submissions depend on the project's available capacity.")}</p>
-          <span className="mt-3 inline-flex rounded-[12px] bg-background px-3 py-1 text-[11px] font-bold text-primary">
-            {t("{count} public feedback", { count: board.totalPublicFeedback })}</span>
-        </div>
-      </section>
-
       <main className="mx-auto grid w-full max-w-content items-start gap-5 px-5 py-6 md:gap-6 md:px-8 md:py-8 lg:grid-cols-[minmax(0,1fr)_21.25rem] xl:px-12 xl:pb-16">
-        <section aria-labelledby="feedback-list-heading" className="ui-card rounded-surface p-5 md:p-6">
+        <section aria-labelledby="feedback-list-heading" className="ui-card min-w-0 rounded-surface p-5 md:p-6">
+          <div className="mb-6 border-b border-border pb-6">
+            <span className="inline-flex rounded-pill bg-surface-brand px-3 py-1 text-xs font-semibold text-primary">
+              {t("{count} public feedback", { count: board.totalPublicFeedback })}
+            </span>
+            <h1 className="mt-3 text-heading-md leading-snug font-bold tracking-tight text-foreground">{t("What should we build next?")}</h1>
+            <p className="mt-2 max-w-prose text-sm leading-6 text-muted-foreground">{t("Search existing feedback and vote for priorities. New submissions depend on the project's available capacity.")}</p>
+          </div>
           <h2 className="sr-only" id="feedback-list-heading">{t("Public feedback")}</h2>
           <PublicFeedbackFilters
             key={`${filters.search}:${filters.sort}:${filters.status}`}

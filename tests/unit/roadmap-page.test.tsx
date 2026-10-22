@@ -23,12 +23,10 @@ describe("RoadmapPage", () => {
     }
     expect(screen.getAllByRole("banner")).toHaveLength(1);
     expect(screen.getByRole("link", { name: /Submit feedback/ })).toHaveAttribute("href", "/p/acme#submit-feedback");
-    for (const name of ["Public project navigation", "Public project mobile navigation"]) {
-      const menu = screen.getByRole("navigation", { name });
-      expect(within(menu).getByRole("link", { name: "Feedback" })).toHaveAttribute("href", "/p/acme");
-      expect(within(menu).getByRole("link", { name: "Roadmap" })).toHaveAttribute("href", "/p/acme/roadmap");
-      expect(within(menu).getByRole("link", { name: "Roadmap" })).toHaveAttribute("aria-current", "page");
-    }
+    const menu = screen.getByRole("navigation", { name: "Public project navigation" });
+    expect(within(menu).getByRole("link", { name: "Feedback" })).toHaveAttribute("href", "/p/acme");
+    expect(within(menu).getByRole("link", { name: "Roadmap" })).toHaveAttribute("href", "/p/acme/roadmap");
+    expect(within(menu).getByRole("link", { name: "Roadmap" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("heading", { name: "Planned" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "In progress" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Completed" })).toBeInTheDocument();
