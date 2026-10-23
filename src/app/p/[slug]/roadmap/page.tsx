@@ -5,6 +5,8 @@ import { notFound } from "next/navigation";
 
 import { PublicProjectHeader } from "@/features/feedback/components/public-project-header";
 import { getPublicRoadmap } from "@/features/feedback/server/roadmap";
+import { publicPageMetadata, NO_INDEX, breadcrumbData } from "@/lib/seo";
+import { JsonLd } from "@/components/json-ld";
 
 type Props = { params: Promise<{ slug: string }> };
 
@@ -28,16 +30,17 @@ const laneMeta = {
 
 // 根据公开项目生成路线图 SEO 信息，不存在时返回明确的未找到标题。
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { t } = await getI18n();
+  const { t, locale } = await getI18n();
   const { slug } = await params;
   const data = await getPublicRoadmap(slug);
 
   return data
-    ? {
+    ? publicPageMetadata({
+        path: `/p/${slug}/roadmap`, locale,
         title: t("{project} roadmap | FeedbackFlow", { project: data.project.name }),
         description: t("Public roadmap for {project}.", { project: data.project.name }),
-      }
-    : { title: t("Roadmap not found | FeedbackFlow") };
+      })
+    : { title: t("Roadmap not found | FeedbackFlow"), robots: NO_INDEX };
 }
 
 // 读取由反馈状态派生的公开路线图，每列只展示有限预览并链接到完整筛选结果。
@@ -49,6 +52,7 @@ export default async function RoadmapPage({ params }: Props) {
 
   return (
     <div className="min-h-svh bg-surface">
+      <JsonLd data={breadcrumbData([{ name: "FeedbackFlow", path: "/" }, { name: data.project.name, path: `/p/${slug}` }, { name: t("Public roadmap"), path: `/p/${slug}/roadmap` }])} />
       <PublicProjectHeader locale={locale} active="roadmap" project={data.project} />
       <main className="mx-auto w-full max-w-content px-5 py-8 md:px-8 md:py-10 xl:px-12">
         <h1 className="text-2xl font-bold md:text-[28px]">{t("Public roadmap")}</h1>

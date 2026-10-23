@@ -20,6 +20,8 @@ import {
   getPublicFeedbackVoteState,
 } from "@/features/feedback/server/queries";
 import { publicFeedbackRouteSchema } from "@/features/feedback/schemas";
+import { publicPageMetadata, NO_INDEX, breadcrumbData } from "@/lib/seo";
+import { JsonLd } from "@/components/json-ld";
 
 type FeedbackDetailPageProps = {
   params: Promise<{ id: string; slug: string }>;
@@ -43,24 +45,25 @@ function roadmapDescription(status: FeedbackStatus) {
 export async function generateMetadata({
   params,
 }: FeedbackDetailPageProps): Promise<Metadata> {
-  const { t } = await getI18n();
+  const { t, locale } = await getI18n();
   const route = await params;
   const parsed = publicFeedbackRouteSchema.safeParse({
     feedbackId: route.id,
     slug: route.slug,
   });
-  if (!parsed.success) return {};
+  if (!parsed.success) return { robots: NO_INDEX };
 
   const item = await getPublicFeedbackDetail(
     parsed.data.slug,
     parsed.data.feedbackId,
   );
-  if (!item) return {};
+  if (!item) return { robots: NO_INDEX };
 
-  return {
+  return publicPageMetadata({
+    path: `/p/${item.projectSlug}/feedback/${item.id}`, locale,
     description: item.description ?? t("Feedback for {project}", { project: item.projectName }),
     title: `${item.title} | ${item.projectName}`,
-  };
+  });
 }
 
 // 绑定 Slug 与反馈 ID 查询公开详情，并结合可选会话初始化当前用户的投票状态。
@@ -92,6 +95,7 @@ export default async function FeedbackDetailPage({
 
   return (
     <div className="min-h-svh bg-surface">
+      <JsonLd data={breadcrumbData([{ name: "FeedbackFlow", path: "/" }, { name: item.projectName, path: feedbackHref }, { name: item.title, path: detailHref }])} />
       <PublicProjectHeader locale={locale}
         project={{
           description: item.projectDescription,

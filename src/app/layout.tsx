@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { getSiteUrl, isIndexableEnvironment, NO_INDEX } from "@/lib/seo";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { I18nProvider } from "@/lib/i18n/client";
@@ -11,8 +12,20 @@ const inter = Inter({
 
 export async function generateMetadata(): Promise<Metadata> {
   const { t } = await getI18n();
-  return { title: "FeedbackFlow", description: t("Collect customer feedback, prioritize what matters, and share product progress.") };
+  return {
+    metadataBase: new URL(getSiteUrl()),
+    title: "FeedbackFlow",
+    description: t("Collect customer feedback, prioritize what matters, and share product progress."),
+    applicationName: "FeedbackFlow",
+    creator: "Nanxuan Li",
+    referrer: "strict-origin-when-cross-origin",
+    icons: { icon: [{ url: "/icons/logo-mark.svg", type: "image/svg+xml" }] },
+    robots: isIndexableEnvironment() ? { index: true, follow: true } : NO_INDEX,
+    formatDetection: { telephone: false, email: false, address: false },
+  };
 }
+
+export const viewport: Viewport = { themeColor: "#675dff", colorScheme: "light" };
 
 export default async function RootLayout({
   children,

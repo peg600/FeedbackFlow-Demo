@@ -17,6 +17,8 @@ import {
   type PublicFeedbackSearchParams,
 } from "@/features/feedback/schemas";
 import { projectSchema } from "@/features/projects/schemas";
+import { publicPageMetadata, NO_INDEX, breadcrumbData } from "@/lib/seo";
+import { JsonLd } from "@/components/json-ld";
 
 type PublicFeedbackPageProps = {
   params: Promise<{ slug: string }>;
@@ -41,22 +43,25 @@ function pageHref(
 // 只为合法且公开存在的项目生成动态 SEO 信息，避免泄露隐藏项目。
 export async function generateMetadata({
   params,
-}: Pick<PublicFeedbackPageProps, "params">): Promise<Metadata> {
-  const { t } = await getI18n();
+  searchParams,
+}: Pick<PublicFeedbackPageProps, "params"> & Partial<Pick<PublicFeedbackPageProps, "searchParams">>): Promise<Metadata> {
+  const { t, locale } = await getI18n();
   const slug = projectSchema.shape.slug.safeParse((await params).slug);
-  if (!slug.success) return {};
+  if (!slug.success) return { robots: NO_INDEX };
 
   const board = await getPublicFeedbackBoard(
     slug.data,
     parsePublicFeedbackSearchParams(undefined),
   );
-  if (!board) return {};
+  if (!board) return { robots: NO_INDEX };
 
-  return {
+  return publicPageMetadata({
+    path: `/p/${slug.data}`, locale,
+    noIndex: Object.keys(await searchParams ?? {}).length > 0,
     description:
       board.project.description ?? t("Public feedback board for {project}", { project: board.project.name }),
     title: t("{project} feedback", { project: board.project.name }),
-  };
+  });
 }
 
 // 校验路由和查询参数后读取公开看板，并渲染筛选、分页、空状态与反馈提交入口。
@@ -87,6 +92,7 @@ export default async function PublicFeedbackPage({
 
   return (
     <div className="min-h-svh bg-surface">
+      <JsonLd data={breadcrumbData([{ name: "FeedbackFlow", path: "/" }, { name: project.name, path: `/p/${project.slug}` }])} />
       <PublicProjectHeader locale={locale} project={project} showSubmitFeedback={false} />
 
       <main className="mx-auto grid w-full max-w-content items-start gap-5 px-5 py-6 md:gap-6 md:px-8 md:py-8 lg:grid-cols-[minmax(0,1fr)_21.25rem] xl:px-12 xl:pb-16">

@@ -156,6 +156,7 @@ export const pageMessages: Record<string, string> = {
   "1 public project": "1 个公开项目",
   "{count} feedback items": "{count} 条反馈",
   "Voting and roadmap": "投票与路线图",
+  "Sandbox billing": "沙盒订阅支付",
   "Unlimited feedback": "不限反馈数量",
   "Everything in Free": "包含免费版全部功能",
   "Self-service billing portal": "自助账单管理门户",

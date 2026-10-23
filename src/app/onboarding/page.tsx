@@ -1,4 +1,8 @@
 import { SiteHeader } from "@/components/site-header";
+import type { Metadata } from "next";
+import { NO_INDEX } from "@/lib/seo";
+
+export const metadata: Metadata = { robots: NO_INDEX };
 import { getI18n } from "@/lib/i18n/server";
 import { redirect } from "next/navigation";
 

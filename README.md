@@ -21,6 +21,41 @@ current configuration status, and variable reference.
 The complete local import file for Vercel Preview (Git branch `develop`) is
 `.env.preview.local`; it replaced `.env.develop.local` on 2026-10-01.
 
+## Search, sharing, and AI discovery
+
+Public pages provide canonical URLs, page-specific Open Graph and Twitter cards,
+and JSON-LD for the website, application, author profile, and breadcrumbs.
+`/share-image` generates a shared 1200 × 630 brand image; `/apple-icon` supplies
+the touch icon. Structured data describes the actual demo, without invented
+reviews or live payment offers.
+
+`SITE_URL` is the public HTTPS origin, defaulting to
+`https://feedback-flow-demo.vercel.app`. Set it when adopting a custom domain,
+then redeploy. It is not a secret and is independent of `BETTER_AUTH_URL`.
+Do not set it to a Preview deployment URL. `.env.example` includes the setting.
+
+Only Vercel Production is indexable. Preview/development use `noindex` headers
+and metadata, a blocking `robots.txt`, and an empty sitemap. Self-hosted builds
+must explicitly set `SITE_URL` with `NODE_ENV=production` to enable indexing.
+Production authentication, dashboard, onboarding, and API responses carry
+`X-Robots-Tag: noindex, nofollow, nosnippet`; authentication pages remain
+crawlable so crawlers can see the directive. These signals do not replace access
+control and cannot remove an already indexed URL immediately.
+
+Production `/sitemap.xml` reads current public projects and public feedback,
+excluding hidden resources and query-string variants. Filtered board pages have
+a clean canonical and `noindex`. No fabricated modification timestamps are used.
+Cookie-based languages share URLs, so no `hreflang` alternatives are advertised;
+crawlers normally see English. Standard crawlable HTML, links, metadata, and
+structured data support search and AI discovery; no special `llms.txt` is
+required or generated, and inclusion or ranking is not guaranteed.
+
+After deployment, inspect `/robots.txt`, `/sitemap.xml`, `/share-image`, and a
+public page using a social crawler user agent such as `Twitterbot`. Confirm the
+canonical origin, card image, and indexing policy in the returned HTML/headers.
+Local checks and policy rationale are recorded in
+[ADR 0028](docs/adr/0028-public-metadata-and-crawler-discovery.md).
+
 ## Architecture decision records
 
 The [ADR index](docs/adr/README.md) records the context, alternatives, choices,

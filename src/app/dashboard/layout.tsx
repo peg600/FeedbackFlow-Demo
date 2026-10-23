@@ -1,4 +1,8 @@
 import type { ReactNode } from "react";
+import type { Metadata } from "next";
+import { NO_INDEX } from "@/lib/seo";
+
+export const metadata: Metadata = { robots: NO_INDEX };
 
 import { DashboardShell } from "@/features/dashboard/components/dashboard-shell";
 import { requireDashboardAccess } from "@/features/projects/server/access";

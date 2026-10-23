@@ -97,6 +97,20 @@ describe("PublicFeedbackPage", () => {
     });
   });
 
+  it("keeps search and pagination out of the index while using the clean board canonical", async () => {
+    vi.stubEnv("VERCEL_ENV", "production");
+    vi.stubEnv("SITE_URL", "https://example.com");
+    try {
+      const result = await generateMetadata({ params, searchParams: Promise.resolve({ q: "dark", page: "2" }) });
+      expect(result.robots).toMatchObject({ index: false });
+      expect(result.alternates).toEqual({ canonical: "https://example.com/p/acme-studio" });
+      mocks.getPublicFeedbackBoard.mockResolvedValueOnce(null);
+      expect((await generateMetadata({ params })).robots).toMatchObject({ index: false });
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+
   it("uses a scoped empty state for an existing public project", async () => {
     mocks.getPublicFeedbackBoard.mockResolvedValueOnce({
       ...board,

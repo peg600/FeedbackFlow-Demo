@@ -35,6 +35,7 @@
 | 0025 | [首页 Demo 导览与标签页内关闭记忆](0025-home-demo-guide.md) | Accepted | 2026-10-22 |
 | 0026 | [Preview 与 Production 共用公开演示身份](0026-shared-preview-production-demo-identity.md) | Accepted | 2026-10-22 |
 | 0027 | [Production Demo 复用 Sandbox 配置](0027-production-shared-sandbox-config.md) | Accepted | 2026-10-22 |
+| 0028 | [公开元数据与爬虫发现策略](0028-public-metadata-and-crawler-discovery.md) | Accepted | 2026-10-23 |
 
 ## 范围与维护
 

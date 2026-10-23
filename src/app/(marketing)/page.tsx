@@ -10,14 +10,16 @@ import { buttonVariants } from "@/components/ui/button";
 import { FREE_FEEDBACK_LIMIT } from "@/features/billing/limits";
 import { cn } from "@/lib/utils";
 import { DemoGuide } from "./demo-guide";
+import { publicPageMetadata, siteUrl } from "@/lib/seo";
+import { JsonLd } from "@/components/json-ld";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { t } = await getI18n();
-  return {
-  title: t("FeedbackFlow | Turn feedback into a trusted roadmap"),
-  description:
-    t("Collect customer feedback, prioritize what matters, and share product progress with FeedbackFlow."),
-};
+  const { t, locale } = await getI18n();
+  return publicPageMetadata({
+    path: "/", locale,
+    title: t("FeedbackFlow | Turn feedback into a trusted roadmap"),
+    description: t("Collect customer feedback, prioritize what matters, and share product progress with FeedbackFlow."),
+  });
 }
 
 const features = [
@@ -79,6 +81,13 @@ export default async function HomePage() {
   const { t } = await getI18n();
   return (
     <div className="min-h-screen bg-background">
+      <JsonLd data={{
+        "@context": "https://schema.org",
+        "@graph": [
+          { "@type": "WebSite", "@id": siteUrl("/#website"), name: "FeedbackFlow", url: siteUrl(), inLanguage: ["en", "zh-CN"] },
+          { "@type": "WebApplication", "@id": siteUrl("/#application"), name: "FeedbackFlow", url: siteUrl(), applicationCategory: "BusinessApplication", operatingSystem: "Web browser", description: t("A feedback management and public roadmap tool that helps product teams collect user feedback and organize feature requests."), featureList: [t("Feedback"), t("Voting and roadmap"), t("Sandbox billing")], creator: { "@type": "Person", "@id": siteUrl("/profile#person"), name: "Nanxuan Li", url: siteUrl("/profile") } },
+        ],
+      }} />
       <HomeHeader />
       <main>
         <section className="mx-auto grid max-w-content items-center gap-14 px-6 py-14 md:px-10 md:py-20 lg:grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)] lg:gap-20 lg:py-24">

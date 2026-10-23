@@ -3,6 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { SiteHeader } from "@/components/site-header";
+import { JsonLd } from "@/components/json-ld";
+import { publicPageMetadata, siteUrl } from "@/lib/seo";
 import { getI18n } from "@/lib/i18n/server";
 import type { Locale } from "@/lib/i18n/shared";
 
@@ -11,11 +13,11 @@ import { projectExperience, workExperience, type ResumeEntry } from "./resume";
 import { projectExperienceEn, workExperienceEn } from "./resume-en";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { t } = await getI18n();
-  return {
+  const { t, locale } = await getI18n();
+  return publicPageMetadata({ path: "/profile", locale,
     title: t("Nanxuan Li | Frontend Engineer"),
     description: t("Nanxuan Li's frontend development portfolio, featuring professional experience and projects in component libraries, real-time bidding, and web performance optimization."),
-  };
+  });
 }
 
 const skills = [
@@ -54,6 +56,11 @@ export default async function ProfilePage() {
 
   return (
     <div className="min-h-svh bg-surface">
+      <JsonLd data={{
+        "@context": "https://schema.org", "@type": "ProfilePage", url: siteUrl("/profile"),
+        name: t("Nanxuan Li | Frontend Engineer"), inLanguage: locale === "zh" ? "zh-CN" : "en",
+        mainEntity: { "@type": "Person", "@id": siteUrl("/profile#person"), name: locale === "zh" ? "李楠煊" : "Nanxuan Li", jobTitle: t("Frontend Engineer"), url: siteUrl("/profile"), image: siteUrl("/li-nanxuan.png") },
+      }} />
       <SiteHeader locale={locale} profileActive navigation={[
         { href: "/#features", label: "Features" },
         { href: "/p/demo/roadmap", label: "Roadmap" },
